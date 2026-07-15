@@ -1,4 +1,4 @@
-import {  useState } from 'react'
+import { useState } from 'react'
 import './Login.css'
 
 export interface LoginCredentials {
@@ -6,19 +6,55 @@ export interface LoginCredentials {
   password: string
 }
 
-interface LoginProps {
-  onLogin?: (credentials: LoginCredentials) => void
+export interface RegistrationData {
+  nombre: string
+  apellido: string
+  cedula: string
+  telefono: string
+  correo: string
+  rol: 'campesena' | 'regular fit' | 'apoyo administrativo'
+  sede: string
+  area: string
+  codigoContrato: string
+  codigoSiif: string
 }
 
-export function Login({ onLogin }: LoginProps) {
+interface LoginProps {
+  onLogin?: (credentials: LoginCredentials) => void
+  onRegister?: (data: RegistrationData) => void
+}
+
+export function Login({ onLogin, onRegister }: LoginProps) {
+  const [mode, setMode] = useState<'login' | 'register'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [registration, setRegistration] = useState<RegistrationData>({
+    nombre: '',
+    apellido: '',
+    cedula: '',
+    telefono: '',
+    correo: '',
+    rol: 'campesena',
+    sede: '',
+    area: '',
+    codigoContrato: '',
+    codigoSiif: '',
+  })
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
-    onLogin?.({ username, password })
+
+    if (mode === 'login') {
+      onLogin?.({ username, password })
+    } else {
+      onRegister?.(registration)
+    }
+  }
+
+  const handleRegisterChange = (field: keyof RegistrationData, value: string) => {
+    setRegistration((current) => ({ ...current, [field]: value }))
   }
 
   return (
@@ -50,50 +86,172 @@ export function Login({ onLogin }: LoginProps) {
       <section className="panel panel--form">
         <div className="form-card">
           <div className="form-header">
-            <p className="form-label">Iniciar Sesión</p>
-            <p className="form-description">Ingresa tus credenciales para continuar</p>
+            <p className="form-label">{mode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</p>
+            <p className="form-description">
+              {mode === 'login'
+                ? 'Ingresa tus credenciales para continuar'
+                : 'Completa el formulario para crear una nueva cuenta'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            <label>
-              Nombre de usuario
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="instructor o coordinador"
-                required
-              />
-            </label>
+            {mode === 'login' ? (
+              <>
+                <label>
+                  Nombre de usuario
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="instructor o coordinador"
+                    required
+                  />
+                </label>
 
-            <label>
-              Contraseña
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="********"
-                required
-              />
-            </label>
+                <label>
+                  Contraseña
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="********"
+                    required
+                  />
+                </label>
 
-            <div className="form-footer">
-              <button type="submit" className="login-button">
-                Iniciar Sesión
-              </button>
-              <a href="#" className="link-secondary">
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
+                <div className="form-footer">
+                  <button type="submit" className="login-button">
+                    Iniciar Sesión
+                  </button>
+                </div>
+                <div className="register-footer">
+                  ¿No tienes cuenta?{' '}
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => {
+                      setMode('register')
+                      setSubmitted(false)
+                    }}
+                  >
+                    Regístrate
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="register-grid">
+                  <label>
+                    Nombre
+                    <input
+                      type="text"
+                      value={registration.nombre}
+                      onChange={(e) => handleRegisterChange('nombre', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Apellido
+                    <input
+                      type="text"
+                      value={registration.apellido}
+                      onChange={(e) => handleRegisterChange('apellido', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Cédula
+                    <input
+                      type="number"
+                      value={registration.cedula}
+                      onChange={(e) => handleRegisterChange('cedula', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Teléfono
+                    <input
+                      type="number"
+                      value={registration.telefono}
+                      onChange={(e) => handleRegisterChange('telefono', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Correo institucional
+                    <input
+                      type="email"
+                      value={registration.correo}
+                      onChange={(e) => handleRegisterChange('correo', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Rol
+                    <select
+                      value={registration.rol}
+                      onChange={(e) => handleRegisterChange('rol', e.target.value)}
+                      required
+                    >
+                      <option value="campesena">Campesena</option>
+                      <option value="regular fit">Regular Fit</option>
+                      <option value="apoyo administrativo">Apoyo Administrativo</option>
+                    </select>
+                  </label>
+                  <label>
+                    Sede
+                    <input
+                      type="text"
+                      value={registration.sede}
+                      onChange={(e) => handleRegisterChange('sede', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Área
+                    <input
+                      type="text"
+                      value={registration.area}
+                      onChange={(e) => handleRegisterChange('area', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Código de contrato
+                    <input
+                      type="text"
+                      value={registration.codigoContrato}
+                      onChange={(e) => handleRegisterChange('codigoContrato', e.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Código SIIF
+                    <input
+                      type="text"
+                      value={registration.codigoSiif}
+                      onChange={(e) => handleRegisterChange('codigoSiif', e.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="form-footer">
+                  <button type="submit" className="login-button">
+                    Crear cuenta
+                  </button>
+                </div>
+              </>
+            )}
           </form>
-
-          <div className="register-footer">
-            ¿No tienes cuenta? <a href="#">Regístrate</a>
-          </div>
 
           {submitted ? (
             <div className="submit-message">
-              Usuario: <strong>{username}</strong> enviado.
+              {mode === 'login' ? (
+                <>Usuario: <strong>{username}</strong> enviado.</>
+              ) : (
+                <>Registro enviado para <strong>{registration.nombre} {registration.apellido}</strong>.</>
+              )}
             </div>
           ) : null}
         </div>

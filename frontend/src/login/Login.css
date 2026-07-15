@@ -99,9 +99,26 @@
   margin-bottom: 24px;
 }
 
+.tabs {
+  display: none;
+}
+
+.link-button {
+  border: none;
+  background: transparent;
+  color: #159144;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .form-label {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
@@ -113,6 +130,16 @@
 .login-form {
   display: grid;
   gap: 18px;
+}
+
+.register-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.register-grid label {
+  width: 100%;
 }
 
 .login-form label {
@@ -200,5 +227,18 @@
 
   .panel {
     padding: 32px 24px;
+  }
+
+  .register-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
   }
 }
