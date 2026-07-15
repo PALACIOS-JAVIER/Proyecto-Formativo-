@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import {  useState } from 'react'
 import './Login.css'
 
 export interface LoginCredentials {
@@ -15,7 +15,7 @@ export function Login({ onLogin }: LoginProps) {
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
     onLogin?.({ username, password })
