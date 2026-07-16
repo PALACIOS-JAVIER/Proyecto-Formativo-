@@ -21,12 +21,16 @@ const pageComponents: Record<PageKey, ReactElement> = {
   asistente: <AsistenteAI />,
 }
 
-export function InstructorApp(): ReactElement {
+interface InstructorAppProps {
+  onLogout: () => void
+}
+
+export function InstructorApp({ onLogout }: InstructorAppProps): ReactElement {
   const [activePage, setActivePage] = useState<PageKey>('dashboard')
 
   return (
     <div className="instructor-layout">
-      <Navegacion active={activePage} onSelect={setActivePage} onLogout={() => console.log('Cerrar sesión')} />
+      <Navegacion active={activePage} onSelect={setActivePage} onLogout={onLogout} />
       <main className="instructor-main">{pageComponents[activePage]}</main>
     </div>
   )
