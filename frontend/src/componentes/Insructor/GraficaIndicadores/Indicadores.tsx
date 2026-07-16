@@ -1,12 +1,12 @@
 import type { ReactElement } from 'react'
 
 function LineChart({ data = [] }: { data?: number[] }) {
-  const width = 720
-  const height = 220
-  const padding = 24
+  const width = 580
+  const height = 180
+  const padding = 20
 
   if (data.length === 0) {
-    return <div className="card">No hay datos para mostrar.</div>
+    return <div>No hay datos para mostrar.</div>
   }
 
   const max = Math.max(...data)
@@ -21,8 +21,7 @@ function LineChart({ data = [] }: { data?: number[] }) {
     .join(' ')
 
   return (
-    <div className="card">
-      <h2>Tendencia mensual</h2>
+    <div className="line-chart">
       <svg className="chart-svg" viewBox={`0 0 ${width} ${height}`} width="100%" height={height} preserveAspectRatio="xMidYMid meet">
         <polyline className="chart-animate" fill="none" stroke="#2fd06f" strokeWidth={3} points={points} />
         {data.map((v, i) => {
@@ -37,6 +36,12 @@ function LineChart({ data = [] }: { data?: number[] }) {
 
 export function Indicadores(): ReactElement {
   const sample = [65, 72, 78, 75, 82, 79]
+  const areas = [
+    { name: 'Seguimiento', level: 92 },
+    { name: 'Informes', level: 76 },
+    { name: 'Movilidad', level: 58 },
+    { name: 'Revisiones', level: 48 },
+  ]
 
   return (
     <section className="page-panel">
@@ -67,21 +72,26 @@ export function Indicadores(): ReactElement {
       </div>
 
       <div className="dashboard-panels">
-        <div className="card">
+        <article className="card chart-panel">
           <h2>Tendencia mensual</h2>
-          <div className="chart-wrap">
-            <LineChart data={sample} />
-          </div>
+          <LineChart data={sample} />
           <p className="stat-small">Gráfica con tendencia de los últimos meses.</p>
-        </div>
+        </article>
 
         <article className="card overview-card overview-card--accent notifications-compact">
           <h2>Áreas con mayor carga</h2>
           <ol className="load-list">
-            <li>Seguimiento</li>
-            <li>Informes</li>
-            <li>Movilidad</li>
-            <li>Revisiones</li>
+            {areas.map((area) => (
+              <li key={area.name}>
+                <div className="load-meta">
+                  <span>{area.name}</span>
+                  <strong>{area.level}%</strong>
+                </div>
+                <div className="load-bar">
+                  <span style={{ width: `${area.level}%` }} />
+                </div>
+              </li>
+            ))}
           </ol>
         </article>
       </div>
