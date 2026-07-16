@@ -1,7 +1,9 @@
 .login-page {
-  min-height: 100svh;
+  min-height: 100vh;
+  height: 100vh;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
   background: linear-gradient(135deg, #eafaf1 0%, #ffffff 100%);
 }
 
@@ -9,7 +11,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
+  padding: 48px 40px;
+  min-height: 100%;
+  overflow: hidden;
 }
 
 .panel--brand {
@@ -19,13 +23,22 @@
 
 .panel--form {
   background: #f7fbfd;
+  align-items: flex-start;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.panel--brand {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .brand-card {
-  width: min(520px, 100%);
+  width: min(540px, 100%);
   display: flex;
   flex-direction: column;
   gap: 28px;
+  justify-content: center;
 }
 
 .brand-badge {
@@ -88,15 +101,29 @@
 }
 
 .form-card {
-  width: min(460px, 100%);
+  width: min(540px, 100%);
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
   padding: 36px;
   border-radius: 32px;
   background: #ffffff;
   box-shadow: 0 24px 80px rgba(24, 67, 120, 0.12);
+  margin: auto;
+}
+
+.form-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.form-card::-webkit-scrollbar-thumb {
+  background: rgba(21, 145, 68, 0.18);
+  border-radius: 999px;
 }
 
 .form-header {
   margin-bottom: 24px;
+  display: grid;
+  gap: 10px;
 }
 
 .tabs {
@@ -116,10 +143,26 @@
   text-decoration: underline;
 }
 
+.back-button {
+  border: none;
+  background: transparent;
+  color: #1b5e2c;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
 .form-label {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
+  color: #208124;
 }
 
 .form-description {
@@ -132,24 +175,35 @@
   gap: 18px;
 }
 
+.form-error {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #ffe7e6;
+  color: #8b1c1c;
+  font-weight: 600;
+}
+
 .register-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
 }
 
-.register-grid label {
-  width: 100%;
-}
-
+.register-grid label,
 .login-form label {
+  width: 100%;
   display: grid;
   gap: 10px;
   font-weight: 600;
   color: #3d4451;
 }
 
-.login-form input {
+.full-width-field {
+  grid-column: 1 / -1;
+}
+
+.login-form input,
+.login-form select {
   width: 100%;
   min-height: 52px;
   border: 1px solid #d8dde5;
@@ -161,7 +215,8 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.login-form input:focus {
+.login-form input:focus,
+.login-form select:focus {
   outline: none;
   border-color: #49b36a;
   box-shadow: 0 0 0 3px rgba(73, 179, 106, 0.15);
@@ -173,6 +228,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  margin-top: 10px;
 }
 
 .login-button {
@@ -203,12 +259,18 @@
   margin-top: 22px;
   color: #707d90;
   text-align: center;
+  width: 100%;
 }
 
-.register-footer a {
+.register-footer a,
+.register-footer button {
   color: #159144;
   font-weight: 700;
   text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .submit-message {
@@ -226,15 +288,43 @@
   }
 
   .panel {
-    padding: 32px 24px;
+    padding: 24px 20px;
+    align-items: flex-start;
+  }
+
+  .form-card {
+    width: 100%;
+    padding: 28px 24px;
   }
 
   .register-grid {
     grid-template-columns: 1fr;
   }
 
-  .tabs {
+  .form-header {
+    gap: 10px;
+  }
+
+  .form-description {
+    max-width: 100%;
+  }
+
+  .form-footer {
+    justify-content: center;
+  }
+
+  .login-button {
     width: 100%;
+    min-width: 0;
+  }
+
+  .register-footer {
+    margin-top: 18px;
+  }
+
+  .panel--brand,
+  .panel--form {
+    padding: 24px 16px;
   }
 
   .tab {

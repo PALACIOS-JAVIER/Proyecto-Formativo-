@@ -12,6 +12,7 @@ export interface RegistrationData {
   cedula: string
   telefono: string
   correo: string
+  contraseña: string
   rol: 'campesena' | 'regular fit' | 'apoyo administrativo'
   sede: string
   area: string
@@ -20,7 +21,7 @@ export interface RegistrationData {
 }
 
 interface LoginProps {
-  onLogin?: (credentials: LoginCredentials) => void
+  onLogin?: (credentials: LoginCredentials) => boolean | void
   onRegister?: (data: RegistrationData) => void
 }
 
@@ -29,12 +30,14 @@ export function Login({ onLogin, onRegister }: LoginProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
     apellido: '',
     cedula: '',
     telefono: '',
     correo: '',
+    contraseña: '',
     rol: 'campesena',
     sede: '',
     area: '',
@@ -44,11 +47,23 @@ export function Login({ onLogin, onRegister }: LoginProps) {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSubmitted(true)
+    setErrorMessage('')
 
     if (mode === 'login') {
-      onLogin?.({ username, password })
+      if (!username.trim() || !password.trim()) {
+        setErrorMessage('Por favor ingresa usuario y contraseña.')
+        return
+      }
+
+      const loginResult = onLogin?.({ username, password })
+      if (loginResult === false) {
+        setErrorMessage('Usuario o contraseña incorrectos.')
+        return
+      }
+
+      setSubmitted(true)
     } else {
+      setSubmitted(true)
       onRegister?.(registration)
     }
   }
@@ -92,9 +107,22 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                 ? 'Ingresa tus credenciales para continuar'
                 : 'Completa el formulario para crear una nueva cuenta'}
             </p>
+            {mode === 'register' && (
+              <button
+                type="button"
+                className="back-button"
+                onClick={() => {
+                  setMode('login')
+                  setSubmitted(false)
+                }}
+              >
+                ← Regresar al inicio
+              </button>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
+            {errorMessage && <div className="form-error">{errorMessage}</div>}
             {mode === 'login' ? (
               <>
                 <label>
@@ -234,11 +262,34 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                       required
                     />
                   </label>
+                  <label className="full-width-field">
+                    Contraseña
+                    <input
+                      type="password"
+                      value={registration.contraseña}
+                      onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
+                      placeholder="Crea una contraseña segura"
+                      required
+                    />
+                  </label>
                 </div>
 
                 <div className="form-footer">
                   <button type="submit" className="login-button">
                     Crear cuenta
+                  </button>
+                </div>
+                <div className="register-footer">
+                  ¿Ya tienes cuenta?{' '}
+                  <button
+                    type="button"
+                    className="link-button"
+                    onClick={() => {
+                      setMode('login')
+                      setSubmitted(false)
+                    }}
+                  >
+                    Inicia sesión
                   </button>
                 </div>
               </>

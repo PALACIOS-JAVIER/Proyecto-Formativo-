@@ -6,9 +6,12 @@ function App() {
   const [authenticated, setAuthenticated] = useState(false)
 
   const handleLogin = ({ username, password }: { username: string; password: string }) => {
-    if (username && password) {
+    const isValid = username.trim().length > 0 && password.trim().length > 0
+    if (isValid) {
       setAuthenticated(true)
+      return true
     }
+    return false
   }
 
   const handleLogout = () => {
