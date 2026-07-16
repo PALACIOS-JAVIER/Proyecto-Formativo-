@@ -28,45 +28,6 @@ export function Dashboard(): ReactElement {
         </article>
       </div>
 
-      <div className="dashboard-panels">
-        <article className="card overview-card">
-          <h2>Cómo usar este panel</h2>
-          <ul className="how-to-list">
-            <li><strong>Ver estado:</strong> Consulta las tarjetas para valores clave (cumplimiento, puntualidad).</li>
-            <li><strong>Subir informe:</strong> Usa «Subir Informe» para validar archivos GC/GF con el asistente.</li>
-            <li><strong>Atención:</strong> Revisa «Alertas» para ver tareas urgentes y observaciones.</li>
-          </ul>
-          <div className="help-box">Consejo didáctico: Prioriza informes con correcciones para reducir observaciones futuras.</div>
-        </article>
-
-        <article className="card overview-card overview-card--accent">
-          <h2>Acciones rápidas</h2>
-          <p>Usa los botones laterales para navegar o los accesos directos desde el asistente IA.</p>
-        </article>
-      </div>
-
-      <div className="quick-actions-grid">
-        <article className="card action-card">
-          <p className="eyebrow accent">Acceso rápido</p>
-          <h2>Nuevo Informe</h2>
-          <p>Selecciona tipo y sube el archivo para validar.</p>
-        </article>
-        <article className="card action-card">
-          <p className="eyebrow accent">Acceso rápido</p>
-          <h2>Historial</h2>
-          <p>Consulta versiones previas y observaciones.</p>
-        </article>
-      </div>
-
-      <section className="card recent-activity">
-        <h2>Actividad reciente</h2>
-        <ul className="activity-list">
-          <li className="activity-item"><strong>Mar/10</strong> - Informe mensual aprobado (sin observaciones).</li>
-          <li className="activity-item"><strong>May/15</strong> - Informe de movilidad: correcciones solicitadas.</li>
-          <li className="activity-item"><strong>May/20</strong> - Nueva plantilla de informe disponible.</li>
-        </ul>
-      </section>
-
       <div className="dashboard-panels extra-grid">
         <article className="card small-card">
           <h3>Próximas entregas</h3>
