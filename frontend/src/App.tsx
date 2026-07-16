@@ -11,7 +11,11 @@ function App() {
     }
   }
 
-  return authenticated ? <InstructorApp /> : <Login onLogin={handleLogin} />
+  const handleLogout = () => {
+    setAuthenticated(false)
+  }
+
+  return authenticated ? <InstructorApp onLogout={handleLogout} /> : <Login onLogin={handleLogin} />
 }
 
 export default App
