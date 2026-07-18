@@ -16,7 +16,7 @@ interface ReportCardProps extends ReportData {
   onDelete: () => void
 }
 
-function ReportCard({ month, status, date, note, badge, onView, onDownload, onEdit, onDelete }: ReportCardProps) {
+function ReportCard({ month, status, date, note, badge, onView, onDownload, onDelete }: ReportCardProps) {
   return (
     <article className="card report-card">
       <div className="report-card-header">
@@ -38,9 +38,6 @@ function ReportCard({ month, status, date, note, badge, onView, onDownload, onEd
         </button>
         <button type="button" className="button button--ghost" onClick={onDownload}>
           Descargar
-        </button>
-        <button type="button" className="button button--ghost" onClick={onEdit}>
-          Editar
         </button>
         <button type="button" className="button button--danger" onClick={onDelete}>
           Eliminar
