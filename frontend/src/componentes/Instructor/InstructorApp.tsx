@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { Navegacion } from './Navegacion/Navegacion'
-import { Dashboard } from './Dashboard/Dashboard'
+import { Dashboard } from './GraficaIndicadores/Dashboard/Dashboard'
 import { CargarInforme } from './CargarInforme/CargarInforme'
 import { Informes } from './Informes/Informes'
 import { AsistenteAI } from './AsistenteIA/AsistenteAI'

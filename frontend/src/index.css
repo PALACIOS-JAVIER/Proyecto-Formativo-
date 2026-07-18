@@ -24,6 +24,95 @@ body {
   color: #e8f5ef;
 }
 
+.coordinator-sidebar {
+  background: linear-gradient(180deg, #071118 0%, #0d1b24 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-summary {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(33, 173, 102, 0.2);
+  color: #9fe5b3;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.nav-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-label {
+  font-weight: 700;
+}
+
+.nav-hint {
+  font-size: 0.78rem;
+  color: #8fa8b4;
+}
+
+.coordinator-hero {
+  background: linear-gradient(135deg, rgba(18, 32, 42, 0.95), rgba(9, 23, 33, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.coordinator-activity-card,
+.coordinator-priority-card {
+  display: grid;
+  gap: 14px;
+}
+
+.priority-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.priority-list li {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d7ebdc;
+}
+
+.mini-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mini-summary > div {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(33, 173, 102, 0.1);
+}
+
+.load-meta--small {
+  font-size: 0.9rem;
+}
+
 #root {
   width: 100%;
   min-height: 100vh;
