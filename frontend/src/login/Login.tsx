@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import './Login.css'
 
 export interface LoginCredentials {
   username: string
@@ -18,6 +19,8 @@ export interface RegistrationData {
   area: string
   codigoContrato: string
   codigoSiif: string
+  fechaInicioContrato: string
+  fechaFinContrato: string
 }
 
 interface LoginProps {
@@ -29,6 +32,7 @@ export function Login({ onLogin, onRegister }: LoginProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
@@ -38,10 +42,12 @@ export function Login({ onLogin, onRegister }: LoginProps) {
     correo: '',
     contraseña: '',
     rol: 'campesena',
-    sede: '',
+    sede: 'Yamboro',
     area: '',
     codigoContrato: '',
     codigoSiif: '',
+    fechaInicioContrato: '',
+    fechaFinContrato: '',
   })
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -61,6 +67,21 @@ export function Login({ onLogin, onRegister }: LoginProps) {
       }
 
     } else {
+      if (!registration.fechaInicioContrato || !registration.fechaFinContrato) {
+        setErrorMessage('Por favor ingresa fecha de inicio y fin del contrato.')
+        return
+      }
+
+      if (new Date(registration.fechaInicioContrato) > new Date(registration.fechaFinContrato)) {
+        setErrorMessage('La fecha de inicio debe ser anterior a la fecha fin del contrato.')
+        return
+      }
+
+      if (registration.contraseña !== confirmPassword) {
+        setErrorMessage('Las contraseñas no coinciden.')
+        return
+      }
+
       onRegister?.(registration)
     }
   }
@@ -69,46 +90,24 @@ export function Login({ onLogin, onRegister }: LoginProps) {
     setRegistration((current) => ({ ...current, [field]: value }))
   }
 
-  const inputClasses = 'w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
-  const labelClasses = 'flex flex-col gap-2 text-sm font-medium text-slate-700'
+  const inputClasses = 'input-field'
+  const labelClasses = 'label-field'
+  const formContainerClasses = 'form-spacing'
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_35%),linear-gradient(135deg,_#f8fafc_0%,_#eefcf6_100%)] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col overflow-hidden rounded-[32px] border border-slate-200/70 bg-white/70 shadow-[0_25px_80px_-30px_rgba(15,23,42,0.45)] backdrop-blur-xl lg:flex-row">
-        <section className="flex flex-1 flex-col justify-between bg-slate-950 px-6 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
-          <div>
-            <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">
-              SISTEMA SITMI
-            </div>
-            <h1 className="mt-6 text-3xl font-semibold sm:text-4xl">Gestión técnica, seguimiento claro y decisiones más rápidas.</h1>
-            <p className="mt-4 max-w-xl text-base text-slate-300 sm:text-lg">
-              Centraliza informes, revisa avances y mantén al equipo alineado con una vista operativa moderna.
-            </p>
-          </div>
-
-          <div className="mt-8 space-y-4">
-            {[
-              ['Gestión eficiente', 'Administra informes y documentación de forma simple y organizada.'],
-              ['Control total', 'Monitorea cumplimiento y estado de las actividades en tiempo real.'],
-            ].map(([title, description]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                <h2 className="font-semibold text-white">{title}</h2>
-                <p className="mt-1 text-sm text-slate-300">{description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex-1 bg-white/90 px-6 py-8 sm:px-8 lg:px-10">
-          <div className="mx-auto flex h-full max-w-xl flex-col justify-center">
-            <div className="flex items-center justify-between rounded-full border border-slate-200 bg-slate-50 px-1 py-1">
+    <main className="login-page">
+      <div className="login-container">
+        <img src="./assets/Imagenes_Login/FondoLogin.png" alt="" />
+        <section className="login-panel-form">
+          <div className="login-panel-form-inner">
+            <div className="login-tab-group">
               <button
                 type="button"
                 onClick={() => {
                   setMode('login')
                   setErrorMessage('')
                 }}
-                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'login' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'}`}
+                className={`tab-button ${mode === 'login' ? 'tab-button--active' : ''}`}
               >
                 Iniciar sesión
               </button>
@@ -118,62 +117,69 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                   setMode('register')
                   setErrorMessage('')
                 }}
-                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'register' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'}`}
+                className={`tab-button ${mode === 'register' ? 'tab-button--active' : ''}`}
               >
                 Registrarse
               </button>
             </div>
 
-            <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50/90 p-5 shadow-sm sm:p-6">
-              <div className="mb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                  {mode === 'login' ? 'Acceso al sistema' : 'Crear una cuenta'}
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-                  {mode === 'login' ? 'Bienvenido de nuevo' : 'Completa tus datos'}
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  {mode === 'login'
-                    ? 'Ingresa tus credenciales para continuar.'
-                    : 'Registra a un nuevo usuario para empezar a trabajar.'}
-                </p>
-              </div>
+            <div className="login-card-shell">
+              <div className="login-card">
+                <div className="card-header">
+                  <p className="section-label">
+                    {mode === 'login' ? 'Acceso al sistema' : 'Crear una cuenta'}
+                  </p>
+                  <h2 className="form-heading">
+                    {mode === 'login' ? 'Bienvenido de nuevo' : 'Completa tus datos'}
+                  </h2>
+                  <p className="form-copy">
+                    {mode === 'login'
+                      ? 'Ingresa tus credenciales para continuar.'
+                      : 'Registra a un nuevo usuario para empezar a trabajar.'}
+                  </p>
+                </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {errorMessage && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{errorMessage}</div>}
+                <form onSubmit={handleSubmit} className={`login-form ${formContainerClasses}`}>
+                  {errorMessage && <div className="error-message">{errorMessage}</div>}
 
-                {mode === 'login' ? (
-                  <>
-                    <label className={labelClasses}>
-                      <span>Usuario</span>
-                      <input
-                        type="text"
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                        placeholder="instructor o coordinador"
-                        required
-                        className={inputClasses}
-                      />
-                    </label>
+                  {mode === 'login' ? (
+                    <>
+                      <div className="floating-field">
+                        <input
+                          id="username"
+                          type="text"
+                          value={username}
+                          onChange={(event) => setUsername(event.target.value)}
+                          placeholder=" "
+                          required
+                          className={`${inputClasses} floating-input`}
+                        />
+                        <label htmlFor="username" className="floating-label">
+                          Usuario
+                        </label>
+                      </div>
 
-                    <label className={labelClasses}>
-                      <span>Contraseña</span>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="********"
-                        required
-                        className={inputClasses}
-                      />
-                    </label>
+                      <div className="floating-field">
+                        <input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder=" "
+                          required
+                          className={`${inputClasses} floating-input`}
+                        />
+                        <label htmlFor="password" className="floating-label">
+                          Contraseña
+                        </label>
+                      </div>
 
-                    <button type="submit" className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
-                      Iniciar sesión
-                    </button>
-                  </>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                      <button type="submit" className="button-primary">
+                        Iniciar sesión
+                      </button>
+                    </>
+                  ) : (
+                  <div className="registration-grid">
                     <label className={labelClasses}>
                       <span>Nombre</span>
                       <input value={registration.nombre} onChange={(event) => handleRegisterChange('nombre', event.target.value)} className={inputClasses} required />
@@ -204,7 +210,10 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                     </label>
                     <label className={labelClasses}>
                       <span>Sede</span>
-                      <input value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required />
+                      <select value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required>
+                        <option value="Yamboro">Yamboro</option>
+                        <option value="Otra">Otra</option>
+                      </select>
                     </label>
                     <label className={labelClasses}>
                       <span>Área</span>
@@ -219,20 +228,33 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                       <input value={registration.codigoSiif} onChange={(event) => handleRegisterChange('codigoSiif', event.target.value)} className={inputClasses} required />
                     </label>
                     <label className={labelClasses}>
+                      <span>Fecha inicio del contrato</span>
+                      <input type="date" value={registration.fechaInicioContrato} onChange={(event) => handleRegisterChange('fechaInicioContrato', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Fecha fin del contrato</span>
+                      <input type="date" value={registration.fechaFinContrato} onChange={(event) => handleRegisterChange('fechaFinContrato', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
                       <span>Contraseña</span>
                       <input type="password" value={registration.contraseña} onChange={(event) => handleRegisterChange('contraseña', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Confirmar contraseña</span>
+                      <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClasses} required />
                     </label>
                   </div>
                 )}
 
                 {mode === 'register' && (
-                  <button type="submit" className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                  <button type="submit" className="button-primary">
                     Crear cuenta
                   </button>
                 )}
               </form>
             </div>
           </div>
+        </div>
         </section>
       </div>
     </main>

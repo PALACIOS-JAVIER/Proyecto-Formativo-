@@ -33,7 +33,63 @@ body {
 }
 
 .overview-card--accent {
-  border-left: 4px solid #3cbf7d;
+  border-left: 4px solid #16a34a;
+}
+
+.page-panel {
+  padding: 2rem 1.25rem;
+}
+
+.stat-card {
+  border-radius: 28px;
+  padding: 1.6rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.12);
+}
+
+.stats-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 0.9rem;
+  font-size: 2rem;
+  color: #0f422a;
+}
+
+.stat-label,
+.stat-small {
+  color: #536c5b;
+}
+
+.chart-panel {
+  border-radius: 28px;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(247, 252, 245, 0.95), #ffffff);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  box-shadow: 0 24px 60px rgba(16, 185, 129, 0.06);
+}
+
+.chart-panel h2 {
+  margin-bottom: 1rem;
+  color: #134228;
+}
+
+.overview-card {
+  border-radius: 28px;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(240, 251, 244, 0.95), #ffffff);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  box-shadow: 0 24px 60px rgba(16, 185, 129, 0.06);
+}
+
+.overview-card--accent {
+  border-left: 4px solid #16a34a;
 }
 
 .action-card {
@@ -365,16 +421,21 @@ body {
   width: 100%;
   height: auto;
   display: block;
-  max-height: 190px;
+  max-height: 220px;
 }
 
 .line-chart {
   width: 100%;
   overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(240, 251, 244, 0.95), rgba(240, 251, 244, 0.7));
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.15);
+  padding: 1rem 0.65rem 0.9rem;
 }
 
 .chart-panel h2 {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
+  color: #113627;
 }
 
 .load-list {
@@ -382,12 +443,15 @@ body {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .load-list li {
   display: grid;
   gap: 10px;
+  padding: 1rem 1.1rem;
+  border-radius: 24px;
+  background: rgba(22, 163, 74, 0.08);
 }
 
 .load-meta {
@@ -395,13 +459,13 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  color: #d5e6d7;
+  color: #134928;
 }
 
 .load-bar {
-  height: 16px;
+  height: 14px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(16, 185, 129, 0.15);
   overflow: hidden;
 }
 
@@ -409,7 +473,7 @@ body {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: #2fd06f;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
 }
 
 .button--danger {
@@ -534,9 +598,11 @@ body {
 
 .perfil-form .foto-field img {
   width: 100%;
-  max-width: 180px;
+  max-width: 220px;
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  object-fit: cover;
 }
 
 .perfil-form button {

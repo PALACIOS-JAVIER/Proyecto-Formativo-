@@ -11,6 +11,8 @@ export interface ProfileData {
     area: string
     codigoContrato: string
     codigoSiif: string
+    fechaInicioContrato: string
+    fechaFinContrato: string
     objetoContrato?: string
     fotoPerfil?: string // URL base64 o blob URL
 }
@@ -29,10 +31,12 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
             telefono: '',
             correo: '',
             rol: 'campesena',
-            sede: '',
+            sede: 'Yamboro',
             area: '',
             codigoContrato: '',
             codigoSiif: '',
+            fechaInicioContrato: '',
+            fechaFinContrato: '',
             objetoContrato: '',
             fotoPerfil: '',
         }
@@ -112,7 +116,10 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
                     <label>
                         Sede
-                        <input value={data.sede} onChange={(e) => handleChange('sede', e.target.value)} />
+                        <select value={data.sede} onChange={(e) => handleChange('sede', e.target.value)}>
+                            <option value="Yamboro">Yamboro</option>
+                            <option value="Otra">Otra</option>
+                        </select>
                     </label>
 
                     <label>
@@ -128,6 +135,16 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
                     <label>
                         Código SIIF
                         <input value={data.codigoSiif} onChange={(e) => handleChange('codigoSiif', e.target.value)} />
+                    </label>
+
+                    <label>
+                        Fecha inicio del contrato
+                        <input type="date" value={data.fechaInicioContrato} onChange={(e) => handleChange('fechaInicioContrato', e.target.value)} />
+                    </label>
+
+                    <label>
+                        Fecha fin del contrato
+                        <input type="date" value={data.fechaFinContrato} onChange={(e) => handleChange('fechaFinContrato', e.target.value)} />
                     </label>
 
                     <label className="full-width">
