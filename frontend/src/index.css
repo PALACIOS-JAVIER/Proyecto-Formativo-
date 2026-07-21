@@ -1,13 +1,17 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 * {
   box-sizing: border-box;
 }
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #203039;
-  background: #eef6f2;
   font-size: 16px;
   line-height: 1.5;
+  color: #0f172a;
+  background-color: #f8fafc;
 }
 
 html,
@@ -20,243 +24,12 @@ body,
 
 body {
   min-height: 100vh;
-  background: #0d131a;
-  color: #e8f5ef;
-}
-
-.coordinator-sidebar {
-  background: linear-gradient(180deg, #071118 0%, #0d1b24 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sidebar-summary {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sidebar-pill {
-  display: inline-flex;
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(33, 173, 102, 0.2);
-  color: #9fe5b3;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.nav-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.nav-label {
-  font-weight: 700;
-}
-
-.nav-hint {
-  font-size: 0.78rem;
-  color: #8fa8b4;
-}
-
-.coordinator-hero {
-  background: linear-gradient(135deg, rgba(18, 32, 42, 0.95), rgba(9, 23, 33, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.coordinator-activity-card,
-.coordinator-priority-card {
-  display: grid;
-  gap: 14px;
-}
-
-.priority-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.priority-list li {
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #d7ebdc;
-}
-
-.mini-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.mini-summary > div {
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(33, 173, 102, 0.1);
-}
-
-.load-meta--small {
-  font-size: 0.9rem;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-}
-
-.instructor-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: 100vh;
-}
-
-.sidebar {
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  overflow: hidden;
-}
-
-.instructor-main {
-  padding: 22px 20px 28px;
-  background: #0a0f16;
-  min-height: 100vh;
-  overflow-y: auto;
-}
-
-.page-panel {
-  display: grid;
-  gap: 18px;
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 20px 22px;
-  border-radius: 26px;
-  background: #12202a;
-}
-
-.page-header--compact {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.eyebrow {
-  margin: 0;
-  color: #8fcf79;
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.subtext {
-  margin: 8px 0 0;
-  color: #c8d7e1;
-  max-width: 640px;
-}
-
-.stats-grid,
-.dashboard-panels,
-.quick-actions-grid,
-.reports-grid,
-.countdown-grid {
-  display: grid;
-  gap: 20px;
-}
-
-.stats-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.dashboard-panels,
-.quick-actions-grid,
-.reports-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.countdown-grid {
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-}
-
-.card {
-  padding: 24px;
-  border-radius: 24px;
-  background: #131f29;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-/* Slightly smaller cards on dashboard for a cleaner look */
-.stats-grid .card,
-.dashboard-panels .card,
-.quick-actions-grid .card {
-  padding: 16px;
-  border-radius: 18px;
-}
-
-.stat-card strong {
-  display: block;
-  margin-top: 14px;
-  font-size: 2.2rem;
-  line-height: 1.05;
-}
-
-.stat-label,
-.report-month,
-.report-card-header h2,
-.action-card h2,
-.status-chip,
-.countdown-panel .eyebrow {
-  color: #dce8ee;
-}
-
-.progress-bar {
-  margin-top: 16px;
-  height: 10px;
-  border-radius: 999px;
-  background: #102427;
-  overflow: hidden;
-}
-
-.progress-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #2fd06f 0%, #0db03d 100%);
-}
-
-.stat-small {
-  margin: 8px 0 0;
-  color: #9bb8c3;
-}
-
-.overview-card h2,
-.action-card h2,
-.report-card-header h2 {
-  margin: 0 0 10px;
-  font-size: 1.4rem;
-}
-
-.overview-card--warning {
-  border-left: 4px solid #f5a33d;
 }
 
 .overview-card--accent {

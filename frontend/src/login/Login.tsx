@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './Login.css'
+import type { FormEvent } from 'react'
 
 export interface LoginCredentials {
   username: string
@@ -29,7 +29,6 @@ export function Login({ onLogin, onRegister }: LoginProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [submitted, setSubmitted] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
@@ -45,7 +44,7 @@ export function Login({ onLogin, onRegister }: LoginProps) {
     codigoSiif: '',
   })
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
 
@@ -61,9 +60,7 @@ export function Login({ onLogin, onRegister }: LoginProps) {
         return
       }
 
-      setSubmitted(true)
     } else {
-      setSubmitted(true)
       onRegister?.(registration)
     }
   }
@@ -72,241 +69,172 @@ export function Login({ onLogin, onRegister }: LoginProps) {
     setRegistration((current) => ({ ...current, [field]: value }))
   }
 
+  const inputClasses = 'w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
+  const labelClasses = 'flex flex-col gap-2 text-sm font-medium text-slate-700'
+
   return (
-    <main className="login-page">
-      <section className="panel panel--brand">
-        <div className="brand-card">
-          <div className="brand-badge">SITMI</div>
-          <h1>Sistema de Información Técnica</h1>
-          <p className="brand-subtitle">de Monitoreo e Instructores</p>
-
-          <div className="feature-card">
-            <span className="feature-icon">✓</span>
-            <div>
-              <h2>Gestión Eficiente</h2>
-              <p>Administra informes y documentación de manera simple y organizada.</p>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_35%),linear-gradient(135deg,_#f8fafc_0%,_#eefcf6_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col overflow-hidden rounded-[32px] border border-slate-200/70 bg-white/70 shadow-[0_25px_80px_-30px_rgba(15,23,42,0.45)] backdrop-blur-xl lg:flex-row">
+        <section className="flex flex-1 flex-col justify-between bg-slate-950 px-6 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+          <div>
+            <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">
+              SISTEMA SITMI
             </div>
-          </div>
-
-          <div className="feature-card">
-            <span className="feature-icon">✓</span>
-            <div>
-              <h2>Control Total</h2>
-              <p>Seguimiento en tiempo real del cumplimiento y estado de informes.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="panel panel--form">
-        <div className="form-card">
-          <div className="form-header">
-            <p className="form-label">{mode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</p>
-            <p className="form-description">
-              {mode === 'login'
-                ? 'Ingresa tus credenciales para continuar'
-                : 'Completa el formulario para crear una nueva cuenta'}
+            <h1 className="mt-6 text-3xl font-semibold sm:text-4xl">Gestión técnica, seguimiento claro y decisiones más rápidas.</h1>
+            <p className="mt-4 max-w-xl text-base text-slate-300 sm:text-lg">
+              Centraliza informes, revisa avances y mantén al equipo alineado con una vista operativa moderna.
             </p>
-            {mode === 'register' && (
+          </div>
+
+          <div className="mt-8 space-y-4">
+            {[
+              ['Gestión eficiente', 'Administra informes y documentación de forma simple y organizada.'],
+              ['Control total', 'Monitorea cumplimiento y estado de las actividades en tiempo real.'],
+            ].map(([title, description]) => (
+              <div key={title} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                <h2 className="font-semibold text-white">{title}</h2>
+                <p className="mt-1 text-sm text-slate-300">{description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex-1 bg-white/90 px-6 py-8 sm:px-8 lg:px-10">
+          <div className="mx-auto flex h-full max-w-xl flex-col justify-center">
+            <div className="flex items-center justify-between rounded-full border border-slate-200 bg-slate-50 px-1 py-1">
               <button
                 type="button"
-                className="back-button"
                 onClick={() => {
                   setMode('login')
-                  setSubmitted(false)
+                  setErrorMessage('')
                 }}
+                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'login' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'}`}
               >
-                ← Regresar al inicio
+                Iniciar sesión
               </button>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('register')
+                  setErrorMessage('')
+                }}
+                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === 'register' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'}`}
+              >
+                Registrarse
+              </button>
+            </div>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            {errorMessage && <div className="form-error">{errorMessage}</div>}
-            {mode === 'login' ? (
-              <>
-                <label>
-                  Nombre de usuario
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="instructor o coordinador"
-                    required
-                  />
-                </label>
+            <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50/90 p-5 shadow-sm sm:p-6">
+              <div className="mb-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                  {mode === 'login' ? 'Acceso al sistema' : 'Crear una cuenta'}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                  {mode === 'login' ? 'Bienvenido de nuevo' : 'Completa tus datos'}
+                </h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  {mode === 'login'
+                    ? 'Ingresa tus credenciales para continuar.'
+                    : 'Registra a un nuevo usuario para empezar a trabajar.'}
+                </p>
+              </div>
 
-                <label>
-                  Contraseña
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="********"
-                    required
-                  />
-                </label>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {errorMessage && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{errorMessage}</div>}
 
-                <div className="form-footer">
-                  <button type="submit" className="login-button">
-                    Iniciar Sesión
-                  </button>
-                </div>
-                <div className="register-footer">
-                  ¿No tienes cuenta?{' '}
-                  <button
-                    type="button"
-                    className="link-button"
-                    onClick={() => {
-                      setMode('register')
-                      setSubmitted(false)
-                    }}
-                  >
-                    Regístrate
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="register-grid">
-                  <label>
-                    Nombre
-                    <input
-                      type="text"
-                      value={registration.nombre}
-                      onChange={(e) => handleRegisterChange('nombre', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Apellido
-                    <input
-                      type="text"
-                      value={registration.apellido}
-                      onChange={(e) => handleRegisterChange('apellido', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Cédula
-                    <input
-                      type="number"
-                      value={registration.cedula}
-                      onChange={(e) => handleRegisterChange('cedula', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Teléfono
-                    <input
-                      type="number"
-                      value={registration.telefono}
-                      onChange={(e) => handleRegisterChange('telefono', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Correo institucional
-                    <input
-                      type="email"
-                      value={registration.correo}
-                      onChange={(e) => handleRegisterChange('correo', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Rol
-                    <select
-                      value={registration.rol}
-                      onChange={(e) => handleRegisterChange('rol', e.target.value)}
-                      required
-                    >
-                      <option value="campesena">Campesena</option>
-                      <option value="regular fit">Regular Fit</option>
-                      <option value="apoyo administrativo">Apoyo Administrativo</option>
-                    </select>
-                  </label>
-                  <label>
-                    Sede
-                    <input
-                      type="text"
-                      value={registration.sede}
-                      onChange={(e) => handleRegisterChange('sede', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Área
-                    <input
-                      type="text"
-                      value={registration.area}
-                      onChange={(e) => handleRegisterChange('area', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Código de contrato
-                    <input
-                      type="text"
-                      value={registration.codigoContrato}
-                      onChange={(e) => handleRegisterChange('codigoContrato', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Código SIIF
-                    <input
-                      type="text"
-                      value={registration.codigoSiif}
-                      onChange={(e) => handleRegisterChange('codigoSiif', e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label className="full-width-field">
-                    Contraseña
-                    <input
-                      type="password"
-                      value={registration.contraseña}
-                      onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
-                      placeholder="Crea una contraseña segura"
-                      required
-                    />
-                  </label>
-                </div>
+                {mode === 'login' ? (
+                  <>
+                    <label className={labelClasses}>
+                      <span>Usuario</span>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        placeholder="instructor o coordinador"
+                        required
+                        className={inputClasses}
+                      />
+                    </label>
 
-                <div className="form-footer">
-                  <button type="submit" className="login-button">
+                    <label className={labelClasses}>
+                      <span>Contraseña</span>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="********"
+                        required
+                        className={inputClasses}
+                      />
+                    </label>
+
+                    <button type="submit" className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                      Iniciar sesión
+                    </button>
+                  </>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className={labelClasses}>
+                      <span>Nombre</span>
+                      <input value={registration.nombre} onChange={(event) => handleRegisterChange('nombre', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Apellido</span>
+                      <input value={registration.apellido} onChange={(event) => handleRegisterChange('apellido', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Cédula</span>
+                      <input type="number" value={registration.cedula} onChange={(event) => handleRegisterChange('cedula', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Teléfono</span>
+                      <input type="number" value={registration.telefono} onChange={(event) => handleRegisterChange('telefono', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Correo institucional</span>
+                      <input type="email" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Rol</span>
+                      <select value={registration.rol} onChange={(event) => handleRegisterChange('rol', event.target.value)} className={inputClasses} required>
+                        <option value="campesena">Campesena</option>
+                        <option value="regular fit">Regular Fit</option>
+                        <option value="apoyo administrativo">Apoyo Administrativo</option>
+                      </select>
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Sede</span>
+                      <input value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Área</span>
+                      <input value={registration.area} onChange={(event) => handleRegisterChange('area', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Código de contrato</span>
+                      <input value={registration.codigoContrato} onChange={(event) => handleRegisterChange('codigoContrato', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Código SIIF</span>
+                      <input value={registration.codigoSiif} onChange={(event) => handleRegisterChange('codigoSiif', event.target.value)} className={inputClasses} required />
+                    </label>
+                    <label className={labelClasses}>
+                      <span>Contraseña</span>
+                      <input type="password" value={registration.contraseña} onChange={(event) => handleRegisterChange('contraseña', event.target.value)} className={inputClasses} required />
+                    </label>
+                  </div>
+                )}
+
+                {mode === 'register' && (
+                  <button type="submit" className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                     Crear cuenta
                   </button>
-                </div>
-                <div className="register-footer">
-                  ¿Ya tienes cuenta?{' '}
-                  <button
-                    type="button"
-                    className="link-button"
-                    onClick={() => {
-                      setMode('login')
-                      setSubmitted(false)
-                    }}
-                  >
-                    Inicia sesión
-                  </button>
-                </div>
-              </>
-            )}
-          </form>
-
-          {submitted ? (
-            <div className="submit-message">
-              {mode === 'login' ? (
-                <>Usuario: <strong>{username}</strong> enviado.</>
-              ) : (
-                <>Registro enviado para <strong>{registration.nombre} {registration.apellido}</strong>.</>
-              )}
+                )}
+              </form>
             </div>
-          ) : null}
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
     </main>
   )
 }
