@@ -27,7 +27,7 @@ export function Dashboard({ theme }: DashboardProps): ReactElement {
 
   return (
     <section className="mx-auto flex max-w-7xl flex-col gap-6">
-      <header className={`rounded-[28px] border px-6 py-6 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-white/70 bg-white/80 backdrop-blur'}`}>
+      <header className={`rounded-[28px] border px-6 py-6 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white text-slate-900'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className={`text-sm font-semibold uppercase tracking-[0.25em] ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>Panel de coordinación</p>
@@ -59,7 +59,7 @@ export function Dashboard({ theme }: DashboardProps): ReactElement {
                   : 'bg-rose-100 text-rose-700'
 
           return (
-            <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white/80'}`}>
+            <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white text-slate-900'}`}>
               <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</p>
               <strong className={`mt-2 block text-3xl font-semibold ${isDark ? 'text-slate-50' : 'text-slate-900'}`}>{item.value}</strong>
               <p className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{item.detail}</p>
@@ -72,7 +72,7 @@ export function Dashboard({ theme }: DashboardProps): ReactElement {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-        <article className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white/80'}`}>
+        <article className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white text-slate-900'}`}>
           <div className="flex items-center justify-between">
             <h3 className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>Actividad reciente</h3>
             <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>Hoy</span>
@@ -96,7 +96,7 @@ export function Dashboard({ theme }: DashboardProps): ReactElement {
           </ul>
         </article>
 
-        <article className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white/80'}`}>
+        <article className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-white text-slate-900'}`}>
           <h3 className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>Acciones prioritarias</h3>
           <ul className="mt-4 space-y-2">
             {priorities.map((priority) => (
