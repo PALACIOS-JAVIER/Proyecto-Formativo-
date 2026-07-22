@@ -29,7 +29,7 @@ export function AsistenteAI(): ReactElement {
 
     setMessages((prev) => [...prev, userMessage, assistantMessage])
     setQuestion('')
-  }
+  }  
 
   return (
     <section className="page-panel">

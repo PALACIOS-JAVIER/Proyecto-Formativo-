@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 
 export function WhatsApp(): ReactElement {
-  const phoneNumber = '573001234567'
+  const phoneNumber = '573112971539'
   const message = 'Hola, necesito ayuda con mi informe.'
 
   return (
