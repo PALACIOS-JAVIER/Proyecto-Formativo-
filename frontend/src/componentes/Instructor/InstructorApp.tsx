@@ -8,6 +8,7 @@ import { AsistenteAI } from './AsistenteIA/AsistenteAI'
 import { Perfil } from './Perfil/Perfil'
 import { Notificaciones } from './Notificaciones/Notificaciones'
 import { Indicadores } from './GraficaIndicadores/Indicadores'
+import { WhatsApp } from './WhatsApp/WhatsApp'
 
 type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
 
@@ -42,6 +43,7 @@ export function InstructorApp({ onLogout, theme, onToggleTheme }: InstructorAppP
       >
         {pageComponents[activePage]}
       </main>
+      <WhatsApp />
     </div>
   )
 }

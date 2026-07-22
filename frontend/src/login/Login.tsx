@@ -26,9 +26,10 @@ export interface RegistrationData {
 interface LoginProps {
   onLogin?: (credentials: LoginCredentials) => boolean | void
   onRegister?: (data: RegistrationData) => void
+  onForgotPassword?: () => void
 }
 
-export function Login({ onLogin, onRegister }: LoginProps) {
+export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -100,29 +101,6 @@ export function Login({ onLogin, onRegister }: LoginProps) {
         <img src="./assets/Imagenes_Login/FondoLogin.png" alt="" />
         <section className="login-panel-form">
           <div className="login-panel-form-inner">
-            <div className="login-tab-group">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('login')
-                  setErrorMessage('')
-                }}
-                className={`tab-button ${mode === 'login' ? 'tab-button--active' : ''}`}
-              >
-                Iniciar sesión
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('register')
-                  setErrorMessage('')
-                }}
-                className={`tab-button ${mode === 'register' ? 'tab-button--active' : ''}`}
-              >
-                Registrarse
-              </button>
-            </div>
-
             <div className="login-card-shell">
               <div className="login-card">
                 <div className="card-header">
@@ -174,87 +152,119 @@ export function Login({ onLogin, onRegister }: LoginProps) {
                         </label>
                       </div>
 
+                      <button
+                        type="button"
+                        onClick={() => onForgotPassword?.()}
+                        className="link-button"
+                      >
+                        Recuperar contraseña
+                      </button>
+
                       <button type="submit" className="button-primary">
                         Iniciar sesión
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('register')
+                          setErrorMessage('')
+                        }}
+                        className="link-button"
+                      >
+                        Registrarse
+                      </button>
                     </>
                   ) : (
-                  <div className="registration-grid">
-                    <label className={labelClasses}>
-                      <span>Nombre</span>
-                      <input value={registration.nombre} onChange={(event) => handleRegisterChange('nombre', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Apellido</span>
-                      <input value={registration.apellido} onChange={(event) => handleRegisterChange('apellido', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Cédula</span>
-                      <input type="number" value={registration.cedula} onChange={(event) => handleRegisterChange('cedula', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Teléfono</span>
-                      <input type="number" value={registration.telefono} onChange={(event) => handleRegisterChange('telefono', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Correo institucional</span>
-                      <input type="email" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Rol</span>
-                      <select value={registration.rol} onChange={(event) => handleRegisterChange('rol', event.target.value)} className={inputClasses} required>
-                        <option value="campesena">Campesena</option>
-                        <option value="regular fit">Regular Fit</option>
-                        <option value="apoyo administrativo">Apoyo Administrativo</option>
-                      </select>
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Sede</span>
-                      <select value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required>
-                        <option value="Yamboro">Yamboro</option>
-                        <option value="Otra">Otra</option>
-                      </select>
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Área</span>
-                      <input value={registration.area} onChange={(event) => handleRegisterChange('area', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Código de contrato</span>
-                      <input value={registration.codigoContrato} onChange={(event) => handleRegisterChange('codigoContrato', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Código SIIF</span>
-                      <input value={registration.codigoSiif} onChange={(event) => handleRegisterChange('codigoSiif', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Fecha inicio del contrato</span>
-                      <input type="date" value={registration.fechaInicioContrato} onChange={(event) => handleRegisterChange('fechaInicioContrato', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Fecha fin del contrato</span>
-                      <input type="date" value={registration.fechaFinContrato} onChange={(event) => handleRegisterChange('fechaFinContrato', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Contraseña</span>
-                      <input type="password" value={registration.contraseña} onChange={(event) => handleRegisterChange('contraseña', event.target.value)} className={inputClasses} required />
-                    </label>
-                    <label className={labelClasses}>
-                      <span>Confirmar contraseña</span>
-                      <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClasses} required />
-                    </label>
-                  </div>
-                )}
+                    <div className="registration-grid">
+                      <label className={labelClasses}>
+                        <span>Nombre</span>
+                        <input value={registration.nombre} onChange={(event) => handleRegisterChange('nombre', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Apellido</span>
+                        <input value={registration.apellido} onChange={(event) => handleRegisterChange('apellido', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Cédula</span>
+                        <input type="number" value={registration.cedula} onChange={(event) => handleRegisterChange('cedula', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Teléfono</span>
+                        <input type="number" value={registration.telefono} onChange={(event) => handleRegisterChange('telefono', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Correo institucional</span>
+                        <input type="email" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Rol</span>
+                        <select value={registration.rol} onChange={(event) => handleRegisterChange('rol', event.target.value)} className={inputClasses} required>
+                          <option value="campesena">Campesena</option>
+                          <option value="regular fit">Regular Fit</option>
+                          <option value="apoyo administrativo">Apoyo Administrativo</option>
+                        </select>
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Sede</span>
+                        <select value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required>
+                          <option value="Yamboro">Yamboro</option>
+                          <option value="Otra">Otra</option>
+                        </select>
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Área</span>
+                        <input value={registration.area} onChange={(event) => handleRegisterChange('area', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Código de contrato</span>
+                        <input value={registration.codigoContrato} onChange={(event) => handleRegisterChange('codigoContrato', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Código SIIF</span>
+                        <input value={registration.codigoSiif} onChange={(event) => handleRegisterChange('codigoSiif', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Fecha inicio del contrato</span>
+                        <input type="date" value={registration.fechaInicioContrato} onChange={(event) => handleRegisterChange('fechaInicioContrato', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Fecha fin del contrato</span>
+                        <input type="date" value={registration.fechaFinContrato} onChange={(event) => handleRegisterChange('fechaFinContrato', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Contraseña</span>
+                        <input type="password" value={registration.contraseña} onChange={(event) => handleRegisterChange('contraseña', event.target.value)} className={inputClasses} required />
+                      </label>
+                      <label className={labelClasses}>
+                        <span>Confirmar contraseña</span>
+                        <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClasses} required />
+                      </label>
+                    </div>
+                  )}
 
-                {mode === 'register' && (
-                  <button type="submit" className="button-primary">
-                    Crear cuenta
-                  </button>
-                )}
-              </form>
+                  {mode === 'register' && (
+                    <>
+                      <button type="submit" className="button-primary">
+                        Crear cuenta
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('login')
+                          setErrorMessage('')
+                        }}
+                        className="link-button"
+                      >
+                        Volver al inicio de sesión
+                      </button>
+                    </>
+                  )}
+                </form>
+              </div>
             </div>
           </div>
-        </div>
         </section>
       </div>
     </main>
