@@ -145,52 +145,6 @@ export function Indicadores(): ReactElement {
           </ol>
         </article>
       </div>
-
-      {/* Detailed breakdown */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <article className="card">
-          <h2 className="mb-4 text-lg font-semibold">Comparativa con el equipo</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="text-muted">Tu score</span>
-                <strong>76%</strong>
-              </div>
-              <div className="h-2 rounded-full bg-border">
-                <div className="h-2 w-3/4 rounded-full bg-emerald" />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="text-muted">Promedio equipo</span>
-                <strong>72%</strong>
-              </div>
-              <div className="h-2 rounded-full bg-border">
-                <div className="h-2 w-5/6 rounded-full bg-sky" />
-              </div>
-            </div>
-          </div>
-          <p className="stat-small mt-4">Tu rendimiento está por encima del promedio del equipo. ¡Sigue así!</p>
-        </article>
-
-        <article className="card">
-          <h2 className="mb-4 text-lg font-semibold">Próximos objetivos</h2>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-center gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald text-xs font-bold text-white">1</span>
-              <span>Mejorar la carga de Movilidad al 70% (actual: 58%)</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald text-xs font-bold text-white">2</span>
-              <span>Reducir revisiones pendientes a 2 (actual: 4)</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald text-xs font-bold text-white">3</span>
-              <span>Mantener score general por encima del 80%</span>
-            </li>
-          </ul>
-        </article>
-      </div>
     </section>
   )
 }
