@@ -134,11 +134,7 @@ export function Informes(): ReactElement {
 
       {/* Summary stats */}
       <div className="stats-grid mb-6">
-        <article className="stat-card">
-          <p className="stat-label">Total informes</p>
-          <strong>{totalReports}</strong>
-          <p className="stat-small">Informes registrados en el sistema.</p>
-        </article>
+
         <article className="stat-card">
           <p className="stat-label">Aprobados</p>
           <strong className="text-emerald-600">{approvedCount}</strong>

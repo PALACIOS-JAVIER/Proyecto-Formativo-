@@ -50,10 +50,7 @@ export function CargarInforme(): ReactElement {
           <p className="eyebrow">SUBE Y VALIDA EL ARCHIVO</p>
           <h1>Elige el tipo de informe, selecciona el mes y agrega el archivo</h1>
         </div>
-        <div className="steps-pill-group flex gap-2">
-          <span className={`status-chip ${selection === 'gc' ? 'status-chip--success' : 'status-chip--warning'}`}>Tipo: {selection.toUpperCase()}</span>
-          <span className="status-chip status-chip--success">Periodo: {selectedPeriod}</span>
-        </div>
+
       </header>
 
       <article className="card upload-card">
@@ -123,14 +120,14 @@ export function CargarInforme(): ReactElement {
         {/* Dropzone */}
         <div className="upload-dropzone">
           <span className="upload-icon">⭳</span>
-          <h2>Sube un archivo GF o GC para validarlo</h2>
           <p>El sistema revisa el formato, el nombre y el tamaño. No genera ni crea archivos adicionales.</p>
+          <h2>Sube un archivo GF o GC para validarlo</h2>
           <label className="button button--primary">
             Seleccionar archivo {selection.toUpperCase()}
             <input type="file" hidden onChange={handleFile} />
           </label>
           <p className="upload-note">
-            {fileName ? `Archivo seleccionado: ${fileName} (${fileSize ? formatFileSize(fileSize) : ''})` : 'Aún no se ha subido ningún archivo.'}
+            {fileName ? `Archivo seleccionado: ${fileName} (${fileSize ? formatFileSize(fileSize) : ''})` : ''}
           </p>
         </div>
 
