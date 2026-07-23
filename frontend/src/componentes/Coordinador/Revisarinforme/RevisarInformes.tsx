@@ -84,15 +84,15 @@ export function RevisarInformes(): ReactElement {
 
       {/* stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
+        <div className="rounded-2xl border border-border bg-bg-card p-5 shadow-md">
           <div className="text-2xl font-bold text-sky">{counts.revision}</div>
           <div className="text-sm text-secondary">En Revisión</div>
         </div>
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
+        <div className="rounded-2xl border border-border bg-bg-card p-5 shadow-md">
           <div className="text-2xl font-bold text-emerald">{counts.aprobado}</div>
           <div className="text-sm text-secondary">Aprobados</div>
         </div>
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
+        <div className="rounded-2xl border border-border bg-bg-card p-5 shadow-md">
           <div className="text-2xl font-bold text-warning">{counts.correccion}</div>
           <div className="text-sm text-secondary">Correcciones</div>
         </div>
@@ -101,7 +101,7 @@ export function RevisarInformes(): ReactElement {
       {/* controls */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex w-full gap-3">
-          <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-3 py-2">
+          <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-2 py-2">
             <span className="text-secondary mr-2">🔎</span>
             <input
               className="w-full border-none bg-transparent outline-none text-sm text-foreground"
@@ -111,7 +111,7 @@ export function RevisarInformes(): ReactElement {
             />
           </div>
           <select
-            className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-foreground"
+            className="rounded-lg border border-border bg-bg-card px-2 py-2 text-sm text-foreground"
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value)}
           >
@@ -147,7 +147,7 @@ export function RevisarInformes(): ReactElement {
       {/* list */}
       <div className="flex flex-col gap-4">
         {filtered.map((r) => (
-          <div key={r.id} className="rounded-2xl border bg-bg-card p-4 shadow-sm">
+          <div key={r.id} className="rounded-2xl border border-border bg-bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">{r.instructor}</h3>
