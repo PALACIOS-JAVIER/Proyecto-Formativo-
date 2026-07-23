@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import './Login.css'
+import senaLogo from '../assets/Imagenes_Login/Sena.png'
 
 export interface LoginCredentials {
   username: string
@@ -26,16 +27,18 @@ export interface RegistrationData {
 interface LoginProps {
   onLogin?: (credentials: LoginCredentials) => boolean | void
   onRegister?: (data: RegistrationData) => void
-  onForgotPassword?: () => void
+  onForgotPassword?: (identifier: string) => boolean | void
 }
 
 export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [forgotIdentifier, setForgotIdentifier] = useState('')
+  const [forgotSubmitted, setForgotSubmitted] = useState(false)
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
     apellido: '',
@@ -58,6 +61,17 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
+
+    if (mode === 'forgot') {
+      if (!forgotIdentifier.trim()) {
+        setErrorMessage('Ingresa tu usuario o correo institucional.')
+        return
+      }
+
+      onForgotPassword?.(forgotIdentifier)
+      setForgotSubmitted(true)
+      return
+    }
 
     if (mode === 'login') {
       if (!username.trim() || !password.trim()) {
@@ -102,37 +116,83 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const goToLogin = () => {
     setMode('login')
     setErrorMessage('')
+    setForgotSubmitted(false)
+    setForgotIdentifier('')
+  }
+
+  const goToForgot = () => {
+    setMode('forgot')
+    setErrorMessage('')
+    setForgotSubmitted(false)
   }
 
   return (
     <main className="login-shell">
-      <header className="site-header">
-        <div className="site-header-inner">
-          {/* Reemplaza esta ruta por el logo institucional del SENA */}
-          <img src="./assets/Imagenes_Login/LogoSena.png" alt="SENA" className="site-logo" />
-        </div>
-      </header>
-
       <div className="login-page">
+        {/* Reemplaza esta ruta por el logo institucional del SENA */}
+        <img src={senaLogo} alt="SENA" className="site-logo" />
+
         <div className={`login-card ${mode === 'register' ? 'login-card--wide' : ''}`}>
           <div className="card-header">
             <p className="section-label">
-              {mode === 'login' ? 'Acceso al sistema' : 'Crear una cuenta'}
+              {mode === 'login' && 'Acceso al sistema'}
+              {mode === 'register' && 'Crear una cuenta'}
+              {mode === 'forgot' && 'Recuperar acceso'}
             </p>
             <h2 className="form-heading">
-              {mode === 'login' ? 'Bienvenido de nuevo' : 'Completa tus datos'}
+              {mode === 'login' && 'Bienvenido de nuevo'}
+              {mode === 'register' && 'Completa tus datos'}
+              {mode === 'forgot' && '¿Olvidaste tu contraseña?'}
             </h2>
             <p className="form-copy">
-              {mode === 'login'
-                ? 'Ingresa tus credenciales para continuar.'
-                : 'Completa tus datos para solicitar acceso a la plataforma.'}
+              {mode === 'login' && 'Ingresa tus credenciales para continuar.'}
+              {mode === 'register' && 'Completa tus datos para solicitar acceso a la plataforma.'}
+              {mode === 'forgot' &&
+                (forgotSubmitted
+                  ? 'Revisa tu correo institucional para continuar con el proceso.'
+                  : 'Ingresa tu usuario o correo y te enviaremos instrucciones para restablecerla.')}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className={mode === 'login' ? 'login-form' : 'register-form'}>
+          <form onSubmit={handleSubmit} className={mode === 'register' ? 'register-form' : 'login-form'}>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
 
-            {mode === 'login' ? (
+            {mode === 'forgot' ? (
+              forgotSubmitted ? (
+                <div className="switch-mode-row">
+                  <button type="button" onClick={goToLogin} className="link-button">
+                    Volver a iniciar sesión
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="floating-field">
+                    <input
+                      id="forgot-identifier"
+                      type="text"
+                      value={forgotIdentifier}
+                      onChange={(event) => setForgotIdentifier(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="forgot-identifier" className="floating-label">
+                      Usuario o correo institucional
+                    </label>
+                  </div>
+
+                  <button type="submit" className="button-primary">
+                    Enviar instrucciones
+                  </button>
+
+                  <div className="switch-mode-row">
+                    <button type="button" onClick={goToLogin} className="link-button">
+                      Volver a iniciar sesión
+                    </button>
+                  </div>
+                </>
+              )
+            ) : mode === 'login' ? (
               <>
                 <div className="floating-field">
                   <input
@@ -176,7 +236,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
 
                   <button
                     type="button"
-                    onClick={() => onForgotPassword?.()}
+                    onClick={goToForgot}
                     className="link-button_password"
                   >
                     ¿Olvidaste tu contraseña?
