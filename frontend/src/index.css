@@ -2,26 +2,28 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --color-bg:#f8fafc;--color-bg-alt:#f1f5f9;--color-bg-card:#ffffff;--color-border:#e2e8f0;
+  --color-bg:#f8fafc;--color-bg-alt:#f1f5f9;--color-bg-card:#ffffff;--color-border:rgba(2,6,23,0.06);
   --color-text:#0f172a;--color-text-muted:#64748b;--color-text-secondary:#475569;
-  --color-emerald:#16a34a;--color-emerald-light:#4ade80;--color-emerald-dark:#15803d;
-  --color-emerald-bg:rgba(22,163,74,0.08);--color-emerald-text:#15803d;--color-emerald-border:rgba(22,163,74,0.2);
-  --color-sky:#0284c7;--color-sky-bg:rgba(2,132,199,0.08);
+  --color-emerald:#10B981;--color-emerald-light:#4ade80;--color-emerald-dark:#0f9a63;
+  --color-emerald-bg:rgba(16,185,129,0.08);--color-emerald-text:#0f9a63;--color-emerald-border:rgba(16,185,129,0.18);
+  --color-sky:#0EA5E9;--color-sky-bg:rgba(14,165,233,0.08);
   --color-success:#22c55e;--color-success-bg:rgba(34,197,94,0.12);--color-success-text:#166534;
-  --color-warning:#f59e0b;--color-warning-bg:rgba(245,152,9,0.12);--color-warning-text:#78350f;
-  --color-alert:#f97316;--color-alert-bg:rgba(249,115,22,0.12);--color-alert-text:#9a3412;
-  --shadow-card:0 4px 20px rgba(16,185,129,0.05);--shadow-card-hover:0 8px 30px rgba(16,185,129,0.08);
+  --color-warning:#F97316;--color-warning-bg:rgba(249,115,22,0.12);--color-warning-text:#9a3412;
+  --color-alert:#F97316;--color-alert-bg:rgba(249,115,22,0.12);--color-alert-text:#9a3412;
+  --shadow-card:0 4px 18px rgba(2,6,23,0.04);--shadow-card-hover:0 8px 28px rgba(2,6,23,0.06);
+  --header-start:#eef6fb;--header-mid:#e6eef6;--header-end:#f4fbff;
 }
 .dark {
-  --color-bg:#0f172a;--color-bg-alt:#1e293b;--color-bg-card:#1e293b;--color-border:#334155;
+  --color-bg:#0f172a;--color-bg-alt:#1e293b;--color-bg-card:#1e293b;--color-border:rgba(255,255,255,0.04);
   --color-text:#f1f5f9;--color-text-muted:#94a3b8;--color-text-secondary:#cbd5e1;
-  --color-emerald:#22c55e;--color-emerald-light:#4ade80;--color-emerald-dark:#16a34a;
-  --color-emerald-bg:rgba(34,197,94,0.1);--color-emerald-text:#4ade80;--color-emerald-border:rgba(34,197,94,0.2);
-  --color-sky:#38bdf8;--color-sky-bg:rgba(56,189,248,0.1);
+  --color-emerald:#10B981;--color-emerald-light:#4ade80;--color-emerald-dark:#0f9a63;
+  --color-emerald-bg:rgba(16,185,129,0.12);--color-emerald-text:#4ade80;--color-emerald-border:rgba(16,185,129,0.2);
+  --color-sky:#0EA5E9;--color-sky-bg:rgba(14,165,233,0.12);
   --color-success:#22c55e;--color-success-bg:rgba(34,197,94,0.12);--color-success-text:#4ade80;
-  --color-warning:#fbbf24;--color-warning-bg:rgba(251,191,36,0.12);--color-warning-text:#fcd34d;
-  --color-alert:#fb923c;--color-alert-bg:rgba(251,146,60,0.12);--color-alert-text:#fdba74;
-  --shadow-card:0 4px 20px rgba(0,0,0,0.3);--shadow-card-hover:0 8px 30px rgba(0,0,0,0.4);
+  --color-warning:#F97316;--color-warning-bg:rgba(249,115,22,0.12);--color-warning-text:#ffb57a;
+  --color-alert:#F97316;--color-alert-bg:rgba(249,115,22,0.12);--color-alert-text:#ffb57a;
+  --shadow-card:0 4px 14px rgba(0,0,0,0.22);--shadow-card-hover:0 8px 24px rgba(0,0,0,0.32);
+  --header-start:#071425;--header-mid:#0b2433;--header-end:#071826;
 }
 
 *{box-sizing:border-box}
@@ -58,11 +60,19 @@ body{min-height:100vh;transition:background-color 200ms ease,color 200ms ease;ba
 .card:hover{box-shadow:var(--shadow-card-hover)}
 @keyframes card-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* Header hero that adapts to theme */
+.page-hero-bg{background:linear-gradient(90deg,var(--header-start),var(--header-mid),var(--header-end))}
+
 /* Status chips */
 .status-chip{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border-radius:999px;font-size:0.85rem;font-weight:700;border:1px solid transparent}
 .status-chip--success{background:var(--color-success-bg);color:var(--color-success-text);border-color:var(--color-emerald-border)}
 .status-chip--warning{background:var(--color-warning-bg);color:var(--color-warning-text);border-color:rgba(245,152,9,0.3)}
 .status-chip--alert{background:var(--color-alert-bg);color:var(--color-alert-text);border-color:rgba(249,115,22,0.3)}
+.status-chip--info{background:var(--color-sky-bg);color:var(--color-sky);border-color:rgba(14,165,233,0.18)}
+
+/* Utility: warning text/border using CSS vars */
+.border-warning{border-color:var(--color-warning)}
+.text-warning{color:var(--color-warning)}
 
 /* Buttons */
 .button,.logout-button,.type-button,.pill-button{border:none;border-radius:999px;cursor:pointer;font:inherit;font-weight:600;transition:background 0.18s ease,color 0.18s ease,transform 0.18s ease,box-shadow 0.18s ease}
