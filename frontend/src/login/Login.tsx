@@ -113,7 +113,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                   <p className="form-copy">
                     {mode === 'login'
                       ? 'Ingresa tus credenciales para continuar.'
-                      : 'Registra a un nuevo usuario para empezar a trabajar.'}
+                      : ''}
                   </p>
                 </div>
 
@@ -152,16 +152,16 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                         </label>
                       </div>
 
+                      <button type="submit" className="button-primary">
+                        Iniciar sesión
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => onForgotPassword?.()}
-                        className="link-button"
+                        className="link-button_password"
                       >
                         Recuperar contraseña
-                      </button>
-
-                      <button type="submit" className="button-primary">
-                        Iniciar sesión
                       </button>
 
                       <button
@@ -187,11 +187,11 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                       </label>
                       <label className={labelClasses}>
                         <span>Cédula</span>
-                        <input type="number" value={registration.cedula} onChange={(event) => handleRegisterChange('cedula', event.target.value)} className={inputClasses} required />
+                        <input value={registration.cedula} onChange={(event) => handleRegisterChange('cedula', event.target.value)} className={inputClasses} required />
                       </label>
                       <label className={labelClasses}>
                         <span>Teléfono</span>
-                        <input type="number" value={registration.telefono} onChange={(event) => handleRegisterChange('telefono', event.target.value)} className={inputClasses} required />
+                        <input value={registration.telefono} onChange={(event) => handleRegisterChange('telefono', event.target.value)} className={inputClasses} required />
                       </label>
                       <label className={labelClasses}>
                         <span>Correo institucional</span>
@@ -255,7 +255,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                           setMode('login')
                           setErrorMessage('')
                         }}
-                        className="link-button"
+                        className="link-button_volversession"
                       >
                         Volver al inicio de sesión
                       </button>
