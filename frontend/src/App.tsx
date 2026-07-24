@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Login, type LoginCredentials, type RegistrationData } from './login/Login'
 import { InstructorApp } from './componentes/Instructor/InstructorApp'
 import { CoordinadorApp } from './componentes/Coordinador/CoordinadorApp'
 import type { ProfileData } from './componentes/Instructor/Perfil/Perfil'
 
 type UserRole = 'instructor' | 'coordinador' | null
-type ThemeMode = 'dark' | 'light'
 type InstructorStatus = 'pendiente' | 'activo' | 'inactivo' | 'rechazado'
 
 export interface InstructorProfile extends ProfileData {
@@ -18,13 +17,6 @@ export interface InstructorProfile extends ProfileData {
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<UserRole>(null)
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'dark'
-    }
-
-    return (window.localStorage.getItem('sitmi-theme') as ThemeMode | null) ?? 'dark'
-  })
 
   const [instructors, setInstructors] = useState<InstructorProfile[]>([
     {
@@ -90,12 +82,6 @@ function App() {
   ])
   const [instructorEditAllowed, setInstructorEditAllowed] = useState(false)
 
-  useEffect(() => {
-    document.documentElement.style.colorScheme = theme
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    window.localStorage.setItem('sitmi-theme', theme)
-  }, [theme])
-
   const handleLogin = ({ username, password }: LoginCredentials) => {
     const normalizedUsername = username.trim().toLowerCase()
     const normalizedPassword = password.trim()
@@ -120,10 +106,6 @@ function App() {
   const handleLogout = () => {
     setAuthenticated(false)
     setUserRole(null)
-  }
-
-  const toggleTheme = () => {
-    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }
 
   const handleRegister = (registration: RegistrationData) => {
@@ -169,8 +151,6 @@ function App() {
   return userRole === 'coordinador' ? (
     <CoordinadorApp
       onLogout={handleLogout}
-      theme={theme}
-      onToggleTheme={toggleTheme}
       instructors={instructors}
       onUpdateInstructor={updateInstructor}
       onCreateSupportStaff={createSupportStaff}
@@ -179,7 +159,7 @@ function App() {
       onToggleInstructorEditPermission={(value) => setInstructorEditAllowed(value)}
     />
   ) : (
-    <InstructorApp onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme} canEditProfile={instructorEditAllowed} />
+    <InstructorApp onLogout={handleLogout} canEditProfile={instructorEditAllowed} />
   )
 }
 
