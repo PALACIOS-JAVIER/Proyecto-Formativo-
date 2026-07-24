@@ -20,9 +20,10 @@ export interface ProfileData {
 interface PerfilProps {
   initialData?: ProfileData
   onSave?: (data: ProfileData) => void
+  canEditProfile?: boolean
 }
 
-export function Perfil({ initialData, onSave }: PerfilProps) {
+export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilProps) {
   const [data, setData] = useState<ProfileData>(
     initialData ?? {
       nombre: 'María Fernanda',
@@ -74,22 +75,35 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
     onSave?.(out)
   }
 
+  const isFieldDisabled = (field: keyof ProfileData) => {
+    if (field === 'cedula') return true
+    if (field === 'telefono' || field === 'fotoPerfil') return false
+    return !canEditProfile
+  }
+
   return (
     <main className="perfil-page">
       <div className="mb-6 flex items-center justify-between">
-        <h2>Perfil de instructor</h2>
+        <div>
+          <h2>Perfil de instructor</h2>
+          <p className="subtext">
+            {canEditProfile
+              ? 'Tienes permiso del coordinador para editar tu perfil completo excepto la cédula.'
+              : 'Sin permiso del coordinador solo puedes cambiar teléfono y foto.'}
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="perfil-form">
         <div className="perfil-grid">
           <label>
             Nombre
-            <input value={data.nombre} onChange={(e) => handleChange('nombre', e.target.value)} required />
+            <input value={data.nombre} onChange={(e) => handleChange('nombre', e.target.value)} disabled={isFieldDisabled('nombre')} required />
           </label>
 
           <label>
             Apellido
-            <input value={data.apellido} onChange={(e) => handleChange('apellido', e.target.value)} required />
+            <input value={data.apellido} onChange={(e) => handleChange('apellido', e.target.value)} disabled={isFieldDisabled('apellido')} required />
           </label>
 
           <label>
@@ -104,12 +118,12 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             Correo institucional
-            <input type="email" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} />
+            <input type="email" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} disabled={isFieldDisabled('correo')} />
           </label>
 
           <label>
             Rol
-            <select value={data.rol} onChange={(e) => handleChange('rol', e.target.value)}>
+            <select value={data.rol} onChange={(e) => handleChange('rol', e.target.value)} disabled={isFieldDisabled('rol')}>
               <option value="campesena">Campesena</option>
               <option value="regular fit">Regular Fit</option>
               <option value="apoyo administrativo">Apoyo Administrativo</option>
@@ -118,7 +132,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             Sede
-            <select value={data.sede} onChange={(e) => handleChange('sede', e.target.value)}>
+            <select value={data.sede} onChange={(e) => handleChange('sede', e.target.value)} disabled={isFieldDisabled('sede')}>
               <option value="Yamboro">Yamboro</option>
               <option value="Otra">Otra</option>
             </select>
@@ -126,32 +140,32 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             Área
-            <input value={data.area} onChange={(e) => handleChange('area', e.target.value)} />
+            <input value={data.area} onChange={(e) => handleChange('area', e.target.value)} disabled={isFieldDisabled('area')} />
           </label>
 
           <label>
             Código de contrato
-            <input value={data.codigoContrato} onChange={(e) => handleChange('codigoContrato', e.target.value)} />
+            <input value={data.codigoContrato} onChange={(e) => handleChange('codigoContrato', e.target.value)} disabled={isFieldDisabled('codigoContrato')} />
           </label>
 
           <label>
             Código SIIF
-            <input value={data.codigoSiif} onChange={(e) => handleChange('codigoSiif', e.target.value)} />
+            <input value={data.codigoSiif} onChange={(e) => handleChange('codigoSiif', e.target.value)} disabled={isFieldDisabled('codigoSiif')} />
           </label>
 
           <label>
             Fecha inicio del contrato
-            <input type="date" value={data.fechaInicioContrato} onChange={(e) => handleChange('fechaInicioContrato', e.target.value)} />
+            <input type="date" value={data.fechaInicioContrato} onChange={(e) => handleChange('fechaInicioContrato', e.target.value)} disabled={isFieldDisabled('fechaInicioContrato')} />
           </label>
 
           <label>
             Fecha fin del contrato
-            <input type="date" value={data.fechaFinContrato} onChange={(e) => handleChange('fechaFinContrato', e.target.value)} />
+            <input type="date" value={data.fechaFinContrato} onChange={(e) => handleChange('fechaFinContrato', e.target.value)} disabled={isFieldDisabled('fechaFinContrato')} />
           </label>
 
           <label className="full-width">
             Objeto del contrato
-            <textarea value={data.objetoContrato} onChange={(e) => handleChange('objetoContrato', e.target.value)} />
+            <textarea value={data.objetoContrato} onChange={(e) => handleChange('objetoContrato', e.target.value)} disabled={isFieldDisabled('objetoContrato')} />
           </label>
 
           <label className="foto-field">

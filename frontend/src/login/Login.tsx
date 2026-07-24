@@ -22,6 +22,7 @@ export interface RegistrationData {
   codigoSiif: string
   fechaInicioContrato: string
   fechaFinContrato: string
+  objetoContrato?: string
 }
 
 interface LoginProps {
@@ -282,7 +283,6 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                     <select value={registration.rol} onChange={(event) => handleRegisterChange('rol', event.target.value)} className={inputClasses} required>
                       <option value="campesena">Campesena</option>
                       <option value="regular fit">Regular Fit</option>
-                      <option value="apoyo administrativo">Apoyo Administrativo</option>
                     </select>
                   </label>
                   <label className={labelClasses}>

@@ -16,9 +16,10 @@ interface InstructorAppProps {
   onLogout: () => void
   theme: 'dark' | 'light'
   onToggleTheme: () => void
+  canEditProfile: boolean
 }
 
-export function InstructorApp({ onLogout, theme, onToggleTheme }: InstructorAppProps): ReactElement {
+export function InstructorApp({ onLogout, theme, onToggleTheme, canEditProfile }: InstructorAppProps): ReactElement {
   const [activePage, setActivePage] = useState<PageKey>('dashboard')
 
   const pageComponents: Record<PageKey, ReactElement> = {
@@ -27,7 +28,7 @@ export function InstructorApp({ onLogout, theme, onToggleTheme }: InstructorAppP
     informes: <Informes />,
     indicadores: <Indicadores />,
     notificaciones: <Notificaciones />,
-    perfil: <Perfil />,
+    perfil: <Perfil canEditProfile={canEditProfile} />,
     asistente: <AsistenteAI />,
   }
 
@@ -37,8 +38,8 @@ export function InstructorApp({ onLogout, theme, onToggleTheme }: InstructorAppP
       <main
         className={`flex-1 overflow-y-auto px-4 py-6 md:px-8 ${
           theme === 'dark'
-            ? 'bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.12),_transparent_35%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]'
-            : 'bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_35%),linear-gradient(135deg,_#f8fafc_0%,_#eefcf6_100%)]'
+            ? 'bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_35%),linear-gradient(135deg,#020617_0%,#0f172a_100%)]'
+            : 'bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_35%),linear-gradient(135deg,#f8fafc_0%,#eefcf6_100%)]'
         }`}
       >
         {pageComponents[activePage]}
