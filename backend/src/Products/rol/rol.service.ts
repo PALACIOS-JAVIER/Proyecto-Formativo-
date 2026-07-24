@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rol } from './entities/rol.entity';
 import { CreateRolDto } from './dto/create-rol.dto';
+import { UpdateRolDto } from './dto/update-rol.dto';
 import { Sede } from '../sede/entities/sede.entity';
 
 @Injectable()
@@ -15,23 +16,46 @@ export class RolesService {
     ) {}
 
     async create(createRolDto: CreateRolDto): Promise<Rol> {
-        // 1. Validar que la sede asignada realmente exista
         const sede = await this.sedeRepository.findOne({ where: { id_sede: createRolDto.id_sede } });
         if (!sede) {
             throw new NotFoundException(`La sede con ID ${createRolDto.id_sede} no existe`);
         }
 
-        // 2. Crear el objeto asignando la relación completa
         const nuevoRol = this.rolRepository.create({
             nombre: createRolDto.nombre,
-            sede: sede // Pasamos la entidad Sede completa para establecer la Foreign Key
+            sede,
         });
 
-        return await this.rolRepository.save(nuevoRol);
+        return this.rolRepository.save(nuevoRol);
     }
 
     async findAll(): Promise<Rol[]> {
-        // relations: { sede: true } incluye los datos de la sede en la respuesta JSON
-        return await this.rolRepository.find({ relations: { sede: true } });
+        return this.rolRepository.find({ relations: { sede: true, areas: true } });
+    }
+
+    async findOne(id: number): Promise<Rol> {
+        const rol = await this.rolRepository.findOne({ where: { id_rol: id }, relations: { sede: true, areas: true } });
+        if (!rol) {
+            throw new NotFoundException(`El rol con ID ${id} no existe`);
+        }
+        return rol;
+    }
+
+    async update(id: number, updateRolDto: UpdateRolDto): Promise<Rol> {
+        const rol = await this.findOne(id);
+        if (updateRolDto.id_sede) {
+            const sede = await this.sedeRepository.findOne({ where: { id_sede: updateRolDto.id_sede } });
+            if (!sede) {
+                throw new NotFoundException(`La sede con ID ${updateRolDto.id_sede} no existe`);
+            }
+            rol.sede = sede;
+        }
+        Object.assign(rol, updateRolDto);
+        return this.rolRepository.save(rol);
+    }
+
+    async remove(id: number): Promise<void> {
+        const rol = await this.findOne(id);
+        await this.rolRepository.remove(rol);
     }
 }
