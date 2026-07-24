@@ -36,11 +36,6 @@ export function Navegacion({ active, onSelect, onLogout, isOpen, onClose }: Prop
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-[#39A900]/20 bg-[#39A900]/10 p-4">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-[#007832] font-bold">Operación</p>
-          <strong className="mt-1 block text-base text-[#00304D]">Seguimiento en tiempo real</strong>
-          <span className="mt-3 inline-flex rounded-full px-3 py-1 text-sm font-bold bg-[#39A900] text-white shadow-sm">Sistema activo</span>
-        </div>
 
         <nav className="mt-6 flex flex-col gap-2">
           {items.map((item) => {
