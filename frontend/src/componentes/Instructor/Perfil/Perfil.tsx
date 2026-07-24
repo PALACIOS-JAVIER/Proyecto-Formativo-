@@ -85,7 +85,7 @@ export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilPr
     <main className="perfil-page">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2>Perfil de instructor</h2>
+          <p className="eyebrow">Perfil de instructores</p>
           <p className="subtext">
             {canEditProfile
               ? 'Tienes permiso del coordinador para editar tu perfil completo excepto la cédula.'
