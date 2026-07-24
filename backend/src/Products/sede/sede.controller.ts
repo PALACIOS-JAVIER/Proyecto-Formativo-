@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/nestjs';
-import { SedesService } from './sedes.service';
+import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { SedesService } from './sede.service';
 import { CreateSedeDto } from './dto/create-sede.dto';
 
 @Controller('sedes')

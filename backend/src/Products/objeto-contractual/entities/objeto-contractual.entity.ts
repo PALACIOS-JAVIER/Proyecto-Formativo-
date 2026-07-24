@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Area } from './area.entity';
+import { Area } from '../../areas/entities/area.entity';
 
 @Entity('objetos_contractuales')
 export class ObjetoContractual {

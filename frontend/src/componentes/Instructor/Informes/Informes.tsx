@@ -117,7 +117,6 @@ export function Informes(): ReactElement {
   const downloadReport = (month: string) => window.alert(`Descargando informe de ${month}...`)
   const deleteReport = (id: number) => setReports((prev) => prev.filter((report) => report.id !== id))
 
-  const totalReports = reports.length
   const approvedCount = reports.filter((r) => r.status === 'success').length
   const pendingCount = reports.filter((r) => r.status === 'warning').length
   const correctionCount = reports.filter((r) => r.status === 'alert').length

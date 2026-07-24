@@ -3,7 +3,8 @@ import type { ReactElement } from 'react'
 import { Navegacion } from './Navegacion/navegacion'
 import { Dashboard } from './Dashboard/dashboard'
 import { RevisarInformes } from './Revisarinforme/RevisarInformes'
-import { Instructores } from './Instructores/instructores'
+import Instructores from './Instructores/instructores'
+import type { InstructorProfile } from '../../App'
 import { Historial } from './Historial/historial'
 import { Reportes } from './Reportes/reportes'
 import { Perfil } from './Perfil/perfil'
@@ -14,9 +15,25 @@ interface CoordinadorAppProps {
   onLogout: () => void
   theme: 'dark' | 'light'
   onToggleTheme: () => void
+  instructors: InstructorProfile[]
+  onUpdateInstructor: (id: number, changes: Partial<InstructorProfile>) => void
+  onCreateSupportStaff: (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => void
+  onDeleteInstructor: (id: number) => void
+  instructorEditAllowed: boolean
+  onToggleInstructorEditPermission: (value: boolean) => void
 }
 
-export function CoordinadorApp({ onLogout, theme, onToggleTheme }: CoordinadorAppProps): ReactElement {
+export function CoordinadorApp({
+  onLogout,
+  theme,
+  onToggleTheme,
+  instructors,
+  onUpdateInstructor,
+  onCreateSupportStaff,
+  onDeleteInstructor,
+  instructorEditAllowed,
+  onToggleInstructorEditPermission,
+}: CoordinadorAppProps): ReactElement {
   const [activePage, setActivePage] = useState<PageKey>('dashboard')
 
   const handleSelectPage = (page: string) => {
@@ -26,7 +43,16 @@ export function CoordinadorApp({ onLogout, theme, onToggleTheme }: CoordinadorAp
   const pageComponents: Record<PageKey, ReactElement> = {
     dashboard: <Dashboard theme={theme} />,
     informes: <RevisarInformes />,
-    instructores: <Instructores />,
+    instructores: (
+      <Instructores
+        instructors={instructors}
+        onUpdateInstructor={onUpdateInstructor}
+        onCreateSupportStaff={onCreateSupportStaff}
+        onDeleteInstructor={onDeleteInstructor}
+        instructorEditAllowed={instructorEditAllowed}
+        onToggleInstructorEditPermission={onToggleInstructorEditPermission}
+      />
+    ),
     historial: <Historial />,
     reportes: <Reportes />,
     perfil: <Perfil />,
@@ -38,8 +64,8 @@ export function CoordinadorApp({ onLogout, theme, onToggleTheme }: CoordinadorAp
       <main
         className={`flex-1 overflow-y-auto px-4 py-6 md:px-8 ${
           theme === 'dark'
-            ? 'bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.12),_transparent_35%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]'
-            : 'bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_35%),linear-gradient(135deg,_#f8fafc_0%,_#eefcf6_100%)]'
+            ? 'bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_35%),linear-gradient(135deg,#020617_0%,#0f172a_100%)]'
+            : 'bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_35%),linear-gradient(135deg,#f8fafc_0%,#eefcf6_100%)]'
         }`}
       >
         {pageComponents[activePage]}
