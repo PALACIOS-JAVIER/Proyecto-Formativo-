@@ -140,22 +140,31 @@ export function Instructores({
               </div>
             </div>
 
-            <div className="controls-grid">
-              <input type="search" placeholder="Buscar por nombre..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field" />
-              <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)} className="input-field">
-                {areaOptions.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="input-field">
-                {roleOptions.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
+            <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_1fr]">
+              <label className="block">
+                <span className="text-xs font-semibold text-secondary">Filtro por nombre</span>
+                <input type="search" placeholder="Buscar por nombre..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field mt-2" />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-secondary">Filtro por área</span>
+                <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)} className="input-field mt-2">
+                  {areaOptions.map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-secondary">Filtro por rol</span>
+                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="input-field mt-2">
+                  {roleOptions.map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
 
@@ -165,12 +174,12 @@ export function Instructores({
 
             <div className="space-y-3 mt-4">
               {filteredInstructors.map((inst) => (
-                <div key={inst.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div key={inst.id} className="flex items-center justify-between gap-4 rounded-xl border border-border bg-bg-card p-3 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-semibold">{(inst.nombre[0] || '') + (inst.apellido[0] || '')}</div>
                     <div>
-                      <div className="font-semibold">{inst.nombre} {inst.apellido}</div>
-                      <div className="text-xs text-slate-500">{inst.rol} · {inst.sede}</div>
+                      <div className="font-semibold text-foreground">{inst.nombre} {inst.apellido}</div>
+                      <div className="text-xs text-secondary">{inst.rol} · {inst.sede}</div>
                       <div className="mt-1">
                         <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${inst.status === 'activo' ? 'bg-emerald-100 text-emerald-800' : inst.status === 'pendiente' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}`}>
                           {inst.status}
@@ -211,28 +220,23 @@ export function Instructores({
           <div className="card-section">
             <div className="space-y-3 max-h-112 overflow-y-auto">
               {instructors.filter((item) => item.status === 'pendiente' && item.rol !== 'apoyo administrativo').length === 0 ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">No hay solicitudes pendientes.</div>
+                <div className="rounded-xl border border-border bg-bg-alt p-4 text-secondary">No hay solicitudes pendientes.</div>
               ) : (
                 instructors
                   .filter((item) => item.status === 'pendiente' && item.rol !== 'apoyo administrativo')
                   .map((request) => (
-                    <div key={request.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div key={request.id} className="rounded-xl border border-border bg-bg-card p-4 shadow-sm">
                       <div className="flex items-center justify-between">
                         <div>
-                          <strong className="block text-sm text-slate-900">{request.nombre} {request.apellido}</strong>
-                          <p className="text-xs text-slate-500">{request.correo} · {request.sede}</p>
+                          <strong className="block text-sm text-foreground">{request.nombre} {request.apellido}</strong>
+                          <p className="text-xs text-secondary">{request.correo} · {request.sede}</p>
+                          <p className="text-xs mt-1 text-secondary">Tipo: registro de instructor</p>
                         </div>
-                        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">Pendiente</span>
+                        <span className="status-chip status-chip--warning">Pendiente</span>
                       </div>
-                        <div className="mt-3 flex items-center justify-between">
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => onUpdateInstructor(request.id, { status: 'activo' })} className="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800 hover:bg-emerald-200">Aceptar</button>
-                          <button type="button" onClick={() => onUpdateInstructor(request.id, { status: 'rechazado' })} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Rechazar</button>
-                        </div>
-                        <div className="flex gap-2">
-                          {request.rol !== 'apoyo administrativo' ? (
-                            <button type="button" onClick={() => openSupportModal({ nombre: request.nombre, apellido: request.apellido, cedula: request.cedula, correo: request.correo })} className={`${btnBase} bg-emerald-600 text-white hover:bg-emerald-700`}>Asignar apoyo</button>
-                          ) : null}
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => openProfileModal(request)} className={`${btnBase} bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground`}>Ver solicitud</button>
                         </div>
                       </div>
                     </div>
@@ -253,10 +257,10 @@ export function Instructores({
       {showProfileModal && selectedInstructorForm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowProfileModal(false)} />
-          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl mx-4 overflow-auto max-h-[90vh]">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-bg-card border border-border p-6 shadow-xl mx-4 overflow-auto max-h-[90vh]">
             <div className="flex items-start justify-between">
-              <h3 className="text-xl font-semibold">Perfil — {selectedInstructorForm.nombre} {selectedInstructorForm.apellido}</h3>
-              <button onClick={() => setShowProfileModal(false)} className="text-slate-500">Cerrar</button>
+              <h3 className="text-xl font-semibold text-foreground">Perfil — {selectedInstructorForm.nombre} {selectedInstructorForm.apellido}</h3>
+              <button onClick={() => setShowProfileModal(false)} className="text-secondary hover:text-foreground">Cerrar</button>
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -298,10 +302,19 @@ export function Instructores({
               </label>
             </div>
 
-            <div className="mt-6 flex items-center gap-3">
-              <button type="button" onClick={() => { if (selectedInstructorForm) { onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700" disabled={!instructorEditAllowed}>Guardar</button>
-              <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
-              <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {selectedInstructorForm.status === 'pendiente' && selectedInstructorForm.source === 'registro' ? (
+                <>
+                  <button type="button" onClick={() => { onUpdateInstructor(selectedInstructorForm.id, { status: 'activo' }); setShowProfileModal(false); setNotificationMessage('Solicitud aceptada.'); }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Aceptar registro</button>
+                  <button type="button" onClick={() => { onUpdateInstructor(selectedInstructorForm.id, { status: 'rechazado' }); setShowProfileModal(false); setNotificationMessage('Solicitud rechazada.'); }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Rechazar registro</button>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) { onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700" disabled={!instructorEditAllowed}>Guardar</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -311,10 +324,10 @@ export function Instructores({
       {showSupportModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowSupportModal(false)} />
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl mx-4">
+          <div className="relative w-full max-w-md rounded-2xl bg-bg-card border border-border p-6 shadow-xl mx-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Asignar apoyo administrativo</h3>
-              <button onClick={() => setShowSupportModal(false)} className="text-slate-500">Cerrar</button>
+              <h3 className="text-lg font-semibold text-foreground">Asignar apoyo administrativo</h3>
+              <button onClick={() => setShowSupportModal(false)} className="text-secondary hover:text-foreground">Cerrar</button>
             </div>
 
             <div className="mt-4 space-y-3">
