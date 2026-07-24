@@ -17,8 +17,8 @@ const SAMPLE_REPORTS: Report[] = [
     instructor: 'Carlos Andrés Martínez',
     cedula: '1098765432',
     area: 'Robótica',
-    periodo: 'Febrero 2025',
-    entrega: '08 Feb 2025',
+    periodo: 'Febrero 2026',
+    entrega: '08 Feb 2026',
     status: 'revision',
     dias: '3 días',
   },
@@ -27,8 +27,8 @@ const SAMPLE_REPORTS: Report[] = [
     instructor: 'Ana María Rodríguez',
     cedula: '1087654321',
     area: 'Desarrollo de Software',
-    periodo: 'Febrero 2025',
-    entrega: '07 Feb 2025',
+    periodo: 'Febrero 2026',
+    entrega: '07 Feb 2026',
     status: 'revision',
     dias: '4 días',
   },
@@ -37,8 +37,8 @@ const SAMPLE_REPORTS: Report[] = [
     instructor: 'Juan Pérez',
     cedula: '1076543210',
     area: 'Ingeniería Civil',
-    periodo: 'Febrero 2025',
-    entrega: '10 Feb 2025',
+    periodo: 'Febrero 2026',
+    entrega: '10 Feb 2026',
     status: 'aprobado',
     dias: '1 día',
   },
@@ -48,6 +48,11 @@ export function RevisarInformes(): ReactElement {
   const [query, setQuery] = useState('')
   const [periodo, setPeriodo] = useState('Todos los periodos')
   const [filter, setFilter] = useState<'revision' | 'aprobado' | 'correccion'>('revision')
+
+  const [pendingInstructors] = useState([
+    { id: 1, name: 'Pedro Martínez', pendingReport: 'Informe mensual Julio' },
+    { id: 2, name: 'Lucía Fernández', pendingReport: 'Informe de avance' },
+  ])
 
   const counts = useMemo(() => {
     const out = { revision: 0, aprobado: 0, correccion: 0 }
@@ -98,93 +103,117 @@ export function RevisarInformes(): ReactElement {
         </div>
       </div>
 
-      {/* controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full gap-3">
-          <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-3 py-2">
-            <span className="text-secondary mr-2">🔎</span>
-            <input
-              className="w-full border-none bg-transparent outline-none text-sm text-foreground"
-              placeholder="Buscar por instructor, cédula, área o ID..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-5">
+          {/* controls */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full gap-3">
+              <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-3 py-2">
+                <span className="text-secondary mr-2">🔎</span>
+                <input
+                  className="w-full border-none bg-transparent outline-none text-sm text-foreground"
+                  placeholder="Buscar por instructor, cédula, área o ID..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+              <select
+                className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-foreground"
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
+              >
+                <option>Todos los periodos</option>
+                <option>Febrero 2026</option>
+                <option>Enero 2026</option>
+              </select>
+            </div>
           </div>
-          <select
-            className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-foreground"
-            value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
-          >
-            <option>Todos los periodos</option>
-            <option>Febrero 2025</option>
-            <option>Enero 2025</option>
-          </select>
+
+          {/* tabs */}
+          <div className="flex gap-3">
+              <button
+                className={`px-4 py-2 rounded-full font-semibold ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+                onClick={() => setFilter('revision')}
+              >
+                En Revisión ({counts.revision})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-full font-semibold ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+                onClick={() => setFilter('aprobado')}
+              >
+                Aprobados ({counts.aprobado})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-full font-semibold ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+                onClick={() => setFilter('correccion')}
+              >
+                Correcciones ({counts.correccion})
+              </button>
+          </div>
+
+          {/* list */}
+          <div className="flex flex-col gap-4">
+            {filtered.map((r) => (
+              <div key={r.id} className="rounded-2xl border bg-bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">{r.instructor}</h3>
+                    <p className="text-sm text-secondary">Cédula: {r.cedula} · Área: {r.area}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`status-chip ${r.status === 'revision' ? 'status-chip--info' : r.status === 'aprobado' ? 'status-chip--success' : 'status-chip--alert'}`}>
+                      {r.status === 'revision' ? 'En Revisión' : r.status === 'aprobado' ? 'Aprobado' : 'Corrección'}
+                    </span>
+                    <span className="rounded-full border px-2 py-1 text-xs text-warning">{r.dias}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-bg-alt rounded-md p-3 border border-border">
+                  <div>
+                    <p className="text-xs text-secondary uppercase font-semibold">ID</p>
+                    <p className="text-sm font-semibold text-foreground">{r.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary uppercase font-semibold">Periodo</p>
+                    <p className="text-sm font-semibold text-foreground">{r.periodo}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-secondary uppercase font-semibold">Entrega</p>
+                    <p className="text-sm font-semibold text-foreground">{r.entrega}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-end gap-3">
+                  <button className="button button--ghost px-4 py-2 text-sm">Ver Informe</button>
+                  <button className="rounded-md border bg-bg-card px-4 py-2 text-sm text-warning border-warning hover:bg-bg-alt">Solicitar Corrección</button>
+                  <button className="button button--primary px-4 py-2 text-sm">Aprobar Informe</button>
+                </div>
+              </div>
+            ))}
+
+            {filtered.length === 0 && <div className="rounded-2xl border bg-bg-card p-6 text-center text-secondary">No hay informes que coincidan con los filtros.</div>}
+          </div>
         </div>
-      </div>
 
-      {/* tabs */}
-      <div className="flex gap-3">
-          <button
-            className={`px-4 py-2 rounded-full font-semibold ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-            onClick={() => setFilter('revision')}
-          >
-            En Revisión ({counts.revision})
-          </button>
-          <button
-            className={`px-4 py-2 rounded-full font-semibold ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-            onClick={() => setFilter('aprobado')}
-          >
-            Aprobados ({counts.aprobado})
-          </button>
-          <button
-            className={`px-4 py-2 rounded-full font-semibold ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-            onClick={() => setFilter('correccion')}
-          >
-            Correcciones ({counts.correccion})
-          </button>
-      </div>
-
-      {/* list */}
-      <div className="flex flex-col gap-4">
-        {filtered.map((r) => (
-          <div key={r.id} className="rounded-2xl border bg-bg-card p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">{r.instructor}</h3>
-                <p className="text-sm text-secondary">Cédula: {r.cedula} · Área: {r.area}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`status-chip ${r.status === 'revision' ? 'status-chip--info' : r.status === 'aprobado' ? 'status-chip--success' : 'status-chip--alert'}`}>
-                  {r.status === 'revision' ? 'En Revisión' : r.status === 'aprobado' ? 'Aprobado' : 'Corrección'}
-                </span>
-                <span className="rounded-full border px-2 py-1 text-xs text-warning">{r.dias}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-bg-alt rounded-md p-3 border border-border">
-              <div>
-                <p className="text-xs text-secondary uppercase font-semibold">ID</p>
-                <p className="text-sm font-semibold text-foreground">{r.id}</p>
-              </div>
-              <div>
-                <p className="text-xs text-secondary uppercase font-semibold">Periodo</p>
-                <p className="text-sm font-semibold text-foreground">{r.periodo}</p>
-              </div>
-              <div>
-                <p className="text-xs text-secondary uppercase font-semibold">Entrega</p>
-                <p className="text-sm font-semibold text-foreground">{r.entrega}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-3">
-              <button className="button button--ghost px-4 py-2 text-sm">Ver Informe</button>
-              <button className="rounded-md border bg-bg-card px-4 py-2 text-sm text-warning border-warning hover:bg-bg-alt">Solicitar Corrección</button>
-              <button className="button button--primary px-4 py-2 text-sm">Aprobar Informe</button>
+        {/* Pendientes Sidebar */}
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-warning bg-bg-card p-5 shadow-sm">
+            <h3 className="font-semibold text-lg text-warning mb-5">Instructores Pendientes</h3>
+            <div className="space-y-3">
+              {pendingInstructors.map(inst => (
+                <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-bg-alt">
+                  <div className="w-10 h-10 rounded-full bg-[var(--color-warning-bg)] text-warning flex items-center justify-center font-bold">
+                    {inst.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-foreground">{inst.name}</p>
+                    <p className="text-xs text-text-muted">{inst.pendingReport}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-
-        {filtered.length === 0 && <div className="rounded-2xl border bg-bg-card p-6 text-center text-secondary">No hay informes que coincidan con los filtros.</div>}
+        </div>
       </div>
     </section>
   )
