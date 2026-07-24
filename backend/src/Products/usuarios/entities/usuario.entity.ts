@@ -51,4 +51,10 @@ export class Usuario {
 
     @Column({ type: 'varchar' })
     password: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    fotoPerfil?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    firma?: string;
 }
