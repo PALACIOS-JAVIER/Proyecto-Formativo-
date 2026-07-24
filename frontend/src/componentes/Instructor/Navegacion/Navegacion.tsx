@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 import { ThemeToggle } from '../../common/ThemeToggle'
+import sitmiLogo from '../../../assets/Imagenes_Login/Sena.png'
 
 type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
 
@@ -28,7 +29,7 @@ export function Navegacion({ active, onSelect, onLogout, theme, onToggleTheme }:
     <aside className={`sticky top-0 flex w-full flex-col justify-between border-b px-5 py-6 backdrop-blur-sm lg:h-screen lg:w-72 lg:border-b-0 lg:border-r ${isDark ? 'border-slate-800 bg-slate-950/95 text-slate-100' : 'border-slate-200 bg-white text-slate-800 shadow-sm'}`}>
       <div>
         <div className={`flex items-center gap-3 rounded-2xl border px-3 py-3 ${isDark ? 'border-slate-800 bg-slate-900/70' : 'border-slate-200 bg-slate-50'}`}>
-          <img src="./assets/Imagenes_Login/Sena.png" alt="SITMI logo" className="h-11 w-11 rounded-xl object-cover" />
+          <img src={sitmiLogo} alt="SITMI logo" className="h-11 w-11 rounded-xl object-cover" />
           <div>
             <div className="text-lg font-semibold">IMRTS</div>
             <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Instructor</div>
