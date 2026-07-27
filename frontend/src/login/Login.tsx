@@ -26,7 +26,7 @@ export interface RegistrationData {
 }
 
 interface LoginProps {
-  onLogin?: (credentials: LoginCredentials) => boolean | void
+  onLogin?: (credentials: LoginCredentials) => boolean | void | Promise<boolean | void>
   onRegister?: (data: RegistrationData) => void
   onForgotPassword?: (identifier: string) => boolean | void
 }
@@ -59,7 +59,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const inputClasses = 'input-field'
   const labelClasses = 'label-field'
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
 
@@ -80,9 +80,14 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
         return
       }
 
-      const loginResult = onLogin?.({ username, password })
-      if (loginResult === false) {
-        setErrorMessage('Usuario o contraseña incorrectos.')
+      try {
+        const loginResult = await onLogin?.({ username, password })
+        if (loginResult === false) {
+          setErrorMessage('Usuario o contraseña incorrectos.')
+          return
+        }
+      } catch (error) {
+        setErrorMessage('Ocurrió un error al iniciar sesión.')
         return
       }
     } else {
