@@ -28,7 +28,7 @@ export class HistorialService {
       accion: createHistorialDto.accion,
       detalles: createHistorialDto.detalles,
       coordinador,
-      instructor: instructor_afectado,
+      instructor_afectado: instructor_afectado,
     });
 
     return this.historialRepository.save(nuevoHistorial);
@@ -37,14 +37,14 @@ export class HistorialService {
   findAll() {
     return this.historialRepository.find({
       order: { fecha: 'DESC' },
-      relations: { coordinador: true, instructor: true },
+      relations: { coordinador: true, instructor_afectado: true },
     });
   }
 
   async findOne(id: number) {
     const historial = await this.historialRepository.findOne({
       where: { id_historial: id },
-      relations: { coordinador: true, instructor: true },
+      relations: { coordinador: true, instructor_afectado: true },
     });
     if (!historial) throw new NotFoundException(`Historial #${id} no encontrado`);
     return historial;
