@@ -296,6 +296,22 @@ export function Instructores({
                 Área
                 <input className="input-field" value={selectedInstructorForm.area} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, area: e.target.value })} disabled={!instructorEditAllowed} />
               </label>
+              <label>
+                Código de contrato
+                <input className="input-field" value={selectedInstructorForm.codigoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoContrato: e.target.value })} disabled={!instructorEditAllowed} />
+              </label>
+              <label>
+                Código SIIF
+                <input className="input-field" value={selectedInstructorForm.codigoSiif || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoSiif: e.target.value })} disabled={!instructorEditAllowed} />
+              </label>
+              <label>
+                Fecha inicio del contrato
+                <input type="date" className="input-field" value={selectedInstructorForm.fechaInicioContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaInicioContrato: e.target.value })} disabled={!instructorEditAllowed} />
+              </label>
+              <label>
+                Fecha fin del contrato
+                <input type="date" className="input-field" value={selectedInstructorForm.fechaFinContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaFinContrato: e.target.value })} disabled={!instructorEditAllowed} />
+              </label>
               <label className="md:col-span-2">
                 Objeto del contrato
                 <textarea className="input-field min-h-24" value={selectedInstructorForm.objetoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, objetoContrato: e.target.value })} disabled={!instructorEditAllowed} />

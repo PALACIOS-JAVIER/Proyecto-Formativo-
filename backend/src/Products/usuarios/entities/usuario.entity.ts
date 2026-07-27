@@ -2,9 +2,10 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 't
 import { Sede } from '../../sede/entities/sede.entity';
 import { Rol } from '../../rol/entities/rol.entity';
 import { Area } from '../../areas/entities/area.entity';
+import { Especialidad } from '../../especialidad/entities/especialidad.entity';
 
 
-@Entity('usuarios') 
+@Entity('usuarios')
 export class Usuario {
 
     @PrimaryGeneratedColumn()
@@ -16,15 +17,15 @@ export class Usuario {
     @Column({ type: 'varchar', length: 200 })
     apellido: string;
 
-    @Column({ type: 'bigint', unique: true }) 
+    @Column({ type: 'bigint', unique: true })
     cedula: number;
 
-    @Column({ type: 'bigint', unique: true }) 
+    @Column({ type: 'bigint', unique: true })
     telefono: number;
 
-    @Column({ type: 'varchar', unique: true }) 
+    @Column({ type: 'varchar', unique: true })
     correo: string;
-        
+
     @ManyToOne(() => Sede, { eager: false })
     @JoinColumn({ name: 'id_sede' })
     sede: Sede;
@@ -36,6 +37,11 @@ export class Usuario {
     @ManyToOne(() => Area, { eager: false })
     @JoinColumn({ name: 'id_area' })
     area: Area;
+
+    // Nueva relación con especialidad
+    @ManyToOne(() => Especialidad, { eager: false, nullable: true })
+    @JoinColumn({ name: 'id_especialidad' })
+    especialidad: Especialidad | null;
 
     @Column({ type: 'varchar' })
     codigoContrato: string;
@@ -51,4 +57,10 @@ export class Usuario {
 
     @Column({ type: 'varchar' })
     password: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    fotoPerfil?: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    firma?: string;
 }
