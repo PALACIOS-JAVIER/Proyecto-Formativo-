@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Rol } from '../../rol/entities/rol.entity';
 import { ObjetoContractual } from '../../objeto-contractual/entities/objeto-contractual.entity';
+import { Especialidad } from '../../especialidad/entities/especialidad.entity';
 
 @Entity('areas')
 export class Area {
@@ -8,13 +9,17 @@ export class Area {
     id_area: number;
 
     @Column()
-    nombre: string; // 'Educación', 'Investigación', 'Extensión'
+    nombre: string; // 'AGRÍCOLA', 'COMUNICACIÓN', 'OPERACIONES FORESTALES', etc.
 
     @ManyToOne(() => Rol, (rol) => rol.areas, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'id_rol' })
     rol: Rol;
 
-    // Relación Uno a Muchos: Una área contiene múltiples objetos contractuales
+    // Relación: Un área tiene muchas especialidades
+    @OneToMany(() => Especialidad, (esp) => esp.area)
+    especialidades: Especialidad[];
+
+    // Relación: Un área tiene muchos objetos contractuales
     @OneToMany(() => ObjetoContractual, (objeto) => objeto.area)
     objetos: ObjetoContractual[];
 }

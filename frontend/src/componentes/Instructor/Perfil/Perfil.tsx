@@ -15,6 +15,7 @@ export interface ProfileData {
   fechaFinContrato: string
   objetoContrato?: string
   fotoPerfil?: string
+  firma?: string
 }
 
 interface PerfilProps {
@@ -44,7 +45,9 @@ export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilPr
   )
 
   const [fotoFile, setFotoFile] = useState<File | null>(null)
+  const [firmaFile, setFirmaFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | undefined>(data.fotoPerfil)
+  const [firmaPreview, setFirmaPreview] = useState<string | undefined>(data.firma)
 
   useEffect(() => {
     if (fotoFile) {
@@ -55,7 +58,19 @@ export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilPr
   }, [fotoFile])
 
   useEffect(() => {
-    if (initialData) setData(initialData)
+    if (firmaFile) {
+      const url = URL.createObjectURL(firmaFile)
+      setFirmaPreview(url)
+      return () => URL.revokeObjectURL(url)
+    }
+  }, [firmaFile])
+
+  useEffect(() => {
+    if (initialData) {
+      setData(initialData)
+      setPreview(initialData.fotoPerfil)
+      setFirmaPreview(initialData.firma)
+    }
   }, [initialData])
 
   const handleChange = (k: keyof ProfileData, v: string) => {
@@ -64,20 +79,39 @@ export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilPr
 
   const handleFoto = (f?: File) => {
     if (!f) return
+    if (!f.type.startsWith('image/')) {
+      alert('Por favor selecciona una imagen para la foto de perfil.')
+      return
+    }
+    if (data.fotoPerfil && !window.confirm('¿Estás seguro de cambiar la foto de perfil? La anterior se reemplazará.')) {
+      return
+    }
     setFotoFile(f)
-    setData((curr) => ({ ...curr, fotoPerfil: curr.fotoPerfil || '' }))
+  }
+
+  const handleFirma = (f?: File) => {
+    if (!f) return
+    if (!f.type.startsWith('image/')) {
+      alert('Por favor selecciona una imagen para la firma.')
+      return
+    }
+    if (data.firma && !window.confirm('¿Estás seguro de cambiar la firma? La anterior se reemplazará.')) {
+      return
+    }
+    setFirmaFile(f)
   }
 
   const handleSave = (e?: React.FormEvent) => {
     e?.preventDefault()
     const out = { ...data }
     if (preview) out.fotoPerfil = preview
+    if (firmaPreview) out.firma = firmaPreview
     onSave?.(out)
   }
 
   const isFieldDisabled = (field: keyof ProfileData) => {
     if (field === 'cedula') return true
-    if (field === 'telefono' || field === 'fotoPerfil') return false
+    if (field === 'telefono' || field === 'fotoPerfil' || field === 'firma') return false
     return !canEditProfile
   }
 
@@ -179,6 +213,19 @@ export function Perfil({ initialData, onSave, canEditProfile = false }: PerfilPr
               }}
             />
             {preview ? <img src={preview} alt="preview" /> : null}
+          </label>
+
+          <label className="foto-field">
+            Agregar firma
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) handleFirma(f)
+              }}
+            />
+            {firmaPreview ? <img src={firmaPreview} alt="firma preview" className="max-h-32 object-contain" /> : null}
           </label>
         </div>
 
