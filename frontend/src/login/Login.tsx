@@ -27,7 +27,7 @@ export interface RegistrationData {
 
 interface LoginProps {
   onLogin?: (credentials: LoginCredentials) => boolean | void | Promise<boolean | void>
-  onRegister?: (data: RegistrationData) => void
+  onRegister?: (data: RegistrationData) => Promise<{ success: boolean; message?: string } | void> | void
   onForgotPassword?: (identifier: string) => boolean | void
 }
 
@@ -38,6 +38,8 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const [rememberMe, setRememberMe] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+  const [loading, setLoading] = useState(false)
   const [forgotIdentifier, setForgotIdentifier] = useState('')
   const [forgotSubmitted, setForgotSubmitted] = useState(false)
   const [registration, setRegistration] = useState<RegistrationData>({
@@ -62,6 +64,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
+    setSuccessMessage('')
 
     if (mode === 'forgot') {
       if (!forgotIdentifier.trim()) {
@@ -81,6 +84,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
       }
 
       try {
+        setLoading(true)
         const loginResult = await onLogin?.({ username, password })
         if (loginResult === false) {
           setErrorMessage('Usuario o contraseña incorrectos.')
@@ -89,6 +93,8 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
       } catch (error) {
         setErrorMessage('Ocurrió un error al iniciar sesión.')
         return
+      } finally {
+        setLoading(false)
       }
     } else {
       if (!registration.fechaInicioContrato || !registration.fechaFinContrato) {
@@ -106,7 +112,23 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
         return
       }
 
-      onRegister?.(registration)
+      try {
+        setLoading(true)
+        const result = await onRegister?.(registration)
+        if (result && result.success === false) {
+          setErrorMessage(result.message || 'Error al registrar la cuenta.')
+          return
+        }
+        setSuccessMessage('¡Registro exitoso! Redirigiendo al inicio de sesión...')
+        setTimeout(() => {
+          goToLogin()
+          setSuccessMessage('')
+        }, 2000)
+      } catch (error: any) {
+        setErrorMessage('Ocurrió un error inesperado durante el registro.')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -162,6 +184,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
 
           <form onSubmit={handleSubmit} className={mode === 'register' ? 'register-form' : 'login-form'}>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
 
             {mode === 'forgot' ? (
               forgotSubmitted ? (
@@ -327,8 +350,8 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                   </label>
                 </div>
 
-                <button type="submit" className="button-primary register-submit">
-                  Crear cuenta
+                <button type="submit" className="button-primary register-submit" disabled={loading}>
+                  {loading ? 'Creando cuenta...' : 'Crear cuenta'}
                 </button>
 
                 <div className="switch-mode-row">

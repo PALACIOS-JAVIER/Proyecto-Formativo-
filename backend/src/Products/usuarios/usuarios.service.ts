@@ -24,12 +24,37 @@ export class UsuariosService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
-    const sede = await this.sedeRepository.findOne({ where: { id_sede: Number(createUsuarioDto.id_sede) } });
-    const rol = await this.rolRepository.findOne({ where: { id_rol: Number(createUsuarioDto.id_rol) } });
-    const area = await this.areaRepository.findOne({ where: { id_area: Number(createUsuarioDto.id_area) } });
+    const sedeIdNum = Number(createUsuarioDto.id_sede);
+    let sede = !isNaN(sedeIdNum)
+      ? await this.sedeRepository.findOne({ where: { id_sede: sedeIdNum } })
+      : await this.sedeRepository.findOne({ where: { nombre: createUsuarioDto.id_sede } });
 
-    if (!sede || !rol || !area) {
-      throw new NotFoundException('Sede, rol o área no encontrados');
+    if (!sede) {
+      sede = await this.sedeRepository.save(
+        this.sedeRepository.create({ nombre: createUsuarioDto.id_sede || 'Yamboro' })
+      );
+    }
+
+    const rolIdNum = Number(createUsuarioDto.id_rol);
+    let rol = !isNaN(rolIdNum)
+      ? await this.rolRepository.findOne({ where: { id_rol: rolIdNum } })
+      : await this.rolRepository.findOne({ where: { nombre: createUsuarioDto.id_rol } });
+
+    if (!rol) {
+      rol = await this.rolRepository.save(
+        this.rolRepository.create({ nombre: createUsuarioDto.id_rol || 'campesena', sede })
+      );
+    }
+
+    const areaIdNum = Number(createUsuarioDto.id_area);
+    let area = !isNaN(areaIdNum)
+      ? await this.areaRepository.findOne({ where: { id_area: areaIdNum } })
+      : await this.areaRepository.findOne({ where: { nombre: createUsuarioDto.id_area } });
+
+    if (!area) {
+      area = await this.areaRepository.save(
+        this.areaRepository.create({ nombre: createUsuarioDto.id_area || 'General', rol })
+      );
     }
 
     const usuario = this.usuarioRepository.create({
