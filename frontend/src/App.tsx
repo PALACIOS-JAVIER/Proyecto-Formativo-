@@ -78,19 +78,33 @@ function App() {
     setUserRole(null)
   }
 
-  const handleRegister = (registration: RegistrationData) => {
-    const { contraseña, ...profile } = registration
-    const newInstructor: InstructorProfile = {
-      id: Date.now(),
-      ...profile,
-      objetoContrato: registration.objetoContrato ?? '',
-      fotoPerfil: '',
-      status: 'pendiente',
-      canEdit: false,
-      source: 'registro',
-    }
+  const handleRegister = async (registration: RegistrationData) => {
+    try {
+      const payload = {
+        nombre: registration.nombre,
+        apellido: registration.apellido,
+        cedula: Number(registration.cedula),
+        telefono: Number(registration.telefono),
+        correo: registration.correo,
+        id_sede: registration.sede || 'Yamboro',
+        id_rol: registration.rol || 'campesena',
+        id_area: registration.area || 'General',
+        codigoContrato: registration.codigoContrato || 'N/A',
+        codigoSiif: Number(registration.codigoSiif) || 0,
+        fechaInicioContrato: registration.fechaInicioContrato,
+        fechaFinContrato: registration.fechaFinContrato,
+        password: registration.contraseña,
+        passwordConfirm: registration.contraseña,
+      }
 
-    setInstructors((current) => [...current, newInstructor])
+      await api.post('/usuarios', payload)
+      return { success: true }
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      const message = error.response?.data?.message
+      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
+      return { success: false, message: formattedMessage }
+    }
   }
 
   const updateInstructor = (id: number, changes: Partial<InstructorProfile>) => {
