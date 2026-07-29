@@ -1,55 +1,18 @@
 import type { ReactElement } from 'react'
 import { useMemo, useState } from 'react'
 
-const CONTRACTORS = [
-  {
-    id: 1,
-    name: 'María Fernanda López Ruiz',
-    cc: '1023456789',
-    email: 'maria.lopez@sena.edu.co',
-    phone: '+57 300 123 4567',
-    area: 'Desarrollo',
-    role: 'Contratista',
-    reports: [
-      { id: 1, title: 'Informe mensual', period: 'Febrero 2025', submittedDate: '2025-02-08', dueDate: '2025-02-10', status: 'Entregado a tiempo', files: 3, method: 'Drive' },
-      { id: 2, title: 'Anexo indicadores', period: 'Febrero 2025', submittedDate: '2025-02-08', dueDate: '2025-02-08', status: 'Entregado a tiempo', files: 2, method: 'Correo' },
-    ],
-    corrections: [
-      { id: 1, date: '2025-02-10', requestedBy: 'Coordinador', note: 'Ajustar tablas de indicadores', status: 'Pendiente', response: 'Por favor envía la versión corregida con fórmulas actualizadas' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Carlos Andrés Martínez',
-    cc: '1098765432',
-    email: 'carlos.martinez@sena.edu.co',
-    phone: '+57 311 987 6543',
-    area: 'Robótica',
-    role: 'Contratista',
-    reports: [
-      { id: 3, title: 'Informe de actividades', period: 'Febrero 2025', submittedDate: '2025-02-07', dueDate: '2025-02-07', status: 'Entregado a tiempo', files: 1, method: 'Correo' },
-      { id: 4, title: 'Plan de trabajo', period: 'Enero 2025', submittedDate: '2025-01-25', dueDate: '2025-01-28', status: 'Entregado con retraso', files: 1, method: 'Drive' },
-    ],
-    corrections: [
-      { id: 2, date: '2025-02-10', requestedBy: 'Coordinador', note: 'Revisar cierre de indicador 3', status: 'En proceso', response: 'Recibido, ajustar valores y reenviar' },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Ana María Rodríguez',
-    cc: '1087654321',
-    email: 'ana.rodriguez@sena.edu.co',
-    phone: '+57 320 765 4321',
-    area: 'Desarrollo',
-    role: 'Contratista',
-    reports: [
-      { id: 5, title: 'Informe mensual', period: 'Febrero 2025', submittedDate: '2025-02-09', dueDate: '2025-02-10', status: 'Entregado a tiempo', files: 2, method: 'Drive' },
-    ],
-    corrections: [],
-  },
-]
+const CONTRACTORS: any[] = []
 
 export function Reportes(): ReactElement {
+  const userData = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user_data') || '{}')
+    } catch {
+      return {}
+    }
+  })()
+  const coordinatorName = userData.nombre || 'Coordinador'
+
   const [filterPeriod, setFilterPeriod] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [filterContractor, setFilterContractor] = useState('')
@@ -58,7 +21,7 @@ export function Reportes(): ReactElement {
   const contractorSearchResults = useMemo(() => {
     return CONTRACTORS.filter((contractor) => {
       const matchesName = filterContractor === '' || contractor.name.toLowerCase().includes(filterContractor.toLowerCase())
-      const matchesPeriod = filterPeriod === '' || contractor.reports.some((report) => report.period.toLowerCase().includes(filterPeriod.toLowerCase()))
+      const matchesPeriod = filterPeriod === '' || contractor.reports.some((report: any) => report.period.toLowerCase().includes(filterPeriod.toLowerCase()))
       return matchesName && matchesPeriod
     })
   }, [filterContractor, filterPeriod])
@@ -71,8 +34,8 @@ export function Reportes(): ReactElement {
     return filteredContractors.filter((contractor) => {
       const matchesDate =
         filterDate === '' ||
-        contractor.reports.some((report) => new Date(report.submittedDate) <= new Date(filterDate)) ||
-        contractor.corrections.some((correction) => new Date(correction.date) <= new Date(filterDate))
+        contractor.reports.some((report: any) => new Date(report.submittedDate) <= new Date(filterDate)) ||
+        contractor.corrections.some((correction: any) => new Date(correction.date) <= new Date(filterDate))
       return matchesDate
     })
   }, [filteredContractors, filterDate])
@@ -109,9 +72,8 @@ export function Reportes(): ReactElement {
             <label className="field-label">1. PERIODO MENSUAL</label>
             <select className="month-selector mt-2" value={filterPeriod} onChange={(e) => setFilterPeriod(e.target.value)}>
               <option value="">Todos</option>
-              <option>Febrero 2025</option>
-              <option>Enero 2025</option>
-              <option>Diciembre 2024</option>
+              <option>Febrero 2026</option>
+              <option>Enero 2026</option>
             </select>
           </div>
 
@@ -183,7 +145,7 @@ export function Reportes(): ReactElement {
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-[0.18em]">Obligaciones</div>
-                  <div className="mt-1 text-foreground font-semibold">17 activas</div>
+                  <div className="mt-1 text-foreground font-semibold">18 (Regular FIC) / 19 (CampeSENA)</div>
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-[0.18em]">Formato salida</div>
@@ -196,26 +158,29 @@ export function Reportes(): ReactElement {
               <h3 className="text-sm font-semibold text-foreground">1. DATOS GENERALES DEL CONTRATO</h3>
               <div className="grid gap-3 text-sm text-secondary mt-3">
                 <div className="flex justify-between gap-4"><span>Centro:</span><span className="text-foreground">Centro de Gestión y Desarrollo Sostenible Surcolombiano</span></div>
-                <div className="flex justify-between gap-4"><span>Subdirector:</span><span className="text-foreground">Ing. Wilson Martínez Medina (Simulado)</span></div>
-                <div className="flex justify-between gap-4"><span>Coordinadora:</span><span className="text-foreground">Ana María López Ruiz</span></div>
+                <div className="flex justify-between gap-4"><span>Coordinador / Responsable:</span><span className="text-foreground">{coordinatorName}</span></div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-bg-card p-4">
               <h3 className="text-sm font-semibold text-foreground">2. CONTRATISTAS CONSOLIDADOS EN LA PLANILLA</h3>
               <div className="space-y-3 mt-3">
-                {displayedContractors.map((contractor) => (
-                  <div key={contractor.id} className="rounded-2xl border border-border bg-white p-3 flex justify-between items-center text-sm">
-                    <span>{contractor.name}</span>
-                    <span className="text-xs text-secondary">C.C. {contractor.cc}</span>
-                  </div>
-                ))}
+                {displayedContractors.length === 0 ? (
+                  <p className="text-sm text-secondary">No hay contratistas seleccionados para este reporte.</p>
+                ) : (
+                  displayedContractors.map((contractor) => (
+                    <div key={contractor.id} className="rounded-2xl border border-border bg-white p-3 flex justify-between items-center text-sm">
+                      <span>{contractor.name}</span>
+                      <span className="text-xs text-secondary">C.C. {contractor.cc}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-bg-card p-4">
               <h3 className="text-sm font-semibold text-foreground">3. OBLIGACIONES INCORPORADAS (GC GTH-F-062 V10)</h3>
-              <p className="text-sm text-secondary mt-3">Se compilarán y concatenarán las bitácoras semanales correspondientes a las 17 obligaciones institucionales para cada uno de los contratistas seleccionados.</p>
+              <p className="text-sm text-secondary mt-3">Se compilarán las bitácoras semanales correspondientes a las **18 obligaciones** para la modalidad Regular - FIC y **19 obligaciones** para la modalidad CampeSENA según corresponda.</p>
             </div>
 
             <div className="rounded-2xl border border-border bg-bg-card p-4">

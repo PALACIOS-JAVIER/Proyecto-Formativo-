@@ -18,6 +18,7 @@ interface InstructoresProps {
   onDeleteInstructor: (id: number) => void
   instructorEditAllowed: boolean
   onToggleInstructorEditPermission: (value: boolean) => void
+  isSupportStaff?: boolean
 }
 
 // (formatRemaining removed - not used)
@@ -29,6 +30,7 @@ export function Instructores({
   onDeleteInstructor,
   instructorEditAllowed,
   onToggleInstructorEditPermission: _onToggleInstructorEditPermission,
+  isSupportStaff = false,
 }: InstructoresProps): ReactElement {
   const btnBase = 'rounded-lg px-3 py-1 text-sm font-semibold'
   const [search, setSearch] = useState('')
@@ -244,11 +246,13 @@ export function Instructores({
               )}
             </div>
 
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Asignar apoyo administrativo</h3>
-              <p className="subtext mb-3">Registra solo los datos básicos necesarios.</p>
-              <button type="button" onClick={() => openSupportModal()} className={`${btnBase} bg-emerald-600 text-white hover:bg-emerald-700`}>Asignar apoyo administrativo</button>
-            </div>
+            {!isSupportStaff && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Asignar apoyo administrativo</h3>
+                <p className="subtext mb-3">Registra solo los datos básicos necesarios.</p>
+                <button type="button" onClick={() => openSupportModal()} className={`${btnBase} bg-emerald-600 text-white hover:bg-emerald-700`}>Asignar apoyo administrativo</button>
+              </div>
+            )}
           </div>
         </article>
       </div>

@@ -11,48 +11,14 @@ type Report = {
   dias: string
 }
 
-const SAMPLE_REPORTS: Report[] = [
-  {
-    id: 'INF-2825-02-847',
-    instructor: 'Carlos Andrés Martínez',
-    cedula: '1098765432',
-    area: 'Robótica',
-    periodo: 'Febrero 2026',
-    entrega: '08 Feb 2026',
-    status: 'revision',
-    dias: '3 días',
-  },
-  {
-    id: 'INF-2825-02-846',
-    instructor: 'Ana María Rodríguez',
-    cedula: '1087654321',
-    area: 'Desarrollo de Software',
-    periodo: 'Febrero 2026',
-    entrega: '07 Feb 2026',
-    status: 'revision',
-    dias: '4 días',
-  },
-  {
-    id: 'INF-2825-02-849',
-    instructor: 'Juan Pérez',
-    cedula: '1076543210',
-    area: 'Ingeniería Civil',
-    periodo: 'Febrero 2026',
-    entrega: '10 Feb 2026',
-    status: 'aprobado',
-    dias: '1 día',
-  },
-]
+const SAMPLE_REPORTS: Report[] = []
 
 export function RevisarInformes(): ReactElement {
   const [query, setQuery] = useState('')
   const [periodo, setPeriodo] = useState('Todos los periodos')
   const [filter, setFilter] = useState<'revision' | 'aprobado' | 'correccion'>('revision')
 
-  const [pendingInstructors] = useState([
-    { id: 1, name: 'Pedro Martínez', pendingReport: 'Informe mensual Julio' },
-    { id: 2, name: 'Lucía Fernández', pendingReport: 'Informe de avance' },
-  ])
+  const [pendingInstructors] = useState<any[]>([])
 
   const counts = useMemo(() => {
     const out = { revision: 0, aprobado: 0, correccion: 0 }
@@ -200,17 +166,21 @@ export function RevisarInformes(): ReactElement {
           <div className="rounded-2xl border border-warning bg-bg-card p-5 shadow-sm">
             <h3 className="font-semibold text-lg text-warning mb-5">Instructores Pendientes</h3>
             <div className="space-y-3">
-              {pendingInstructors.map(inst => (
-                <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-bg-alt">
-                  <div className="w-10 h-10 rounded-full bg-[var(--color-warning-bg)] text-warning flex items-center justify-center font-bold">
-                    {inst.name.charAt(0)}
+              {pendingInstructors.length === 0 ? (
+                <div className="text-sm text-secondary p-2">Sin instructores pendientes por entregar.</div>
+              ) : (
+                pendingInstructors.map(inst => (
+                  <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-bg-alt">
+                    <div className="w-10 h-10 rounded-full bg-[var(--color-warning-bg)] text-warning flex items-center justify-center font-bold">
+                      {inst.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{inst.name}</p>
+                      <p className="text-xs text-text-muted">{inst.pendingReport}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-sm text-foreground">{inst.name}</p>
-                    <p className="text-xs text-text-muted">{inst.pendingReport}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

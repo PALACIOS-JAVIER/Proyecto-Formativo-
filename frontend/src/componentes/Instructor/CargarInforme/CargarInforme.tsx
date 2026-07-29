@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { ReactElement } from 'react'
 
 export function CargarInforme(): ReactElement {
-  const [selection, setSelection] = useState<'gc' | 'gf'>('gc')
   const [fileName, setFileName] = useState('')
   const [month, setMonth] = useState('Mayo')
   const [year, setYear] = useState('2026')
@@ -12,9 +11,6 @@ export function CargarInforme(): ReactElement {
   const monthOptions = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
   const yearOptions = ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
   const selectedPeriod = `${month} ${year}`
-  const validationNote = selection === 'gc'
-    ? 'La validación GC comprueba el formato financiero y la estructura general del documento.'
-    : 'La validación GF revisa el contenido según las reglas de gestión financiera y evidencias.'
 
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -34,7 +30,7 @@ export function CargarInforme(): ReactElement {
       return
     }
 
-    setSubmissionMessage(`Informe ${selection.toUpperCase()} programado para ${month}. Archivo listo para validación.`)
+    setSubmissionMessage(`✓ Informe GC programado para ${month} ${year}. Archivo cargado correctamente y enviado a validación.`)
   }
 
   const formatFileSize = (bytes: number) => {
@@ -48,28 +44,20 @@ export function CargarInforme(): ReactElement {
       <header className="page-header page-header--compact">
         <div>
           <p className="eyebrow">SUBE Y VALIDA EL ARCHIVO</p>
-          <h1>Elige el tipo de informe, selecciona el mes y agrega el archivo</h1>
+          <h1>Subir Informe Mensual (GC)</h1>
+          <p className="subtext">Selecciona el mes y año de tu periodo de trabajo y adjunta la plantilla oficial GC.</p>
         </div>
-
       </header>
 
       <article className="card upload-card">
-        {/* Type picker */}
+        {/* Type indicator */}
         <div className="upload-type-picker">
-          <button
-            type="button"
-            className={`type-button ${selection === 'gc' ? 'type-button--active' : ''}`}
-            onClick={() => setSelection('gc')}
-          >
+          <button type="button" className="type-button type-button--active">
             GC · Validar archivo
           </button>
-          <button
-            type="button"
-            className={`type-button ${selection === 'gf' ? 'type-button--active' : ''}`}
-            onClick={() => setSelection('gf')}
-          >
-            GF · Validar archivo
-          </button>
+          <span className="text-xs text-text-secondary font-medium px-3 py-2 rounded-full border border-border bg-bg-alt flex items-center">
+            Formato Institucional GC GTH-F-062
+          </span>
         </div>
 
         {/* Timeline selectors */}
@@ -93,11 +81,10 @@ export function CargarInforme(): ReactElement {
           </label>
         </div>
 
-        {/* Summary */}
+        {/* Summary banner */}
         <div className="upload-summary">
           <p>
-            Informe <strong>{selection.toUpperCase()}</strong> previsto para <strong>{selectedPeriod}</strong>.
-            {` ${validationNote}`}
+            Informe <strong>GC</strong> previsto para <strong>{selectedPeriod}</strong>. La validación comprueba la estructura del documento y los anexos de evidencia.
           </p>
         </div>
 
@@ -105,37 +92,38 @@ export function CargarInforme(): ReactElement {
         <div className="upload-instructions">
           <div>
             <span className="instruction-step">1</span>
-            <p>Elige si el informe es GC o GF según la plantilla que tengas.</p>
+            <p>Selecciona el mes y año correspondientes a tu periodo de instrucción.</p>
           </div>
           <div>
             <span className="instruction-step">2</span>
-            <p>Selecciona el mes y año correctos para el periodo del informe.</p>
+            <p>Adjunta el archivo del informe mensual en formato .xlsx o .pdf.</p>
           </div>
           <div>
             <span className="instruction-step">3</span>
-            <p>Sube el archivo y confirma para que el sistema lo valide automáticamente.</p>
+            <p>Confirma el envío para notificar a la coordinación asignada.</p>
           </div>
         </div>
 
         {/* Dropzone */}
         <div className="upload-dropzone">
-          <span className="upload-icon">⭳</span>
-          <p>El sistema revisa el formato, el nombre y el tamaño. No genera ni crea archivos adicionales.</p>
-          <h2>Sube un archivo GF o GC para validarlo</h2>
-          <label className="button button--primary">
-            Seleccionar archivo {selection.toUpperCase()}
-            <input type="file" hidden onChange={handleFile} />
+          <span className="upload-icon">📥</span>
+          <h2>Sube tu archivo de Informe GC</h2>
+          <p className="upload-note">El sistema revisa el formato, el nombre y la estructura sin modificar la información.</p>
+          
+          <label className="button button--primary cursor-pointer mt-3">
+            Seleccionar archivo GC
+            <input type="file" hidden accept=".xlsx,.xls,.pdf,.docx" onChange={handleFile} />
           </label>
-          <p className="upload-note">
-            {fileName ? `Archivo seleccionado: ${fileName} (${fileSize ? formatFileSize(fileSize) : ''})` : ''}
-          </p>
+
+          {fileName && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
+              <span>📎 {fileName} ({fileSize ? formatFileSize(fileSize) : ''})</span>
+            </div>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="upload-actions">
-          <button type="button" className="button button--secondary" onClick={handleSubmit}>
-            Enviar informe
-          </button>
+        <div className="upload-actions justify-end">
           <button
             type="button"
             className="button button--ghost"
@@ -147,11 +135,14 @@ export function CargarInforme(): ReactElement {
           >
             Limpiar
           </button>
+          <button type="button" className="button button--primary" onClick={handleSubmit}>
+            Enviar informe GC
+          </button>
         </div>
 
         {submissionMessage && (
-          <p className="submission-message">
-            {submissionMessage} <strong>{month} {year}</strong>
+          <p className="submission-message font-medium mt-2">
+            {submissionMessage}
           </p>
         )}
       </article>

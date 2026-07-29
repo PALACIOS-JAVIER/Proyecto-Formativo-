@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from '../Products/usuarios/entities/usuario.entity';
+import { Coordinador } from '../Products/coordinadores/entities/coordinador.entity';
+import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
@@ -10,22 +12,22 @@ export class AuthService {
   constructor(
     @InjectRepository(Usuario)
     private usuarioRepository: Repository<Usuario>,
+    @InjectRepository(Coordinador)
+    private coordinadorRepository: Repository<Coordinador>,
+    @InjectRepository(ApoyoAdministrativo)
+    private apoyoRepository: Repository<ApoyoAdministrativo>,
     private jwtService: JwtService,
   ) {}
 
   async login(loginDto: LoginDto) {
-    // Buscar usuario por correo (o cédula si el username es un número)
     const usernameNormalizado = loginDto.username.trim().toLowerCase();
     
-    // For now, we will allow login with 'instructor' / 'coordinador' to match frontend,
-    // but also check real database
     let user = await this.usuarioRepository.findOne({ 
       where: { correo: usernameNormalizado },
       relations: { rol: true }
     });
 
     if (!user) {
-        // Fallback for cedula
         const cedula = parseInt(usernameNormalizado);
         if (!isNaN(cedula)) {
              user = await this.usuarioRepository.findOne({ 
@@ -36,7 +38,6 @@ export class AuthService {
     }
 
     if (!user) {
-        // Fallback for demo frontend credentials if not in db yet
         if (loginDto.username === 'instructor' && loginDto.password === '123456') {
             const payload = { sub: 0, correo: 'demo@sena.edu.co', rol: 'instructor' };
             return {
@@ -55,19 +56,30 @@ export class AuthService {
         throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Comprobar contraseña
     if (user.password !== loginDto.password) {
         throw new UnauthorizedException('Contraseña incorrecta');
     }
 
-    const payload = { sub: user.id_Usuario, correo: user.correo, rol: user.rol?.nombre };
+    // Determinar rol dinámico (coordinador, apoyo_administrativo, o instructor)
+    let rolExacto = 'instructor';
+    const isCoordinador = await this.coordinadorRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+    if (isCoordinador || user.rol?.nombre?.toLowerCase().includes('coordinador')) {
+      rolExacto = 'coordinador';
+    } else {
+      const isApoyo = await this.apoyoRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+      if (isApoyo || user.rol?.nombre?.toLowerCase().includes('apoyo')) {
+        rolExacto = 'apoyo_administrativo';
+      }
+    }
+
+    const payload = { sub: user.id_Usuario, correo: user.correo, rol: rolExacto };
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
         id: user.id_Usuario,
         nombre: `${user.nombre} ${user.apellido}`,
         correo: user.correo,
-        rol: user.rol?.nombre,
+        rol: rolExacto,
       }
     };
   }

@@ -49,10 +49,10 @@ CREATE TABLE usuarios (
     cedula BIGINT UNIQUE NOT NULL,
     telefono BIGINT UNIQUE NOT NULL,
     correo VARCHAR(255) UNIQUE NOT NULL,
-    "codigoContrato" VARCHAR(255) NOT NULL,
-    "codigoSiif" INT NOT NULL,
-    "fechaInicioContrato" DATE NOT NULL,
-    "fechaFinContrato" DATE NOT NULL,
+    "codigoContrato" VARCHAR(255),
+    "codigoSiif" INT,
+    "fechaInicioContrato" DATE,
+    "fechaFinContrato" DATE,
     password VARCHAR(255) NOT NULL,
     "fotoPerfil" VARCHAR(255),
     firma VARCHAR(255),
@@ -61,6 +61,19 @@ CREATE TABLE usuarios (
     id_rol INT REFERENCES roles(id_rol),
     id_area INT REFERENCES areas(id_area),
     id_especialidad INT REFERENCES especialidades(id_especialidad)
+);
+
+CREATE TABLE coordinadores (
+    id_coordinador SERIAL PRIMARY KEY,
+    anio_ejercicio INT NOT NULL DEFAULT 2026,
+    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
+    id_sede INT REFERENCES sedes(id_sede) ON DELETE CASCADE
+);
+
+CREATE TABLE apoyos_administrativos (
+    id_apoyo SERIAL PRIMARY KEY,
+    id_coordinador INT REFERENCES coordinadores(id_coordinador) ON DELETE CASCADE,
+    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE
 );
 
 CREATE TABLE campesena_obligaciones (
