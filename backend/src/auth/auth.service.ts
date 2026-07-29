@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from '../Products/usuarios/entities/usuario.entity';
+import { Coordinador } from '../Products/coordinador/entities/coordinador.entity';
+import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
@@ -10,6 +12,10 @@ export class AuthService {
   constructor(
     @InjectRepository(Usuario)
     private usuarioRepository: Repository<Usuario>,
+    @InjectRepository(Coordinador)
+    private coordinadorRepository: Repository<Coordinador>,
+    @InjectRepository(ApoyoAdministrativo)
+    private apoyoRepository: Repository<ApoyoAdministrativo>,
     private jwtService: JwtService,
   ) {}
 
@@ -60,14 +66,30 @@ export class AuthService {
         throw new UnauthorizedException('Contraseña incorrecta');
     }
 
-    const payload = { sub: user.id_Usuario, correo: user.correo, rol: user.rol?.nombre };
+    // Determinar si es coordinador o apoyo administrativo
+    let specificRole = user.rol?.nombre;
+    if (specificRole === 'Apoyo Administrativo') {
+        const isCoordinador = await this.coordinadorRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+        if (isCoordinador) {
+            specificRole = 'coordinador';
+        } else {
+            const isApoyo = await this.apoyoRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+            if (isApoyo) {
+                specificRole = 'apoyo_administrativo';
+            }
+        }
+    } else if (specificRole === 'Campesina' || specificRole === 'Regular Fic') {
+        specificRole = 'instructor';
+    }
+
+    const payload = { sub: user.id_Usuario, correo: user.correo, rol: specificRole };
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
         id: user.id_Usuario,
         nombre: `${user.nombre} ${user.apellido}`,
         correo: user.correo,
-        rol: user.rol?.nombre,
+        rol: specificRole,
       }
     };
   }

@@ -24,27 +24,35 @@ function App() {
   const fetchInstructors = async () => {
     try {
       const res = await api.get('/usuarios')
-      // Mapear los datos del backend al formato que espera el frontend si es necesario
-      const mappedInstructors = res.data.map((u: any) => ({
-        id: u.id_Usuario,
-        nombre: u.nombre,
-        apellido: u.apellido,
-        cedula: u.cedula?.toString() || '',
-        telefono: u.telefono?.toString() || '',
-        correo: u.correo,
-        rol: u.rol?.nombre || 'campesena',
-        sede: u.sede?.nombre || 'Yamboro',
-        area: u.area?.nombre || 'Desarrollo Formativo',
-        codigoContrato: '',
-        codigoSiif: '',
-        fechaInicioContrato: '',
-        fechaFinContrato: '',
-        objetoContrato: '',
-        fotoPerfil: u.fotoPerfil || '',
-        status: 'activo',
-        canEdit: false,
-        source: 'coordinador'
-      }))
+      const mappedInstructors = res.data.map((u: any) => {
+        // Map backend estado_cuenta to frontend status
+        let frontendStatus: InstructorStatus = 'pendiente'
+        if (u.estado_cuenta === 'aprobado') frontendStatus = 'activo'
+        if (u.estado_cuenta === 'rechazado') frontendStatus = 'rechazado'
+        if (u.estado_cuenta === 'inactivo') frontendStatus = 'inactivo'
+
+        return {
+          id: u.id_Usuario,
+          nombre: u.nombre,
+          apellido: u.apellido,
+          cedula: u.cedula?.toString() || '',
+          telefono: u.telefono?.toString() || '',
+          correo: u.correo,
+          rol: u.rol?.nombre || 'campesena',
+          sede: u.sede?.nombre || 'Yamboro',
+          area: u.area?.nombre || 'Desarrollo Formativo',
+          codigoContrato: u.codigoContrato || '',
+          codigoSiif: u.codigoSiif?.toString() || '',
+          fechaInicioContrato: u.fechaInicioContrato || '',
+          fechaFinContrato: u.fechaFinContrato || '',
+          objetoContrato: '',
+          fotoPerfil: u.fotoPerfil || '',
+          status: frontendStatus,
+          canEdit: false,
+          source: u.rol?.nombre === 'Apoyo Administrativo' ? 'coordinador' : 'registro'
+        }
+      })
+      // Opcional: Filtrar para no mostrar al coordinador actual (o dejarlo si quieren verse)
       setInstructors(mappedInstructors)
     } catch (error) {
       console.error('Error fetching instructors', error)
@@ -63,7 +71,7 @@ function App() {
       setUserRole(user.rol as UserRole)
       setAuthenticated(true)
       
-      if (user.rol === 'coordinador') {
+      if (user.rol === 'coordinador' || user.rol === 'apoyo_administrativo') {
         fetchInstructors()
       }
       return true
@@ -78,47 +86,99 @@ function App() {
     setUserRole(null)
   }
 
-  const handleRegister = (registration: RegistrationData) => {
-    const { contraseña, ...profile } = registration
-    const newInstructor: InstructorProfile = {
-      id: Date.now(),
-      ...profile,
-      objetoContrato: registration.objetoContrato ?? '',
-      fotoPerfil: '',
-      status: 'pendiente',
-      canEdit: false,
-      source: 'registro',
+  const handleRegister = async (registration: RegistrationData) => {
+    // Mapeo básico temporal de strings a IDs
+    const id_sede = registration.sede.toLowerCase() === 'otra' ? '2' : '1'
+    let id_rol = '1'
+    if (registration.rol.toLowerCase().includes('regular')) id_rol = '2'
+    
+    try {
+      await api.post('/usuarios', {
+        nombre: registration.nombre,
+        apellido: registration.apellido,
+        cedula: Number(registration.cedula),
+        telefono: Number(registration.telefono),
+        correo: registration.correo,
+        password: registration.contraseña,
+        passwordConfirm: registration.contraseña,
+        id_sede,
+        id_rol,
+        id_area: '1', // Default por ahora ya que el form de login tiene un input texto libre
+        codigoContrato: registration.codigoContrato,
+        codigoSiif: Number(registration.codigoSiif) || 0,
+        fechaInicioContrato: registration.fechaInicioContrato,
+        fechaFinContrato: registration.fechaFinContrato
+      })
+      alert('Registro completado. Tu cuenta está pendiente de aprobación.')
+    } catch (error) {
+      console.error('Error en registro', error)
+      alert('Error en el registro. Verifica los datos o si la cédula/correo ya existe.')
     }
-
-    setInstructors((current) => [...current, newInstructor])
   }
 
-  const updateInstructor = (id: number, changes: Partial<InstructorProfile>) => {
-    setInstructors((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
+  const updateInstructor = async (id: number, changes: Partial<InstructorProfile>) => {
+    try {
+      const payload: any = {}
+      if (changes.status) {
+        if (changes.status === 'activo') payload.estado_cuenta = 'aprobado'
+        if (changes.status === 'rechazado') payload.estado_cuenta = 'rechazado'
+        if (changes.status === 'inactivo') payload.estado_cuenta = 'inactivo'
+        if (changes.status === 'pendiente') payload.estado_cuenta = 'pendiente'
+      }
+      
+      // Añade más campos aquí si los modifican desde el perfil modal
+      if (changes.nombre) payload.nombre = changes.nombre;
+      if (changes.apellido) payload.apellido = changes.apellido;
+      if (changes.telefono) payload.telefono = Number(changes.telefono);
+      if (changes.correo) payload.correo = changes.correo;
+
+      await api.patch(`/usuarios/${id}`, payload)
+      // Refrescar lista
+      fetchInstructors()
+    } catch (error) {
+      console.error('Error al actualizar instructor', error)
+      alert('No se pudo actualizar el instructor.')
+    }
   }
 
-  const createSupportStaff = (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => {
-    setInstructors((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        ...support,
-        status: 'activo',
-        canEdit: false,
-        source: 'coordinador',
-      },
-    ])
+  const createSupportStaff = async (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => {
+    try {
+      const userDataStr = localStorage.getItem('user_data')
+      if (!userDataStr) throw new Error('No user data')
+      const user = JSON.parse(userDataStr)
+
+      await api.post('/apoyos-administrativos', {
+        id_usuario: user.id, // ID del coordinador actual
+        nombre: support.nombre,
+        apellido: support.apellido,
+        cedula: Number(support.cedula),
+        telefono: Number(support.telefono),
+        correo: support.correo,
+        password: support.contraseña || '123456'
+      })
+      fetchInstructors()
+      alert('Apoyo administrativo creado correctamente.')
+    } catch (error) {
+      console.error('Error creando apoyo', error)
+      alert('Error al crear apoyo administrativo. Verifica que no haya correos/cédulas duplicadas.')
+    }
   }
 
-  const deleteInstructor = (id: number) => {
-    setInstructors((current) => current.filter((item) => item.id !== id))
+  const deleteInstructor = async (id: number) => {
+    try {
+      await api.delete(`/usuarios/${id}`)
+      fetchInstructors()
+    } catch (error) {
+      console.error('Error eliminando', error)
+      alert('Error al eliminar usuario.')
+    }
   }
 
   if (!authenticated) {
     return <Login onLogin={handleLogin} onRegister={handleRegister} />
   }
 
-  return userRole === 'coordinador' ? (
+  return (userRole === 'coordinador' || userRole === 'apoyo_administrativo') ? (
     <CoordinadorApp
       onLogout={handleLogout}
       instructors={instructors}
@@ -127,6 +187,7 @@ function App() {
       onDeleteInstructor={deleteInstructor}
       instructorEditAllowed={instructorEditAllowed}
       onToggleInstructorEditPermission={(value) => setInstructorEditAllowed(value)}
+      isSupportStaff={userRole === 'apoyo_administrativo'}
     />
   ) : (
     <InstructorApp onLogout={handleLogout} canEditProfile={instructorEditAllowed} />

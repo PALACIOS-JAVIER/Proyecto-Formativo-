@@ -49,10 +49,10 @@ CREATE TABLE usuarios (
     cedula BIGINT UNIQUE NOT NULL,
     telefono BIGINT UNIQUE NOT NULL,
     correo VARCHAR(255) UNIQUE NOT NULL,
-    "codigoContrato" VARCHAR(255) NOT NULL,
-    "codigoSiif" INT NOT NULL,
-    "fechaInicioContrato" DATE NOT NULL,
-    "fechaFinContrato" DATE NOT NULL,
+    "codigoContrato" VARCHAR(255),
+    "codigoSiif" INT,
+    "fechaInicioContrato" DATE,
+    "fechaFinContrato" DATE,
     password VARCHAR(255) NOT NULL,
     "fotoPerfil" VARCHAR(255),
     firma VARCHAR(255),
@@ -61,6 +61,19 @@ CREATE TABLE usuarios (
     id_rol INT REFERENCES roles(id_rol),
     id_area INT REFERENCES areas(id_area),
     id_especialidad INT REFERENCES especialidades(id_especialidad)
+);
+
+CREATE TABLE coordinadores (
+    id_coordinador SERIAL PRIMARY KEY,
+    id_sede INT UNIQUE REFERENCES sedes(id_sede) ON DELETE CASCADE,
+    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
+    anio_ejercicio INT
+);
+
+CREATE TABLE apoyos_administrativos (
+    id_apoyo SERIAL PRIMARY KEY,
+    id_coordinador INT REFERENCES coordinadores(id_coordinador) ON DELETE CASCADE,
+    id_usuario INT UNIQUE REFERENCES usuarios("id_Usuario") ON DELETE CASCADE
 );
 
 CREATE TABLE campesena_obligaciones (
@@ -174,7 +187,10 @@ INSERT INTO objetos_contractuales (descripcion, id_area, id_especialidad) VALUES
 
 -- Insertar coordinador por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area) 
-VALUES ('Admin', 'Coordinador', 111111111, 3000000000, 'admin@sena.edu.co', 'CTR-000', 0, '2025-01-01', '2026-12-31', '123456', 'aprobado', 1, 3, NULL);
+VALUES ('Admin', 'Coordinador', 111111111, 3000000000, 'admin@sena.edu.co', NULL, NULL, NULL, NULL, '123456', 'aprobado', 1, 3, NULL);
+
+-- Asignar coordinador a la sede Yamboro
+INSERT INTO coordinadores (id_sede, id_usuario, anio_ejercicio) VALUES (1, 1, 2025);
 
 -- Insertar instructor por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area, id_especialidad) 

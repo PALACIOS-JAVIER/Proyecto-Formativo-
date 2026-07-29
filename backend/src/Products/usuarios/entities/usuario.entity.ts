@@ -43,16 +43,16 @@ export class Usuario {
     @JoinColumn({ name: 'id_especialidad' })
     especialidad: Especialidad | null;
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'varchar', nullable: true })
     codigoContrato: string;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'int', nullable: true })
     codigoSiif: number;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     fechaInicioContrato: Date;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     fechaFinContrato: Date;
 
     @Column({ type: 'varchar' })
