@@ -43,17 +43,20 @@ export class Usuario {
     @JoinColumn({ name: 'id_especialidad' })
     especialidad: Especialidad | null;
 
-    @Column({ type: 'varchar' })
-    codigoContrato: string;
+    @Column({ type: 'varchar', nullable: true })
+    codigoContrato?: string;
 
-    @Column({ type: 'int' })
-    codigoSiif: number;
+    @Column({ type: 'int', nullable: true })
+    codigoSiif?: number;
 
-    @Column({ type: 'date' })
-    fechaInicioContrato: Date;
+    @Column({ type: 'date', nullable: true })
+    fechaInicioContrato?: Date;
 
-    @Column({ type: 'date' })
-    fechaFinContrato: Date;
+    @Column({ type: 'date', nullable: true })
+    fechaFinContrato?: Date;
+
+    @Column({ type: 'varchar', default: 'pendiente', nullable: true })
+    estado_cuenta: string;
 
     @Column({ type: 'varchar' })
     password: string;

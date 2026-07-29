@@ -5,7 +5,7 @@ import { CoordinadorApp } from './componentes/Coordinador/CoordinadorApp'
 import type { ProfileData } from './componentes/Instructor/Perfil/Perfil'
 import { api } from './services/api'
 
-type UserRole = 'instructor' | 'coordinador' | null
+type UserRole = 'instructor' | 'coordinador' | 'apoyo_administrativo' | null
 type InstructorStatus = 'pendiente' | 'activo' | 'inactivo' | 'rechazado'
 
 export interface InstructorProfile extends ProfileData {
@@ -24,27 +24,33 @@ function App() {
   const fetchInstructors = async () => {
     try {
       const res = await api.get('/usuarios')
-      // Mapear los datos del backend al formato que espera el frontend si es necesario
-      const mappedInstructors = res.data.map((u: any) => ({
-        id: u.id_Usuario,
-        nombre: u.nombre,
-        apellido: u.apellido,
-        cedula: u.cedula?.toString() || '',
-        telefono: u.telefono?.toString() || '',
-        correo: u.correo,
-        rol: u.rol?.nombre || 'campesena',
-        sede: u.sede?.nombre || 'Yamboro',
-        area: u.area?.nombre || 'Desarrollo Formativo',
-        codigoContrato: '',
-        codigoSiif: '',
-        fechaInicioContrato: '',
-        fechaFinContrato: '',
-        objetoContrato: '',
-        fotoPerfil: u.fotoPerfil || '',
-        status: 'activo',
-        canEdit: false,
-        source: 'coordinador'
-      }))
+      const mappedInstructors = res.data.map((u: any) => {
+        let status: InstructorStatus = 'pendiente'
+        if (u.estado_cuenta === 'aprobado' || u.estado_cuenta === 'activo') status = 'activo'
+        else if (u.estado_cuenta === 'rechazado') status = 'rechazado'
+        else if (u.estado_cuenta === 'inactivo') status = 'inactivo'
+
+        return {
+          id: u.id_Usuario,
+          nombre: u.nombre,
+          apellido: u.apellido,
+          cedula: u.cedula?.toString() || '',
+          telefono: u.telefono?.toString() || '',
+          correo: u.correo,
+          rol: u.rol?.nombre || 'campesena',
+          sede: u.sede?.nombre || 'Yamboro',
+          area: u.area?.nombre || 'Desarrollo Formativo',
+          codigoContrato: u.codigoContrato || '',
+          codigoSiif: u.codigoSiif?.toString() || '',
+          fechaInicioContrato: u.fechaInicioContrato || '',
+          fechaFinContrato: u.fechaFinContrato || '',
+          objetoContrato: '',
+          fotoPerfil: u.fotoPerfil || '',
+          status,
+          canEdit: false,
+          source: 'coordinador'
+        }
+      })
       setInstructors(mappedInstructors)
     } catch (error) {
       console.error('Error fetching instructors', error)
@@ -60,10 +66,11 @@ function App() {
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('user_data', JSON.stringify(user))
       
-      setUserRole(user.rol as UserRole)
+      const role = user.rol as UserRole
+      setUserRole(role)
       setAuthenticated(true)
       
-      if (user.rol === 'coordinador') {
+      if (role === 'coordinador' || role === 'apoyo_administrativo') {
         fetchInstructors()
       }
       return true
@@ -107,32 +114,49 @@ function App() {
     }
   }
 
-  const updateInstructor = (id: number, changes: Partial<InstructorProfile>) => {
-    setInstructors((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
+  const updateInstructor = async (id: number, changes: Partial<InstructorProfile>) => {
+    try {
+      if (changes.status) {
+        const estado_cuenta = changes.status === 'activo' ? 'aprobado' : changes.status
+        await api.patch(`/usuarios/${id}`, { estado_cuenta })
+      }
+      setInstructors((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
+    } catch (error) {
+      console.error('Error updating instructor:', error)
+    }
   }
 
-  const createSupportStaff = (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => {
-    setInstructors((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        ...support,
-        status: 'activo',
-        canEdit: false,
-        source: 'coordinador',
-      },
-    ])
+  const createSupportStaff = async (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => {
+    try {
+      const payload = {
+        nombre: support.nombre,
+        apellido: support.apellido,
+        cedula: Number(support.cedula),
+        telefono: Number(support.telefono),
+        correo: support.correo,
+        password: support.contraseña || '123456',
+      }
+      await api.post('/apoyo-administrativo', payload)
+      fetchInstructors()
+    } catch (error) {
+      console.error('Error creating support staff:', error)
+    }
   }
 
-  const deleteInstructor = (id: number) => {
-    setInstructors((current) => current.filter((item) => item.id !== id))
+  const deleteInstructor = async (id: number) => {
+    try {
+      await api.delete(`/usuarios/${id}`)
+      setInstructors((current) => current.filter((item) => item.id !== id))
+    } catch (error) {
+      console.error('Error deleting instructor:', error)
+    }
   }
 
   if (!authenticated) {
     return <Login onLogin={handleLogin} onRegister={handleRegister} />
   }
 
-  return userRole === 'coordinador' ? (
+  return userRole === 'coordinador' || userRole === 'apoyo_administrativo' ? (
     <CoordinadorApp
       onLogout={handleLogout}
       instructors={instructors}
@@ -141,6 +165,7 @@ function App() {
       onDeleteInstructor={deleteInstructor}
       instructorEditAllowed={instructorEditAllowed}
       onToggleInstructorEditPermission={(value) => setInstructorEditAllowed(value)}
+      isSupportStaff={userRole === 'apoyo_administrativo'}
     />
   ) : (
     <InstructorApp onLogout={handleLogout} canEditProfile={instructorEditAllowed} />

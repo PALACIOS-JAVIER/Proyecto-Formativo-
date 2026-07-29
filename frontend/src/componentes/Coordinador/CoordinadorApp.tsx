@@ -19,6 +19,7 @@ interface CoordinadorAppProps {
   onDeleteInstructor: (id: number) => void
   instructorEditAllowed: boolean
   onToggleInstructorEditPermission: (value: boolean) => void
+  isSupportStaff?: boolean
 }
 
 export function CoordinadorApp({
@@ -29,6 +30,7 @@ export function CoordinadorApp({
   onDeleteInstructor,
   instructorEditAllowed,
   onToggleInstructorEditPermission,
+  isSupportStaff = false,
 }: CoordinadorAppProps): ReactElement {
   const [activePage, setActivePage] = useState<PageKey>('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -48,6 +50,7 @@ export function CoordinadorApp({
         onDeleteInstructor={onDeleteInstructor}
         instructorEditAllowed={instructorEditAllowed}
         onToggleInstructorEditPermission={onToggleInstructorEditPermission}
+        isSupportStaff={isSupportStaff}
       />
     ),
     historial: <Historial />,

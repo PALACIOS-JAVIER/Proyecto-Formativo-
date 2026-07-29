@@ -68,41 +68,7 @@ function ReportCard({ month, status, date, note, badge, instructor, contract, it
 }
 
 export function Informes(): ReactElement {
-  const [reports, setReports] = useState<ReportData[]>([
-    {
-      id: 1,
-      month: 'Marzo 2026',
-      status: 'success',
-      date: '10/04/2026',
-      note: 'Informe validado y aprobado sin observaciones.',
-      badge: 'aprobado',
-      instructor: 'María Fernanda',
-      contract: '#1234',
-      items: 5,
-    },
-    {
-      id: 2,
-      month: 'Abril 2026',
-      status: 'warning',
-      date: '08/05/2026',
-      note: 'Documento en evaluación por coordinación.',
-      badge: 'revisión',
-      instructor: 'María Fernanda',
-      contract: '#1234',
-      items: 3,
-    },
-    {
-      id: 3,
-      month: 'Mayo 2026',
-      status: 'alert',
-      date: '15/05/2026',
-      note: 'Se requieren ajustes en las evidencias de movilidad.',
-      badge: 'correcciones',
-      instructor: 'María Fernanda',
-      contract: '#1234',
-      items: 4,
-    },
-  ])
+  const [reports, setReports] = useState<ReportData[]>([])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'warning' | 'alert'>('all')

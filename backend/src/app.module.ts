@@ -30,6 +30,9 @@ import { InformeGF } from './Products/informes-gf/entities/informe-gf.entity';
 import { ObservacionGF } from './Products/informes-gf/entities/observacion-gf.entity';
 import { NotificacionesModule } from './Products/notificaciones/notificaciones.module';
 import { Notificacion } from './Products/notificaciones/entities/notificacione.entity';
+import { Coordinador } from './Products/coordinadores/entities/coordinador.entity';
+import { ApoyoAdministrativo } from './Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
+import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo-administrativo.module';
 
 @Module({
   imports: [
@@ -38,12 +41,12 @@ import { Notificacion } from './Products/notificaciones/entities/notificacione.e
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: [Area, Rol, Sede, ObjetoContractual, Usuario, Especialidad, Historial, CampesenaObligacione, RegularFicObligacione, InformeGC, ObservacionGC, InformeGF, ObservacionGF, Notificacion],
+      username: process.env.DB_USERNAME || 'admin',
+      password: String(process.env.DB_PASSWORD || 'secretpassword'),
+      database: process.env.DB_NAME || 'proyecto_formativo',
+      entities: [Area, Rol, Sede, ObjetoContractual, Usuario, Especialidad, Historial, CampesenaObligacione, RegularFicObligacione, InformeGC, ObservacionGC, InformeGF, ObservacionGF, Notificacion, Coordinador, ApoyoAdministrativo],
       synchronize: process.env.DB_SYNCHRONIZE === 'true',
       logging: false,
     }),
@@ -60,6 +63,7 @@ import { Notificacion } from './Products/notificaciones/entities/notificacione.e
     InformesGfModule,
     NotificacionesModule,
     AuthModule,
+    ApoyoAdministrativoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

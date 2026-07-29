@@ -57,18 +57,13 @@ function LineChart({ data = [] }: { data?: number[] }) {
 
 export function Indicadores(): ReactElement {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | '1y'>('30d')
-  const sample = [65, 72, 78, 75, 82, 79]
-  const areas = [
-    { name: 'Seguimiento', level: 92, color: 'emerald' },
-    { name: 'Informes', level: 76, color: 'sky' },
-    { name: 'Movilidad', level: 58, color: 'amber' },
-    { name: 'Revisiones', level: 48, color: 'red' },
-  ]
+  const sample: number[] = []
+  const areas: { name: string; level: number; color: string }[] = []
 
   const statCards = [
-    { label: 'Score general', value: '76%', desc: 'Tu rendimiento promedio de los últimos 5 meses.', trend: '+5%' },
-    { label: 'Eficiencia de entrega', value: '88%', desc: 'Entregas realizadas dentro del plazo establecido.', trend: '+12%' },
-    { label: 'Alertas pendientes', value: '4', desc: 'Informes con observaciones por revisar.', trend: '-2' },
+    { label: 'Score general', value: '0%', desc: 'Tu rendimiento promedio acumulado.', trend: '0%' },
+    { label: 'Eficiencia de entrega', value: '0%', desc: 'Entregas realizadas dentro del plazo establecido.', trend: '0%' },
+    { label: 'Alertas pendientes', value: '0', desc: 'Informes con observaciones por revisar.', trend: '0' },
   ]
 
   return (
@@ -110,7 +105,7 @@ export function Indicadores(): ReactElement {
           <article key={stat.label} className="stat-card">
             <div className="flex items-center justify-between">
               <p className="stat-label">{stat.label}</p>
-              <span className={`text-xs font-semibold ${stat.trend.startsWith('+') ? 'text-emerald-600' : 'text-alert-600'}`}>
+              <span className="text-xs font-semibold text-emerald-600">
                 {stat.trend}
               </span>
             </div>
@@ -125,24 +120,28 @@ export function Indicadores(): ReactElement {
         <article className="chart-panel">
           <h2>Tendencia mensual</h2>
           <LineChart data={sample} />
-          <p className="stat-small mt-2">Gráfica con tendencia de los últimos meses. Cada punto representa el score mensual.</p>
+          <p className="stat-small mt-2">Gráfica con tendencia de los últimos meses. Se actualizará con tus primeros informes enviados.</p>
         </article>
 
         <article className="overview-card overview-card--accent">
           <h2>Áreas con mayor carga</h2>
-          <ol className="load-list">
-            {areas.map((area) => (
-              <li key={area.name}>
-                <div className="load-meta">
-                  <span>{area.name}</span>
-                  <strong>{area.level}%</strong>
-                </div>
-                <div className="load-bar">
-                  <span style={{ width: `${area.level}%` }} />
-                </div>
-              </li>
-            ))}
-          </ol>
+          {areas.length === 0 ? (
+            <p className="text-sm text-slate-500 mt-3">Sin registro de cargas por el momento.</p>
+          ) : (
+            <ol className="load-list">
+              {areas.map((area) => (
+                <li key={area.name}>
+                  <div className="load-meta">
+                    <span>{area.name}</span>
+                    <strong>{area.level}%</strong>
+                  </div>
+                  <div className="load-bar">
+                    <span style={{ width: `${area.level}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </article>
       </div>
     </section>

@@ -34,20 +34,24 @@ export class CreateUsuarioDto {
     id_area: string;
 
     @IsString()
-    @IsNotEmpty()
-    codigoContrato: string;
+    @IsOptional()
+    codigoContrato?: string;
 
     @IsNumber()
-    @IsNotEmpty()
-    codigoSiif: number;
+    @IsOptional()
+    codigoSiif?: number;
 
     @IsDateString()
-    @IsNotEmpty()
-    fechaInicioContrato: Date;
+    @IsOptional()
+    fechaInicioContrato?: Date;
 
     @IsDateString()
-    @IsNotEmpty()   
-    fechaFinContrato: Date;
+    @IsOptional()   
+    fechaFinContrato?: Date;
+
+    @IsString()
+    @IsOptional()
+    estado_cuenta?: string;
 
     @IsString()
     @IsNotEmpty()
@@ -62,7 +66,6 @@ export class CreateUsuarioDto {
     firma?: string;
 
     @IsString()
-    @IsNotEmpty()
-    passwordConfirm: string;
-
+    @IsOptional()
+    passwordConfirm?: string;
 }
