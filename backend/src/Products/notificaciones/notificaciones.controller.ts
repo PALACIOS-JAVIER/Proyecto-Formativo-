@@ -1,30 +1,23 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { NotificacionesService } from './notificaciones.service';
-import { CreateNotificacioneDto } from './dto/create-notificacione.dto';
-import { UpdateNotificacioneDto } from './dto/update-notificacione.dto';
 
 @Controller('notificaciones')
 export class NotificacionesController {
   constructor(private readonly notificacionesService: NotificacionesService) {}
 
   @Post()
-  create(@Body() createNotificacioneDto: CreateNotificacioneDto) {
-    return this.notificacionesService.create(createNotificacioneDto);
+  create(@Body() body: { titulo: string; descripcion: string; tipo: string; usuario_destino_id: number; usuario_origen_id?: number }) {
+    return this.notificacionesService.createNotification(body);
   }
 
-  @Get()
-  findAll() {
-    return this.notificacionesService.findAll();
+  @Get('usuario/:userId')
+  findByUsuario(@Param('userId') userId: string) {
+    return this.notificacionesService.findByUsuario(+userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificacionesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificacioneDto: UpdateNotificacioneDto) {
-    return this.notificacionesService.update(+id, updateNotificacioneDto);
+  @Patch(':id/marcar-leida')
+  marcarLeida(@Param('id') id: string) {
+    return this.notificacionesService.marcarLeida(+id);
   }
 
   @Delete(':id')

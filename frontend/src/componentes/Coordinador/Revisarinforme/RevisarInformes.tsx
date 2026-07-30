@@ -1,57 +1,203 @@
-import { useMemo, useState, type ReactElement } from 'react'
+import { useEffect, useMemo, useState, type ReactElement } from 'react'
 
-type Report = {
-  id: string
-  instructor: string
-  cedula: string
-  area: string
-  periodo: string
-  entrega: string
-  status: 'revision' | 'aprobado' | 'correccion'
-  dias: string
+interface BackendObservacion {
+  id_observacion_gc: number
+  comentario: string
+  fecha: string
 }
 
-const SAMPLE_REPORTS: Report[] = []
+interface BackendInforme {
+  id_informe_gc?: number
+  id_informe_gf?: number
+  tipo: 'GC' | 'GF'
+  mes: string
+  anio: number
+  estado: string
+  fecha_registro: string
+  archivo_url: string
+  usuario?: {
+    id_Usuario: number
+    nombre: string
+    apellido: string
+    cedula: string
+    area?: { nombre: string } | string
+    sede?: { nombre: string } | string
+  }
+  observaciones?: BackendObservacion[]
+}
 
 export function RevisarInformes(): ReactElement {
+  const [reports, setReports] = useState<BackendInforme[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [periodo, setPeriodo] = useState('Todos los periodos')
   const [filter, setFilter] = useState<'revision' | 'aprobado' | 'correccion'>('revision')
 
-  const [pendingInstructors] = useState<any[]>([])
+  // Modal / correction state
+  const [correctionTarget, setCorrectionTarget] = useState<{ id: number; tipo: 'GC' | 'GF' } | null>(null)
+  const [correctionNote, setCorrectionNote] = useState('')
+  const [isSubmittingNote, setIsSubmittingNote] = useState(false)
+  const [actionAlert, setActionAlert] = useState('')
+
+  const fetchAllReports = async () => {
+    try {
+      setIsLoading(true)
+      const [gcRes, gfRes] = await Promise.all([
+        fetch('http://localhost:3000/api/informes-gc').then(r => r.ok ? r.json() : []),
+        fetch('http://localhost:3000/api/informes-gf').then(r => r.ok ? r.json() : [])
+      ])
+
+      const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' as const }))
+      const gfList = (gfRes || []).map((r: any) => ({ ...r, tipo: 'GF' as const }))
+
+      const combined = [...gcList, ...gfList].sort((a, b) => new Date(b.fecha_registro).getTime() - new Date(a.fecha_registro).getTime())
+      setReports(combined)
+    } catch (err) {
+      console.error('Error fetching reports for coordinator:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAllReports()
+  }, [])
+
+  const reportsWithVersions = useMemo(() => {
+    const sortedOldest = [...reports].sort((a, b) => new Date(a.fecha_registro).getTime() - new Date(b.fecha_registro).getTime())
+    const tracker: Record<string, number> = {}
+    
+    const mapped = sortedOldest.map((r) => {
+      const instructorId = r.usuario?.id_Usuario || r.usuario?.cedula || 'unknown'
+      const key = `${instructorId}_${r.mes}_${r.anio}_${r.tipo}`
+      tracker[key] = (tracker[key] || 0) + 1
+      return { ...r, version: tracker[key] }
+    })
+
+    return mapped.sort((a, b) => new Date(b.fecha_registro).getTime() - new Date(a.fecha_registro).getTime())
+  }, [reports])
 
   const counts = useMemo(() => {
     const out = { revision: 0, aprobado: 0, correccion: 0 }
-    for (const r of SAMPLE_REPORTS) out[r.status]++
+    for (const r of reportsWithVersions) {
+      const st = r.estado === 'success' ? 'aprobado' : r.estado === 'alert' ? 'correccion' : (r.estado === 'aprobado' ? 'aprobado' : r.estado === 'correccion' ? 'correccion' : 'revision')
+      out[st]++
+    }
     return out
-  }, [])
+  }, [reportsWithVersions])
 
   const filtered = useMemo(() => {
-    return SAMPLE_REPORTS.filter((r) => {
-      if (filter !== r.status) return false
-      if (periodo !== 'Todos los periodos' && r.periodo !== periodo) return false
+    return reportsWithVersions.filter((r) => {
+      const normalizedStatus = r.estado === 'success' ? 'aprobado' : r.estado === 'alert' ? 'correccion' : (r.estado === 'aprobado' ? 'aprobado' : r.estado === 'correccion' ? 'correccion' : 'revision')
+      if (filter !== normalizedStatus) return false
+      
+      const pText = `${r.mes} ${r.anio}`
+      if (periodo !== 'Todos los periodos' && pText !== periodo) return false
+
       const q = query.trim().toLowerCase()
       if (!q) return true
+      
+      const instructorName = `${r.usuario?.nombre || ''} ${r.usuario?.apellido || ''}`.toLowerCase()
+      const cedulaStr = (r.usuario?.cedula || '').toString()
+      const areaStr = (typeof r.usuario?.area === 'object' ? r.usuario?.area?.nombre : r.usuario?.area || '').toLowerCase()
+      const idStr = (r.id_informe_gc || r.id_informe_gf || '').toString()
+      const verStr = `versión ${r.version}`
+
       return (
-        r.instructor.toLowerCase().includes(q) ||
-        r.cedula.includes(q) ||
-        r.area.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
+        instructorName.includes(q) ||
+        cedulaStr.includes(q) ||
+        areaStr.includes(q) ||
+        idStr.includes(q) ||
+        verStr.includes(q) ||
+        r.tipo.toLowerCase().includes(q)
       )
     })
-  }, [filter, periodo, query])
+  }, [reportsWithVersions, filter, periodo, query])
+
+  const handleApprove = async (reportId: number, tipo: 'GC' | 'GF') => {
+    try {
+      const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
+      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/estado`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: 'aprobado' }),
+      })
+
+      if (!res.ok) throw new Error('Error al aprobar el informe.')
+
+      setActionAlert(`✓ Informe ${tipo} #${reportId} aprobado exitosamente.`)
+      setTimeout(() => setActionAlert(''), 3000)
+      fetchAllReports()
+    } catch (err: any) {
+      alert(err.message || 'Ocurrió un error al aprobar.')
+    }
+  }
+
+  const handleSendCorrection = async (reportId: number, tipo: 'GC' | 'GF') => {
+    if (!correctionNote.trim()) {
+      alert('Por favor escribe el motivo o la observación de corrección.')
+      return
+    }
+
+    try {
+      setIsSubmittingNote(true)
+      const rawUser = localStorage.getItem('user_data')
+      const userSession = rawUser ? JSON.parse(rawUser) : null
+      const coordId = userSession?.id || userSession?.id_Usuario
+
+      const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
+      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/observacion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          comentario: correctionNote.trim(),
+          coordinadorId: coordId || undefined,
+        }),
+      })
+
+      if (!res.ok) throw new Error('Error al registrar la observación.')
+
+      setActionAlert(`⚠️ Informe ${tipo} #${reportId} enviado a corrección con la observación indicada.`)
+      setTimeout(() => setActionAlert(''), 3500)
+      setCorrectionTarget(null)
+      setCorrectionNote('')
+      fetchAllReports()
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar corrección.')
+    } finally {
+      setIsSubmittingNote(false)
+    }
+  }
+
+  const monthOptions = useMemo(() => {
+    const setOfMonths = new Set<string>()
+    setOfMonths.add('Todos los periodos')
+    reports.forEach((r) => {
+      if (r.mes && r.anio) setOfMonths.add(`${r.mes} ${r.anio}`)
+    })
+    return Array.from(setOfMonths)
+  }, [reports])
 
   return (
     <section className="mx-auto flex max-w-7xl flex-col gap-6">
       <header className="rounded-[28px] border border-transparent page-hero-bg p-6 shadow-md">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald">Revisar informes</p>
-            <h1 className="mt-2 text-3xl font-semibold text-foreground">Evaluá, aprobá o solicitá correcciones a las entregas mensuales de tu unidad académica</h1>
-            <p className="mt-3 max-w-2xl text-sm text-secondary">Filtros rápidos y acciones para revisar los informes con eficiencia.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald">Revisar informes PDF</p>
+            <h1 className="mt-2 text-3xl font-semibold text-foreground">Evalúa, aprueba o solicita correcciones a las entregas mensuales en PDF</h1>
+            <p className="mt-3 max-w-2xl text-sm text-secondary">Abre el archivo PDF original de cada instructor y envía retroalimentación oportuna.</p>
           </div>
+          <button type="button" onClick={fetchAllReports} className="button button--ghost text-xs">
+            🔄 Actualizar lista
+          </button>
         </div>
       </header>
+
+      {actionAlert && (
+        <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-800 text-sm shadow-sm">
+          {actionAlert}
+        </div>
+      )}
 
       {/* stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -73,7 +219,7 @@ export function RevisarInformes(): ReactElement {
         <div className="lg:col-span-2 flex flex-col gap-5">
           {/* controls */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex w-full gap-3">
+            <div className="flex w-full flex-col sm:flex-row gap-3">
               <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-3 py-2">
                 <span className="text-secondary mr-2">🔎</span>
                 <input
@@ -83,105 +229,201 @@ export function RevisarInformes(): ReactElement {
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-              <select
-                className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-foreground"
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-              >
-                <option>Todos los periodos</option>
-                <option>Febrero 2026</option>
-                <option>Enero 2026</option>
-              </select>
+
+              {/* Month Selector Filter */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-bold text-secondary uppercase">Mes:</span>
+                <select
+                  value={periodo}
+                  onChange={(e) => setPeriodo(e.target.value)}
+                  className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm font-semibold text-foreground focus:border-emerald-500 focus:outline-none"
+                >
+                  {monthOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
           {/* tabs */}
           <div className="flex gap-3">
-              <button
-                className={`px-4 py-2 rounded-full font-semibold ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-                onClick={() => setFilter('revision')}
-              >
-                En Revisión ({counts.revision})
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full font-semibold ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-                onClick={() => setFilter('aprobado')}
-              >
-                Aprobados ({counts.aprobado})
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full font-semibold ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
-                onClick={() => setFilter('correccion')}
-              >
-                Correcciones ({counts.correccion})
-              </button>
+            <button
+              className={`px-4 py-2 rounded-full font-semibold ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              onClick={() => setFilter('revision')}
+            >
+              En Revisión ({counts.revision})
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full font-semibold ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              onClick={() => setFilter('aprobado')}
+            >
+              Aprobados ({counts.aprobado})
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full font-semibold ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              onClick={() => setFilter('correccion')}
+            >
+              Correcciones ({counts.correccion})
+            </button>
           </div>
 
           {/* list */}
           <div className="flex flex-col gap-4">
-            {filtered.map((r) => (
-              <div key={r.id} className="rounded-2xl border bg-bg-card p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">{r.instructor}</h3>
-                    <p className="text-sm text-secondary">Cédula: {r.cedula} · Área: {r.area}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`status-chip ${r.status === 'revision' ? 'status-chip--info' : r.status === 'aprobado' ? 'status-chip--success' : 'status-chip--alert'}`}>
-                      {r.status === 'revision' ? 'En Revisión' : r.status === 'aprobado' ? 'Aprobado' : 'Corrección'}
-                    </span>
-                    <span className="rounded-full border px-2 py-1 text-xs text-warning">{r.dias}</span>
-                  </div>
-                </div>
+            {isLoading ? (
+              <div className="rounded-2xl border bg-bg-card p-6 text-center text-secondary">Cargando entregas de informes...</div>
+            ) : filtered.length === 0 ? (
+              <div className="rounded-2xl border bg-bg-card p-6 text-center text-secondary">No hay informes que coincidan con los filtros seleccionados.</div>
+            ) : (
+              filtered.map((r) => {
+                const reportId = (r.id_informe_gc || r.id_informe_gf)!
+                const cardKey = `${r.tipo}-${reportId}`
+                const pdfFullUrl = r.archivo_url.startsWith('http')
+                  ? r.archivo_url
+                  : `http://localhost:3000/${r.archivo_url}`
 
-                <div className="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-bg-alt rounded-md p-3 border border-border">
-                  <div>
-                    <p className="text-xs text-secondary uppercase font-semibold">ID</p>
-                    <p className="text-sm font-semibold text-foreground">{r.id}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-secondary uppercase font-semibold">Periodo</p>
-                    <p className="text-sm font-semibold text-foreground">{r.periodo}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-secondary uppercase font-semibold">Entrega</p>
-                    <p className="text-sm font-semibold text-foreground">{r.entrega}</p>
-                  </div>
-                </div>
+                const instructorFullName = `${r.usuario?.nombre || 'Instructor'} ${r.usuario?.apellido || ''}`
+                const areaName = typeof r.usuario?.area === 'object' ? r.usuario?.area?.nombre : r.usuario?.area || 'General'
 
-                <div className="mt-4 flex items-center justify-end gap-3">
-                  <button className="button button--ghost px-4 py-2 text-sm">Ver Informe</button>
-                  <button className="rounded-md border bg-bg-card px-4 py-2 text-sm text-warning border-warning hover:bg-bg-alt">Solicitar Corrección</button>
-                  <button className="button button--primary px-4 py-2 text-sm">Aprobar Informe</button>
-                </div>
-              </div>
-            ))}
+                const normalizedStatus = r.estado === 'success' ? 'aprobado' : r.estado === 'alert' ? 'correccion' : (r.estado === 'aprobado' ? 'aprobado' : r.estado === 'correccion' ? 'correccion' : 'revision')
 
-            {filtered.length === 0 && <div className="rounded-2xl border bg-bg-card p-6 text-center text-secondary">No hay informes que coincidan con los filtros.</div>}
+                const isCorrectionOpen = correctionTarget?.id === reportId && correctionTarget?.tipo === r.tipo
+
+                return (
+                  <div key={cardKey} className="rounded-2xl border bg-bg-card p-5 shadow-sm space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${r.tipo === 'GC' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sky-100 text-sky-800 border border-sky-300'}`}>
+                            Informe {r.tipo}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            Versión {r.version}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">{instructorFullName}</h3>
+                        <p className="text-sm text-secondary">
+                          Cédula: {r.usuario?.cedula || 'N/A'} · Área: {areaName}
+                        </p>
+                      </div>
+                      <span className={`status-chip ${normalizedStatus === 'revision' ? 'status-chip--info' : normalizedStatus === 'aprobado' ? 'status-chip--success' : 'status-chip--alert'}`}>
+                        {normalizedStatus === 'revision' ? '⏳ En Revisión' : normalizedStatus === 'aprobado' ? '✓ Aprobado' : '⚠️ Corrección'}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 bg-bg-alt rounded-xl p-3 border border-border text-sm">
+                      <div>
+                        <p className="text-xs text-secondary uppercase font-semibold">ID Informe</p>
+                        <p className="font-semibold text-foreground">#INF-{r.tipo}-{reportId}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-secondary uppercase font-semibold">Periodo</p>
+                        <p className="font-semibold text-foreground">{r.mes} {r.anio}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-secondary uppercase font-semibold">Fecha Registro</p>
+                        <p className="font-semibold text-foreground">{new Date(r.fecha_registro).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+
+                    {/* Display existing observations if any */}
+                    {r.observaciones && r.observaciones.length > 0 && (
+                      <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-900">
+                        <strong className="block mb-1 font-bold">Observación enviada al instructor:</strong>
+                        <p className="italic">"{r.observaciones[r.observaciones.length - 1].comentario}"</p>
+                      </div>
+                    )}
+
+                    {/* Form to submit correction observation */}
+                    {isCorrectionOpen && (
+                      <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-4 space-y-3">
+                        <label className="block text-xs font-bold text-amber-900 uppercase">
+                          Escribe el motivo / detalles que el instructor debe corregir para el Informe {r.tipo}:
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={correctionNote}
+                          onChange={(e) => setCorrectionNote(e.target.value)}
+                          placeholder="Ej: Faltan firmas en el anexo 2, ajustar horas en la tabla..."
+                          className="w-full rounded-xl border border-amber-300 bg-white p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            className="button button--ghost px-3 py-1.5 text-xs font-semibold"
+                            onClick={() => {
+                              setCorrectionTarget(null)
+                              setCorrectionNote('')
+                            }}
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isSubmittingNote}
+                            className="button bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-1.5 rounded-xl text-xs shadow-sm"
+                            onClick={() => handleSendCorrection(reportId, r.tipo)}
+                          >
+                            {isSubmittingNote ? 'Enviando...' : 'Confirmar y Enviar a Corrección'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+                      <a
+                        href={pdfFullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="button button--ghost px-4 py-2 text-sm flex items-center gap-1.5"
+                      >
+                        📄 Ver Informe PDF
+                      </a>
+
+                      {normalizedStatus !== 'correccion' && (
+                        <button
+                          type="button"
+                          className="rounded-xl border bg-bg-card px-4 py-2 text-sm text-amber-700 border-amber-400 hover:bg-amber-50 font-semibold"
+                          onClick={() => {
+                            setCorrectionTarget({ id: reportId, tipo: r.tipo })
+                            setCorrectionNote('')
+                          }}
+                        >
+                          Solicitar Corrección
+                        </button>
+                      )}
+
+                      {normalizedStatus !== 'aprobado' && (
+                        <button
+                          type="button"
+                          className="button button--primary px-4 py-2 text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+                          onClick={() => handleApprove(reportId, r.tipo)}
+                        >
+                          ✓ Aprobar Informe
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
 
-        {/* Pendientes Sidebar */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-warning bg-bg-card p-5 shadow-sm">
-            <h3 className="font-semibold text-lg text-warning mb-5">Instructores Pendientes</h3>
-            <div className="space-y-3">
-              {pendingInstructors.length === 0 ? (
-                <div className="text-sm text-secondary p-2">Sin instructores pendientes por entregar.</div>
-              ) : (
-                pendingInstructors.map(inst => (
-                  <div key={inst.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-bg-alt">
-                    <div className="w-10 h-10 rounded-full bg-[var(--color-warning-bg)] text-warning flex items-center justify-center font-bold">
-                      {inst.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-foreground">{inst.name}</p>
-                      <p className="text-xs text-text-muted">{inst.pendingReport}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+          <div className="rounded-2xl border border-emerald-300 bg-bg-card p-5 shadow-sm">
+            <h3 className="font-semibold text-lg text-emerald-800 mb-2">Instrucciones de Revisión</h3>
+            <p className="text-xs text-secondary leading-relaxed">
+              1. Haz clic en <strong>Ver Informe PDF</strong> para inspeccionar el documento institucional adjuntado.
+              <br/><br/>
+              2. Si todo cumple, haz clic en <strong>Aprobar Informe</strong>.
+              <br/><br/>
+              3. Si requiere correcciones, selecciona <strong>Solicitar Corrección</strong> y describe detalladamente lo que el instructor debe modificar.
+            </p>
           </div>
         </div>
       </div>
