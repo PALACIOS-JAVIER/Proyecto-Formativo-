@@ -189,7 +189,13 @@ export function Instructores({
               {filteredInstructors.map((inst) => (
                 <div key={inst.id} className="flex items-center justify-between gap-4 rounded-xl border border-border bg-bg-card p-3 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-semibold">{(inst.nombre[0] || '') + (inst.apellido[0] || '')}</div>
+                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-semibold overflow-hidden border border-emerald-500">
+                      {inst.fotoPerfil ? (
+                        <img src={inst.fotoPerfil.startsWith('http') ? inst.fotoPerfil : `http://localhost:3000/${inst.fotoPerfil}`} alt="Perfil" className="h-full w-full object-cover" />
+                      ) : (
+                        (inst.nombre[0] || '') + (inst.apellido[0] || '')
+                      )}
+                    </div>
                     <div>
                       <div className="font-semibold text-foreground">{inst.nombre} {inst.apellido}</div>
                       <div className="text-xs text-secondary">{inst.rol} · {inst.sede}</div>
@@ -272,13 +278,20 @@ export function Instructores({
       {showProfileModal && selectedInstructorForm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowProfileModal(false)} />
-          <div className="relative w-full max-w-2xl rounded-2xl bg-bg-card border border-border p-6 shadow-xl mx-4 overflow-auto max-h-[90vh]">
-            <div className="flex items-start justify-between">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-bg-card border border-border shadow-xl mx-4 flex flex-col max-h-[90vh]">
+            {/* Sticky Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border shrink-0 sticky top-0 bg-bg-card z-10 rounded-t-2xl">
               <h3 className="text-xl font-semibold text-foreground">Perfil — {selectedInstructorForm.nombre} {selectedInstructorForm.apellido}</h3>
-              <button onClick={() => setShowProfileModal(false)} className="text-secondary hover:text-foreground">Cerrar</button>
+              <button onClick={() => setShowProfileModal(false)} className="text-secondary hover:text-foreground p-1 rounded-full hover:bg-slate-100 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {/* Scrollable Body */}
+            <div className="p-6 overflow-y-auto">
+              <div className="grid gap-4 md:grid-cols-2">
               <label>
                 Nombre
                 <input className="input-field" value={selectedInstructorForm.nombre} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, nombre: e.target.value })} disabled={!instructorEditAllowed} />
@@ -332,17 +345,19 @@ export function Instructores({
                 <textarea className="input-field min-h-24" value={selectedInstructorForm.objetoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, objetoContrato: e.target.value })} disabled={!instructorEditAllowed} />
               </label>
             </div>
+            </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            {/* Sticky Footer */}
+            <div className="p-6 border-t border-border shrink-0 flex flex-wrap items-center gap-3 sticky bottom-0 bg-bg-card z-10 rounded-b-2xl">
               {selectedInstructorForm.status === 'pendiente' && selectedInstructorForm.source === 'registro' ? (
                 <>
-                  <button type="button" onClick={() => { onUpdateInstructor(selectedInstructorForm.id, { status: 'activo' }); setShowProfileModal(false); setNotificationMessage('Solicitud aceptada.'); }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Aceptar registro</button>
+                  <button type="button" onClick={() => { onUpdateInstructor(selectedInstructorForm.id, { status: 'activo' }); setShowProfileModal(false); setNotificationMessage('Solicitud aceptada.'); }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm">Aceptar registro</button>
                   <button type="button" onClick={() => { onUpdateInstructor(selectedInstructorForm.id, { status: 'rechazado' }); setShowProfileModal(false); setNotificationMessage('Solicitud rechazada.'); }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Rechazar registro</button>
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) { onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700" disabled={!instructorEditAllowed}>Guardar</button>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) { onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
                   <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
                 </>
               )}

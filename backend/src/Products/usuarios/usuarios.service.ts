@@ -69,11 +69,11 @@ export class UsuariosService {
   }
 
   findAll(): Promise<Usuario[]> {
-    return this.usuarioRepository.find({ relations: { sede: true, rol: true, area: true } });
+    return this.usuarioRepository.find({ relations: { sede: true, rol: true, area: true, especialidad: true, objetoContractual: true } });
   }
 
   async findOne(id: number): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({ where: { id_Usuario: id }, relations: { sede: true, rol: true, area: true } });
+    const usuario = await this.usuarioRepository.findOne({ where: { id_Usuario: id }, relations: { sede: true, rol: true, area: true, especialidad: true, objetoContractual: true } });
     if (!usuario) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
@@ -81,12 +81,12 @@ export class UsuariosService {
   }
 
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto): Promise<Usuario> {
-    let usuario = await this.usuarioRepository.findOne({ where: { id_Usuario: id }, relations: { sede: true, rol: true, area: true } });
+    let usuario = await this.usuarioRepository.findOne({ where: { id_Usuario: id }, relations: { sede: true, rol: true, area: true, especialidad: true, objetoContractual: true } });
     if (!usuario && !isNaN(id)) {
-      usuario = await this.usuarioRepository.findOne({ where: { cedula: id }, relations: { sede: true, rol: true, area: true } });
+      usuario = await this.usuarioRepository.findOne({ where: { cedula: id }, relations: { sede: true, rol: true, area: true, especialidad: true, objetoContractual: true } });
     }
     if (!usuario) {
-      const all = await this.usuarioRepository.find({ relations: { sede: true, rol: true, area: true } });
+      const all = await this.usuarioRepository.find({ relations: { sede: true, rol: true, area: true, especialidad: true, objetoContractual: true } });
       if (all.length > 0) {
         usuario = all.find(u => u.id_Usuario === id || u.cedula?.toString() === id.toString()) || all[0];
       }
@@ -122,6 +122,16 @@ export class UsuariosService {
         : await this.areaRepository.findOne({ where: { nombre: dto.id_area } });
       if (area) usuario.area = area;
       delete (dto as any).id_area;
+    }
+
+    if (dto.id_especialidad) {
+      usuario.especialidad = { id_especialidad: dto.id_especialidad } as any;
+      delete (dto as any).id_especialidad;
+    }
+
+    if (dto.id_objeto) {
+      usuario.objetoContractual = { id_objeto: dto.id_objeto } as any;
+      delete (dto as any).id_objeto;
     }
 
     Object.assign(usuario, dto);

@@ -16,6 +16,9 @@ export interface ProfileData {
   objetoContrato?: string
   fotoPerfil?: string
   firma?: string
+  id_especialidad?: string
+  id_objeto?: string
+  id_area_db?: string // Needed to fetch especialidades and objetos filtered by Area
 }
 
 interface PerfilProps {
@@ -62,6 +65,9 @@ const loadSessionUserData = (): ProfileData => {
         objetoContrato: u.objetoContrato || '',
         fotoPerfil: u.fotoPerfil || '',
         firma: u.firma || '',
+        id_especialidad: u.especialidad?.id_especialidad?.toString() || u.id_especialidad?.toString() || '',
+        id_objeto: u.objetoContractual?.id_objeto?.toString() || u.id_objeto?.toString() || '',
+        id_area_db: u.area?.id_area?.toString() || u.id_area?.toString() || '',
       }
     }
   } catch (e) {
@@ -81,6 +87,9 @@ const loadSessionUserData = (): ProfileData => {
     fechaInicioContrato: '',
     fechaFinContrato: '',
     objetoContrato: '',
+    id_especialidad: '',
+    id_objeto: '',
+    id_area_db: '',
   }
 }
 
@@ -94,6 +103,16 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   const [saveError, setSaveError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  const [showSettings, setShowSettings] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+
+  const [especialidadesList, setEspecialidadesList] = useState<any[]>([])
+  const [objetosList, setObjetosList] = useState<any[]>([])
+  const [lockedEspecialidad, setLockedEspecialidad] = useState(false)
+  const [lockedObjeto, setLockedObjeto] = useState(false)
 
   // Load profile directly from Backend DB on mount (with ID & email fallback)
   useEffect(() => {
@@ -122,11 +141,16 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         codigoSiif: u.codigoSiif !== undefined && u.codigoSiif !== null ? u.codigoSiif.toString() : '',
         fechaInicioContrato: u.fechaInicioContrato ? u.fechaInicioContrato.split('T')[0] : '',
         fechaFinContrato: u.fechaFinContrato ? u.fechaFinContrato.split('T')[0] : '',
-        objetoContrato: u.objetoContrato || '',
+        objetoContrato: u.objetoContractual?.descripcion || u.objetoContrato || '',
         fotoPerfil: u.fotoPerfil || '',
         firma: u.firma || '',
+        id_especialidad: u.especialidad?.id_especialidad?.toString() || '',
+        id_objeto: u.objetoContractual?.id_objeto?.toString() || '',
+        id_area_db: u.area?.id_area?.toString() || '',
       }
       setData(loaded)
+      if (u.especialidad) setLockedEspecialidad(true)
+      if (u.objetoContractual) setLockedObjeto(true)
       if (u.fotoPerfil) setPreview(u.fotoPerfil.startsWith('http') ? u.fotoPerfil : `http://localhost:3000/${u.fotoPerfil}`)
       if (u.firma) setFirmaPreview(u.firma.startsWith('http') ? u.firma : `http://localhost:3000/${u.firma}`)
     }
@@ -166,6 +190,18 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
     fetchProfile()
   }, [])
+
+  useEffect(() => {
+    if (data.id_area_db) {
+      Promise.all([
+        fetch(`http://localhost:3000/api/especialidades?id_area=${data.id_area_db}`).then(r => r.json()),
+        fetch(`http://localhost:3000/api/objeto-contractual?id_area=${data.id_area_db}`).then(r => r.json())
+      ]).then(([e, o]) => {
+        setEspecialidadesList(e)
+        setObjetosList(o)
+      }).catch(console.error)
+    }
+  }, [data.id_area_db])
 
   useEffect(() => {
     if (fotoFile) {
@@ -223,14 +259,15 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       const payload: Record<string, any> = {
         nombre: data.nombre,
         apellido: data.apellido,
-        telefono: data.telefono,
+        telefono: Number(data.telefono) || 0,
         correo: data.correo,
         codigoContrato: data.codigoContrato,
-        codigoSiif: data.codigoSiif,
+        codigoSiif: Number(data.codigoSiif) || 0,
         fechaInicioContrato: data.fechaInicioContrato || null,
         fechaFinContrato: data.fechaFinContrato || null,
-        objetoContrato: data.objetoContrato,
       }
+      if (data.id_especialidad) payload.id_especialidad = Number(data.id_especialidad)
+      if (data.id_objeto) payload.id_objeto = Number(data.id_objeto)
 
       if (userId) {
         const response = await fetch(`http://localhost:3000/api/usuarios/${userId}`, {
@@ -294,6 +331,60 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
     return false
   }
 
+  const handleDownloadFirma = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!firmaPreview) return;
+    try {
+      const response = await fetch(firmaPreview);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'firma_digital.png';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading signature:', error);
+      alert('Error al descargar la firma.');
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPassword !== confirmNewPassword) {
+      alert("Las contraseñas no coinciden.")
+      return
+    }
+    if (newPassword.length < 6) {
+      alert("La contraseña debe tener al menos 6 caracteres.")
+      return
+    }
+    try {
+      setIsUpdatingPassword(true)
+      const userId = getUserIdFromSession()
+      if (!userId) throw new Error("ID de usuario no encontrado")
+
+      const response = await fetch(`http://localhost:3000/api/usuarios/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword }),
+      })
+
+      if (!response.ok) throw new Error("Error al actualizar contraseña")
+      alert("Contraseña actualizada exitosamente.")
+      setShowSettings(false)
+      setNewPassword('')
+      setConfirmNewPassword('')
+    } catch (err) {
+      console.error(err)
+      alert("Ocurrió un error al actualizar la contraseña.")
+    } finally {
+      setIsUpdatingPassword(false)
+    }
+  }
+
   const initials = `${(data.nombre[0] || '').toUpperCase()}${(data.apellido[0] || '').toUpperCase()}` || 'IN'
 
   return (
@@ -313,8 +404,19 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
             </span>
           </div>
         </div>
-        <div className="text-xs text-secondary max-w-xs text-right">
-          🔒 Los campos Cédula, Rol y Área están protegidos. Puedes editar y guardar los demás datos.
+        <div className="flex items-center gap-4">
+          <div className="text-xs text-secondary max-w-xs text-right hidden sm:block">
+            🔒 Los campos Cédula, Rol y Área están protegidos. Puedes editar y guardar los demás datos.
+          </div>
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="p-2 rounded-full hover:bg-slate-100 transition-colors bg-white border border-border shadow-sm text-slate-600"
+            title="Ajustes de cuenta"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -403,8 +505,37 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           </label>
 
           <label className="full-width">
-            <span className="font-medium text-xs text-secondary uppercase">Objeto del contrato</span>
-            <textarea value={data.objetoContrato} onChange={(e) => handleChange('objetoContrato', e.target.value)} disabled={isFieldDisabled('objetoContrato')} placeholder="Ingresa objeto contractual" />
+            <span className="font-medium text-xs text-secondary uppercase">Especialidad {lockedEspecialidad && "(Guardada - No editable)"}</span>
+            <select
+              value={data.id_especialidad || ''}
+              onChange={(e) => handleChange('id_especialidad', e.target.value)}
+              disabled={lockedEspecialidad || isFieldDisabled('id_especialidad' as keyof ProfileData)}
+              className="w-full p-3 border border-border rounded-xl bg-white focus:border-emerald-500 focus:ring-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              <option value="">Seleccione su especialidad</option>
+              {especialidadesList.map((e: any) => (
+                <option key={e.id_especialidad} value={e.id_especialidad.toString()}>
+                  {e.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="full-width">
+            <span className="font-medium text-xs text-secondary uppercase">Objeto del contrato {lockedObjeto && "(Guardado - No editable)"}</span>
+            <select
+              value={data.id_objeto || ''}
+              onChange={(e) => handleChange('id_objeto', e.target.value)}
+              disabled={lockedObjeto || isFieldDisabled('id_objeto' as keyof ProfileData)}
+              className="w-full p-3 border border-border rounded-xl bg-white focus:border-emerald-500 focus:ring-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              <option value="">Seleccione el objeto contractual</option>
+              {objetosList.map((o: any) => (
+                <option key={o.id_objeto} value={o.id_objeto.toString()} title={o.descripcion}>
+                  {o.descripcion}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="foto-field">
@@ -430,7 +561,22 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
                 if (f) handleFirma(f)
               }}
             />
-            {firmaPreview ? <img src={firmaPreview} alt="firma preview" className="max-h-32 object-contain rounded-xl border border-border p-2 bg-white" /> : null}
+            {firmaPreview ? (
+              <div className="flex flex-col items-start gap-2 mt-2">
+                <img src={firmaPreview} alt="firma preview" className="max-h-32 object-contain rounded-xl border border-border p-2 bg-white shadow-sm" />
+                <a 
+                  href={firmaPreview} 
+                  download="firma_digital.png"
+                  onClick={handleDownloadFirma}
+                  className="text-xs font-semibold px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg hover:bg-emerald-200 transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Descargar Firma
+                </a>
+              </div>
+            ) : null}
           </label>
         </div>
 
@@ -440,6 +586,66 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           </button>
         </div>
       </form>
+
+      {showSettings ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
+          <div className="relative w-full max-w-md rounded-2xl bg-bg-card border border-border p-6 shadow-xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Seguridad y Ajustes
+              </h3>
+              <button onClick={() => setShowSettings(false)} className="text-secondary hover:text-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleChangePassword} className="space-y-4 mt-6">
+              <p className="text-sm text-secondary">Cambiar la contraseña de acceso a tu cuenta.</p>
+              
+              <label className="block">
+                <span className="text-xs font-semibold text-secondary uppercase block mb-1">Nueva contraseña</span>
+                <input 
+                  type="password" 
+                  className="w-full p-3 border border-border rounded-xl bg-white" 
+                  value={newPassword} 
+                  onChange={e => setNewPassword(e.target.value)} 
+                  required 
+                  minLength={6}
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold text-secondary uppercase block mb-1">Confirmar nueva contraseña</span>
+                <input 
+                  type="password" 
+                  className="w-full p-3 border border-border rounded-xl bg-white" 
+                  value={confirmNewPassword} 
+                  onChange={e => setConfirmNewPassword(e.target.value)} 
+                  required 
+                  minLength={6}
+                  placeholder="Confirma la contraseña"
+                />
+              </label>
+
+              <div className="mt-8 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowSettings(false)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={isUpdatingPassword} className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                  {isUpdatingPassword ? 'Actualizando...' : 'Actualizar contraseña'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }

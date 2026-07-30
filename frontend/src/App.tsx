@@ -72,7 +72,7 @@ function App() {
           codigoSiif: u.codigoSiif?.toString() || '',
           fechaInicioContrato: u.fechaInicioContrato || '',
           fechaFinContrato: u.fechaFinContrato || '',
-          objetoContrato: '',
+          objetoContrato: u.objetoContractual?.descripcion || u.objetoContrato || '',
           fotoPerfil: u.fotoPerfil || '',
           status,
           canEdit: false,
