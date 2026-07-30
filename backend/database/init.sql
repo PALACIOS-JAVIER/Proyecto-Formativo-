@@ -59,7 +59,8 @@ CREATE TABLE usuarios (
     id_sede INT REFERENCES sedes(id_sede),
     id_rol INT REFERENCES roles(id_rol),
     id_area INT REFERENCES areas(id_area),
-    id_especialidad INT REFERENCES especialidades(id_especialidad)
+    id_especialidad INT REFERENCES especialidades(id_especialidad),
+    id_objeto INT REFERENCES objetos_contractuales(id_objeto)
 );
 
 CREATE TABLE coordinadores (

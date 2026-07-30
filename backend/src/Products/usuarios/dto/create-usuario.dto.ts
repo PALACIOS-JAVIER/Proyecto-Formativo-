@@ -33,6 +33,14 @@ export class CreateUsuarioDto {
     @IsNotEmpty()
     id_area: string;
 
+    @IsNumber()
+    @IsOptional()
+    id_especialidad?: number;
+
+    @IsNumber()
+    @IsOptional()
+    id_objeto?: number;
+
     @IsString()
     @IsOptional()
     codigoContrato?: string;
