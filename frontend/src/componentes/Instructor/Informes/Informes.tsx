@@ -91,7 +91,7 @@ export function Informes(): ReactElement {
     <section className="page-panel">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Mis Reportes</p>
+          <p className="eyebrow">Mis Informes</p>
           <h1>Revisa los informes enviados y su estado actual.</h1>
           <p className="subtext">Filtra por mes, estado o palabra clave para encontrar rápidamente lo que necesitas.</p>
         </div>

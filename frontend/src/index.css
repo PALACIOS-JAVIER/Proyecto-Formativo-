@@ -134,10 +134,18 @@ body{min-height:100vh;background-color:var(--color-bg);color:var(--color-text)}
 @keyframes pop{from{transform:scale(0.2);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* Upload card */
-.upload-card{display:grid;gap:16px}
+.upload-card{display:grid;gap:16px;width:100%}
+.upload-sections{display:grid;gap:16px;grid-template-columns:1fr;width:100%}
+.upload-section{padding:24px 20px;display:grid;gap:18px;min-width:0}
+.upload-section h2{margin:0}
+.file-picker-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;max-width:240px;white-space:nowrap;min-height:44px}
+.folder-preview{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:24px;background:var(--color-bg-alt);border:1px solid var(--color-border)}
+.folder-preview__icon{font-size:1.8rem}
+.folder-preview__content{display:grid;gap:4px}
+.folder-preview__title{margin:0;font-weight:700;color:var(--color-text)}
+.folder-preview__text{margin:0;color:var(--color-text-secondary);font-size:0.95rem}
 .upload-type-picker{display:flex;gap:12px;flex-wrap:wrap}
-.type-button{padding:12px 20px;background:var(--color-bg-alt);color:var(--color-text);border:1px solid var(--color-border)}
-.type-button--active{background:var(--color-emerald);color:#fff;border-color:var(--color-emerald)}
+.type-label{font-size:0.85rem;font-weight:700;color:var(--color-text-secondary)}
 .timeline-selectors{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .field-label{display:grid;gap:8px;font-size:0.95rem;color:var(--color-text-secondary)}
 .month-selector{width:100%;min-width:180px;padding:12px 14px;border-radius:16px;border:1px solid var(--color-border);background:var(--color-bg-alt);color:var(--color-text)}
@@ -145,12 +153,39 @@ body{min-height:100vh;background-color:var(--color-bg);color:var(--color-text)}
 .upload-instructions{display:grid;gap:14px;padding:18px 20px;border-radius:22px;background:var(--color-bg-alt)}
 .upload-instructions div{display:flex;gap:14px;align-items:flex-start}
 .instruction-step{width:32px;height:32px;display:grid;place-items:center;border-radius:999px;background:var(--color-emerald);color:#fff;font-weight:700}
-.upload-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.upload-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.upload-actions button{min-width:0;flex:1}
+.upload-actions button:first-child{flex:0 1 auto}
 .submission-message{margin:0;color:var(--color-emerald-light);font-size:0.95rem}
 .upload-icon{display:block;font-size:2.5rem;margin-bottom:18px;color:var(--color-emerald)}
 .upload-dropzone{padding:28px 22px;border-radius:24px;background:var(--color-bg-alt);text-align:center;border:2px dashed var(--color-border)}
 .upload-dropzone h2{margin:0 0 10px;color:var(--color-text)}
-.upload-note{color:var(--color-text-muted);font-size:0.9rem4;}
+.upload-note{color:var(--color-text-muted);font-size:0.95rem;line-height:1.6;}
+
+@media (min-width:1024px){
+  .upload-sections{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media (max-width:1080px){
+  .timeline-selectors{grid-template-columns:1fr}
+}
+
+@media (max-width:768px){
+  .upload-card{padding:0}
+  .upload-sections{grid-template-columns:1fr}
+  .upload-section{padding:18px 16px}
+  .upload-actions{flex-direction:column;align-items:stretch}
+  .upload-actions button{width:100%}
+  .upload-actions button:first-child{order:2}
+  .upload-actions button:last-child{order:1}
+  .month-selector{min-width:0}
+}
+
+@media (max-width:560px){
+  .upload-section{padding:16px}
+  .upload-summary{padding:16px}
+  .upload-instructions{padding:16px}
+}
 
 /* Assistant */
 .assistant-card{display:grid;gap:16px}
