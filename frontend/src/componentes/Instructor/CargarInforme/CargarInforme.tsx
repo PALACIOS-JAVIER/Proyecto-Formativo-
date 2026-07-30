@@ -2,35 +2,61 @@ import { useState } from 'react'
 import type { ReactElement } from 'react'
 
 export function CargarInforme(): ReactElement {
-  const [fileName, setFileName] = useState('')
+  const [gcFileName, setGcFileName] = useState('')
+  const [gcFileSize, setGcFileSize] = useState<number | null>(null)
+  const [gfFileName, setGfFileName] = useState('')
+  const [gfFileSize, setGfFileSize] = useState<number | null>(null)
+  const [gcMessage, setGcMessage] = useState('')
+  const [gfMessage, setGfMessage] = useState('')
   const [month, setMonth] = useState('Mayo')
   const [year, setYear] = useState('2026')
-  const [submissionMessage, setSubmissionMessage] = useState('')
-  const [fileSize, setFileSize] = useState<number | null>(null)
 
   const monthOptions = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
   const yearOptions = ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
   const selectedPeriod = `${month} ${year}`
+  const bothFilesSelected = Boolean(gcFileName && gfFileName)
+  const createdFolderName = `${selectedPeriod}`
 
-  const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGcFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      setFileName(file.name)
-      setFileSize(file.size)
+      setGcFileName(file.name)
+      setGcFileSize(file.size)
     } else {
-      setFileName('')
-      setFileSize(null)
+      setGcFileName('')
+      setGcFileSize(null)
     }
-    setSubmissionMessage('')
+    setGcMessage('')
   }
 
-  const handleSubmit = () => {
-    if (!fileName) {
-      setSubmissionMessage('Por favor selecciona un archivo antes de enviar.')
+  const handleGfFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setGfFileName(file.name)
+      setGfFileSize(file.size)
+    } else {
+      setGfFileName('')
+      setGfFileSize(null)
+    }
+    setGfMessage('')
+  }
+
+  const handleGcSubmit = () => {
+    if (!gcFileName) {
+      setGcMessage('Por favor selecciona el archivo GC antes de cargarlo.')
       return
     }
 
-    setSubmissionMessage(`✓ Informe GC programado para ${month} ${year}. Archivo cargado correctamente y enviado a validación.`)
+    setGcMessage(`✓ Informe GC para ${selectedPeriod} cargado correctamente.`)
+  }
+
+  const handleGfSubmit = () => {
+    if (!gfFileName) {
+      setGfMessage('Por favor selecciona el archivo GF antes de cargarlo.')
+      return
+    }
+
+    setGfMessage(`✓ Informe GF para ${selectedPeriod} cargado correctamente.`)
   }
 
   const formatFileSize = (bytes: number) => {
@@ -43,24 +69,13 @@ export function CargarInforme(): ReactElement {
     <section className="page-panel">
       <header className="page-header page-header--compact">
         <div>
-          <p className="eyebrow">SUBE Y VALIDA EL ARCHIVO</p>
-          <h1>Subir Informe Mensual (GC)</h1>
-          <p className="subtext">Selecciona el mes y año de tu periodo de trabajo y adjunta la plantilla oficial GC.</p>
+          <p className="eyebrow">SUBE EL ARCHIVO</p>
+          <h1>Subir informes mensuales</h1>
+          <p className="subtext">Selecciona el mes y año de tu periodo de trabajo y adjunta los archivos oficiales GC y GF.</p>
         </div>
       </header>
 
       <article className="card upload-card">
-        {/* Type indicator */}
-        <div className="upload-type-picker">
-          <button type="button" className="type-button type-button--active">
-            GC · Validar archivo
-          </button>
-          <span className="text-xs text-text-secondary font-medium px-3 py-2 rounded-full border border-border bg-bg-alt flex items-center">
-            Formato Institucional GC GTH-F-062
-          </span>
-        </div>
-
-        {/* Timeline selectors */}
         <div className="timeline-selectors">
           <label className="field-label">
             Mes de la carga
@@ -81,70 +96,100 @@ export function CargarInforme(): ReactElement {
           </label>
         </div>
 
-        {/* Summary banner */}
         <div className="upload-summary">
           <p>
-            Informe <strong>GC</strong> previsto para <strong>{selectedPeriod}</strong>. La validación comprueba la estructura del documento y los anexos de evidencia.
+            Informes previstos para <strong>{selectedPeriod}</strong>. Adjunta los archivos oficiales sin modificar la información.
           </p>
         </div>
 
-        {/* Instructions */}
-        <div className="upload-instructions">
-          <div>
-            <span className="instruction-step">1</span>
-            <p>Selecciona el mes y año correspondientes a tu periodo de instrucción.</p>
-          </div>
-          <div>
-            <span className="instruction-step">2</span>
-            <p>Adjunta el archivo del informe mensual en formato .xlsx o .pdf.</p>
-          </div>
-          <div>
-            <span className="instruction-step">3</span>
-            <p>Confirma el envío para notificar a la coordinación asignada.</p>
-          </div>
-        </div>
-
-        {/* Dropzone */}
-        <div className="upload-dropzone">
-          <span className="upload-icon">📥</span>
-          <h2>Sube tu archivo de Informe GC</h2>
-          <p className="upload-note">El sistema revisa el formato, el nombre y la estructura sin modificar la información.</p>
-          
-          <label className="button button--primary cursor-pointer mt-3">
-            Seleccionar archivo GC
-            <input type="file" hidden accept=".xlsx,.xls,.pdf,.docx" onChange={handleFile} />
-          </label>
-
-          {fileName && (
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
-              <span>📎 {fileName} ({fileSize ? formatFileSize(fileSize) : ''})</span>
+        {bothFilesSelected && (
+          <div className="folder-preview">
+            <div className="folder-preview__icon">📁</div>
+            <div className="folder-preview__content">
+              <p className="folder-preview__label">Carpeta creada automáticamente</p>
+              <p className="folder-preview__title">{createdFolderName}</p>
+              <p className="folder-preview__text">Guardada en <strong>Mis Informes</strong>.</p>
             </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="upload-actions justify-end">
-          <button
-            type="button"
-            className="button button--ghost"
-            onClick={() => {
-              setFileName('')
-              setFileSize(null)
-              setSubmissionMessage('')
-            }}
-          >
-            Limpiar
-          </button>
-          <button type="button" className="button button--primary" onClick={handleSubmit}>
-            Enviar informe GC
-          </button>
-        </div>
-
-        {submissionMessage && (
-          <p className="submission-message font-medium mt-2">
-            {submissionMessage}
-          </p>
+          </div>
         )}
+
+        <div className="upload-sections">
+          <div className="card upload-card--compact upload-section">
+            <div className="upload-type-picker">
+              <span className="type-label">GC · Cargar archivo</span>
+            </div>
+            <h2>Informe GC</h2>
+            <p className="upload-note">Adjunta el archivo de informe GC en formato .xlsx o .pdf.</p>
+
+            <label className="button button--primary file-picker-button cursor-pointer mt-3">
+              Seleccionar archivo GC
+              <input type="file" hidden accept=".xlsx,.xls,.pdf,.docx" onChange={handleGcFile} />
+            </label>
+
+            {gcFileName && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
+                <span>📎 {gcFileName} ({gcFileSize ? formatFileSize(gcFileSize) : ''})</span>
+              </div>
+            )}
+
+            <div className="upload-actions justify-end mt-4">
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => {
+                  setGcFileName('')
+                  setGcFileSize(null)
+                  setGcMessage('')
+                }}
+              >
+                Limpiar
+              </button>
+              <button type="button" className="button button--primary" onClick={handleGcSubmit}>
+                Cargar informe GC
+              </button>
+            </div>
+
+            {gcMessage && <p className="submission-message font-medium mt-2">{gcMessage}</p>}
+          </div>
+
+          <div className="card upload-card--compact upload-section">
+            <div className="upload-type-picker">
+              <span className="type-label">GF · Cargar archivo</span>
+            </div>
+            <h2>Informe GF</h2>
+            <p className="upload-note">Adjunta el archivo de informe GF en formato .xlsx o .pdf.</p>
+
+            <label className="button button--primary file-picker-button cursor-pointer mt-3">
+              Seleccionar archivo GF
+              <input type="file" hidden accept=".xlsx,.xls,.pdf,.docx" onChange={handleGfFile} />
+            </label>
+
+            {gfFileName && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
+                <span>📎 {gfFileName} ({gfFileSize ? formatFileSize(gfFileSize) : ''})</span>
+              </div>
+            )}
+
+            <div className="upload-actions justify-end mt-4">
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => {
+                  setGfFileName('')
+                  setGfFileSize(null)
+                  setGfMessage('')
+                }}
+              >
+                Limpiar
+              </button>
+              <button type="button" className="button button--primary" onClick={handleGfSubmit}>
+                Cargar informe GF
+              </button>
+            </div>
+
+            {gfMessage && <p className="submission-message font-medium mt-2">{gfMessage}</p>}
+          </div>
+        </div>
       </article>
     </section>
   )

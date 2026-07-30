@@ -6,7 +6,7 @@ type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificacio
 const navigationItems: Array<{ id: PageKey; label: string; icon: string }> = [
   { id: 'dashboard', label: 'Dashboard', icon: '📊' },
   { id: 'subir', label: 'Subir Informe', icon: '📁' },
-  { id: 'informes', label: 'Mis Reportes', icon: '🗂️' },
+  { id: 'informes', label: 'Mis Informes', icon: '🗂️' },
   { id: 'indicadores', label: 'Indicadores', icon: '📈' },
   { id: 'notificaciones', label: 'Alertas', icon: '🔔' },
   { id: 'perfil', label: 'Perfil', icon: '⚙️' },
