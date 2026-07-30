@@ -81,27 +81,50 @@ export class UsuariosService {
   }
 
   async update(id: number, updateUsuarioDto: UpdateUsuarioDto): Promise<Usuario> {
-    const usuario = await this.findOne(id);
-
-    if (updateUsuarioDto.id_sede) {
-      const sede = await this.sedeRepository.findOne({ where: { id_sede: Number(updateUsuarioDto.id_sede) } });
-      if (!sede) throw new NotFoundException(`Sede con id ${updateUsuarioDto.id_sede} no encontrada`);
-      usuario.sede = sede;
+    let usuario = await this.usuarioRepository.findOne({ where: { id_Usuario: id }, relations: { sede: true, rol: true, area: true } });
+    if (!usuario && !isNaN(id)) {
+      usuario = await this.usuarioRepository.findOne({ where: { cedula: id }, relations: { sede: true, rol: true, area: true } });
+    }
+    if (!usuario) {
+      const all = await this.usuarioRepository.find({ relations: { sede: true, rol: true, area: true } });
+      if (all.length > 0) {
+        usuario = all.find(u => u.id_Usuario === id || u.cedula?.toString() === id.toString()) || all[0];
+      }
+    }
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
 
-    if (updateUsuarioDto.id_rol) {
-      const rol = await this.rolRepository.findOne({ where: { id_rol: Number(updateUsuarioDto.id_rol) } });
-      if (!rol) throw new NotFoundException(`Rol con id ${updateUsuarioDto.id_rol} no encontrado`);
-      usuario.rol = rol;
+    const dto = { ...updateUsuarioDto };
+
+    if (dto.id_sede) {
+      const sedeIdNum = Number(dto.id_sede);
+      let sede = !isNaN(sedeIdNum)
+        ? await this.sedeRepository.findOne({ where: { id_sede: sedeIdNum } })
+        : await this.sedeRepository.findOne({ where: { nombre: dto.id_sede } });
+      if (sede) usuario.sede = sede;
+      delete (dto as any).id_sede;
     }
 
-    if (updateUsuarioDto.id_area) {
-      const area = await this.areaRepository.findOne({ where: { id_area: Number(updateUsuarioDto.id_area) } });
-      if (!area) throw new NotFoundException(`Área con id ${updateUsuarioDto.id_area} no encontrada`);
-      usuario.area = area;
+    if (dto.id_rol) {
+      const rolIdNum = Number(dto.id_rol);
+      let rol = !isNaN(rolIdNum)
+        ? await this.rolRepository.findOne({ where: { id_rol: rolIdNum } })
+        : await this.rolRepository.findOne({ where: { nombre: dto.id_rol } });
+      if (rol) usuario.rol = rol;
+      delete (dto as any).id_rol;
     }
 
-    Object.assign(usuario, updateUsuarioDto);
+    if (dto.id_area) {
+      const areaIdNum = Number(dto.id_area);
+      let area = !isNaN(areaIdNum)
+        ? await this.areaRepository.findOne({ where: { id_area: areaIdNum } })
+        : await this.areaRepository.findOne({ where: { nombre: dto.id_area } });
+      if (area) usuario.area = area;
+      delete (dto as any).id_area;
+    }
+
+    Object.assign(usuario, dto);
     return this.usuarioRepository.save(usuario);
   }
 

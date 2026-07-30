@@ -109,9 +109,20 @@ export function Instructores({
     setSupportStaffData({ nombre: '', apellido: '', cedula: '', telefono: '', correo: '', contraseña: '' })
   }
 
+  const handleAccept = (instructor: InstructorProfile) => {
+    onUpdateInstructor(instructor.id, { status: 'activo' })
+    setNotificationMessage(`✓ Instructor ${instructor.nombre} ${instructor.apellido} aceptado correctamente.`)
+  }
+
+  const handleReject = (instructor: InstructorProfile) => {
+    onUpdateInstructor(instructor.id, { status: 'rechazado' })
+    setNotificationMessage(`⚠️ Registro de ${instructor.nombre} ${instructor.apellido} rechazado.`)
+  }
+
   const toggleActivation = (instructor: InstructorProfile) => {
     const nextStatus = instructor.status === 'activo' ? 'inactivo' : 'activo'
     onUpdateInstructor(instructor.id, { status: nextStatus })
+    setNotificationMessage(`✓ Estado de ${instructor.nombre} ${instructor.apellido} cambiado a: ${nextStatus}.`)
   }
 
   const handleDeleteInstructor = (id: number) => {
@@ -195,12 +206,12 @@ export function Instructores({
                       Ver perfil
                     </button>
                     {inst.status === 'pendiente' ? (
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => onUpdateInstructor(inst.id, { status: 'activo' })} className={`${btnBase} bg-emerald-100 text-emerald-800 hover:bg-emerald-200`}>Aceptar</button>
-                        <button type="button" onClick={() => onUpdateInstructor(inst.id, { status: 'rechazado' })} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Rechazar</button>
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        <button type="button" onClick={() => handleAccept(inst)} className={`${btnBase} bg-emerald-100 text-emerald-800 hover:bg-emerald-200`}>Aceptar</button>
+                        <button type="button" onClick={() => handleReject(inst)} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Rechazar</button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap justify-end gap-1.5">
                         <button type="button" onClick={() => toggleActivation(inst)} className={`${btnBase} bg-slate-100 text-slate-800 hover:bg-slate-200`}>{inst.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
                         <button type="button" onClick={() => handleDeleteInstructor(inst.id)} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Eliminar</button>
                       </div>
