@@ -38,8 +38,7 @@ CREATE TABLE especialidades (
 CREATE TABLE objetos_contractuales (
     id_objeto SERIAL PRIMARY KEY,
     descripcion TEXT NOT NULL,
-    id_area INT REFERENCES areas(id_area) ON DELETE CASCADE,
-    id_especialidad INT REFERENCES especialidades(id_especialidad) ON DELETE SET NULL
+    id_area INT REFERENCES areas(id_area) ON DELETE CASCADE
 );
 
 CREATE TABLE usuarios (
@@ -178,12 +177,12 @@ INSERT INTO especialidades (nombre, id_area) VALUES
 ('CULTIVOS AGRÍCOLAS', 1),
 ('IDIOMAS-INGLES', 5);
 
-INSERT INTO objetos_contractuales (descripcion, id_area, id_especialidad) VALUES
-('Prestar servicios profesionales en la planeación y ejecución de la formación... población campesina- CampeSENA, en la especialidad de PRODUCCIÓN PECUARIA', 3, NULL),
-('Prestar servicios de apoyo a la gestión... población campesina- CampeSENA, en la especialidad de AGRICOLA - PRODUCCIÓN DE CAFES', 1, 1),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de OPERACIONES FORESTALES', 2, NULL),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de COMUNICACIÓN', 4, NULL),
-('Prestar servicios profesionales... población campesina- CampeSENA, en la especialidad de AGRICOLA - CULTIVOS AGRÍCOLAS', 1, 2);
+INSERT INTO objetos_contractuales (descripcion, id_area) VALUES
+('Prestar servicios profesionales en la planeación y ejecución de la formación... población campesina- CampeSENA, en la especialidad de PRODUCCIÓN PECUARIA', 3),
+('Prestar servicios de apoyo a la gestión... población campesina- CampeSENA, en la especialidad de AGRICOLA - PRODUCCIÓN DE CAFES', 1),
+('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de OPERACIONES FORESTALES', 2),
+('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de COMUNICACIÓN', 4),
+('Prestar servicios profesionales... población campesina- CampeSENA, en la especialidad de AGRICOLA - CULTIVOS AGRÍCOLAS', 1);
 
 -- Insertar coordinador por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area) 
