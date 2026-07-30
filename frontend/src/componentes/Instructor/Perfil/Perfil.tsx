@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FaApple } from 'react-icons/fa'
 
 export interface ProfileData {
   nombre: string
@@ -99,7 +101,6 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   const [firmaFile, setFirmaFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | undefined>(data.fotoPerfil)
   const [firmaPreview, setFirmaPreview] = useState<string | undefined>(data.firma)
-  const [savedAlert, setSavedAlert] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -108,6 +109,15 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message)
+    setToastType(type)
+    setTimeout(() => setToastMessage(''), 4000)
+  }
 
   const [especialidadesList, setEspecialidadesList] = useState<any[]>([])
   const [objetosList, setObjetosList] = useState<any[]>([])
@@ -231,24 +241,6 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
     setData((curr) => ({ ...curr, [k]: v } as ProfileData))
   }
 
-  const handleFoto = (f?: File) => {
-    if (!f) return
-    if (!f.type.startsWith('image/')) {
-      alert('Por favor selecciona una imagen para la foto de perfil.')
-      return
-    }
-    setFotoFile(f)
-  }
-
-  const handleFirma = (f?: File) => {
-    if (!f) return
-    if (!f.type.startsWith('image/')) {
-      alert('Por favor selecciona una imagen para la firma.')
-      return
-    }
-    setFirmaFile(f)
-  }
-
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault()
     setIsSaving(true)
@@ -277,6 +269,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         })
 
         if (!response.ok) {
+          showToast('Error al guardar los datos en la base de datos.', 'error')
           throw new Error('Error al guardar los datos en la base de datos.')
         }
 
@@ -314,9 +307,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       if (preview) out.fotoPerfil = preview
       if (firmaPreview) out.firma = firmaPreview
       onSave?.(out)
-
-      setSavedAlert(true)
-      setTimeout(() => setSavedAlert(false), 3500)
+      showToast('Perfil actualizado correctamente', 'success')
     } catch (err: any) {
       console.error('Error saving profile to backend DB:', err)
       setSaveError(err.message || 'Ocurrió un error al actualizar la base de datos.')
@@ -347,18 +338,18 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading signature:', error);
-      alert('Error al descargar la firma.');
+      showToast('Error al descargar la firma', 'error');
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     if (newPassword !== confirmNewPassword) {
-      alert("Las contraseñas no coinciden.")
+      showToast("Las contraseñas no coinciden", 'error')
       return
     }
     if (newPassword.length < 6) {
-      alert("La contraseña debe tener al menos 6 caracteres.")
+      showToast("La contraseña debe tener al menos 6 caracteres", 'error')
       return
     }
     try {
@@ -373,13 +364,13 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       })
 
       if (!response.ok) throw new Error("Error al actualizar contraseña")
-      alert("Contraseña actualizada exitosamente.")
+      showToast("Contraseña actualizada exitosamente", 'success')
       setShowSettings(false)
       setNewPassword('')
       setConfirmNewPassword('')
     } catch (err) {
       console.error(err)
-      alert("Ocurrió un error al actualizar la contraseña.")
+      showToast("Ocurrió un error al actualizar la contraseña", 'error')
     } finally {
       setIsUpdatingPassword(false)
     }
@@ -643,6 +634,18 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {toastMessage ? (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 rounded-2xl bg-white p-4 pr-12 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className={toastType === 'success' ? "text-emerald-500 text-3xl" : "text-rose-500 text-3xl"}>
+            <FaApple />
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-sm font-bold text-slate-800">Sistema</h4>
+            <p className="text-xs font-medium text-slate-500">{toastMessage}</p>
           </div>
         </div>
       ) : null}
