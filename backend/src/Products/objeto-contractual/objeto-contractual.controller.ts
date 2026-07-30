@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ObjetoContractualService } from './objeto-contractual.service';
 import { CreateObjetoContractualDto } from './dto/create-objeto-contractual.dto';
 import { UpdateObjetoContractualDto } from './dto/update-objeto-contractual.dto';
@@ -13,7 +13,10 @@ export class ObjetoContractualController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('id_area') id_area?: string) {
+    if (id_area) {
+      return this.objetoContractualService.findByArea(+id_area);
+    }
     return this.objetoContractualService.findAll();
   }
 

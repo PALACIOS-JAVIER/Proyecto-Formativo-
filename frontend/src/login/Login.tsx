@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import './Login.css'
 import senaLogo from '../assets/Imagenes_Login/Sena.png'
@@ -58,8 +58,29 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
     fechaFinContrato: '',
   })
 
+  const [sedesList, setSedesList] = useState<any[]>([])
+  const [rolesList, setRolesList] = useState<any[]>([])
+  const [areasList, setAreasList] = useState<any[]>([])
+
+  useEffect(() => {
+    if (mode === 'register') {
+      Promise.all([
+        fetch('http://localhost:3000/api/sedes').then(r => r.json()),
+        fetch('http://localhost:3000/api/roles').then(r => r.json()),
+        fetch('http://localhost:3000/api/areas').then(r => r.json())
+      ]).then(([s, r, a]) => {
+        setSedesList(s)
+        setRolesList(r)
+        setAreasList(a)
+      }).catch(console.error)
+    }
+  }, [mode])
+
   const inputClasses = 'input-field'
   const labelClasses = 'label-field'
+
+  const filteredRoles = rolesList.filter(r => !registration.sede || r.sede?.id_sede?.toString() === registration.sede)
+  const filteredAreas = areasList.filter(a => !registration.rol || a.rol?.id_rol?.toString() === registration.rol)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -307,22 +328,38 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                     <input type="email" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
                   </label>
                   <label className={labelClasses}>
-                    <span>Rol</span>
-                    <select value={registration.rol} onChange={(event) => handleRegisterChange('rol', event.target.value)} className={inputClasses} required>
-                      <option value="campesena">Campesena</option>
-                      <option value="regular fit">Regular Fit</option>
+                    <span>Sede</span>
+                    <select value={registration.sede} onChange={(event) => {
+                      handleRegisterChange('sede', event.target.value)
+                      handleRegisterChange('rol', '')
+                      handleRegisterChange('area', '')
+                    }} className={inputClasses} required>
+                      <option value="">Seleccione una sede</option>
+                      {sedesList.map(s => (
+                        <option key={s.id_sede} value={s.id_sede.toString()}>{s.nombre}</option>
+                      ))}
                     </select>
                   </label>
                   <label className={labelClasses}>
-                    <span>Sede</span>
-                    <select value={registration.sede} onChange={(event) => handleRegisterChange('sede', event.target.value)} className={inputClasses} required>
-                      <option value="Yamboro">Yamboro</option>
-                      <option value="Otra">Otra</option>
+                    <span>Rol</span>
+                    <select value={registration.rol} onChange={(event) => {
+                      handleRegisterChange('rol', event.target.value)
+                      handleRegisterChange('area', '')
+                    }} className={inputClasses} required disabled={!registration.sede}>
+                      <option value="">Seleccione un rol</option>
+                      {filteredRoles.map(r => (
+                        <option key={r.id_rol} value={r.id_rol.toString()}>{r.nombre}</option>
+                      ))}
                     </select>
                   </label>
                   <label className={labelClasses}>
                     <span>Área</span>
-                    <input value={registration.area} onChange={(event) => handleRegisterChange('area', event.target.value)} className={inputClasses} required />
+                    <select value={registration.area} onChange={(event) => handleRegisterChange('area', event.target.value)} className={inputClasses} required disabled={!registration.rol}>
+                      <option value="">Seleccione un área</option>
+                      {filteredAreas.map(a => (
+                        <option key={a.id_area} value={a.id_area.toString()}>{a.nombre}</option>
+                      ))}
+                    </select>
                   </label>
                   <label className={labelClasses}>
                     <span>Código de contrato</span>

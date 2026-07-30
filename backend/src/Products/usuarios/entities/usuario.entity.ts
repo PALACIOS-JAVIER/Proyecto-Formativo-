@@ -3,6 +3,7 @@ import { Sede } from '../../sede/entities/sede.entity';
 import { Rol } from '../../rol/entities/rol.entity';
 import { Area } from '../../areas/entities/area.entity';
 import { Especialidad } from '../../especialidad/entities/especialidad.entity';
+import { ObjetoContractual } from '../../objeto-contractual/entities/objeto-contractual.entity';
 
 
 @Entity('usuarios')
@@ -42,6 +43,10 @@ export class Usuario {
     @ManyToOne(() => Especialidad, { eager: false, nullable: true })
     @JoinColumn({ name: 'id_especialidad' })
     especialidad: Especialidad | null;
+
+    @ManyToOne(() => ObjetoContractual, { eager: false, nullable: true })
+    @JoinColumn({ name: 'id_objeto' })
+    objetoContractual: ObjetoContractual | null;
 
     @Column({ type: 'varchar', nullable: true })
     codigoContrato?: string;
