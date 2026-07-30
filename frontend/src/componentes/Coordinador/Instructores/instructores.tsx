@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
+import { FaApple } from 'react-icons/fa'
 import type { InstructorProfile } from '../../../App'
 
 interface SupportStaffData {
@@ -411,7 +412,17 @@ export function Instructores({
         </div>
       ) : null}
 
-      {notificationMessage ? <div className="fixed bottom-6 right-6 rounded-lg bg-slate-800 px-4 py-2 text-white">{notificationMessage}</div> : null}
+      {notificationMessage ? (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 rounded-2xl bg-white p-4 pr-12 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="text-emerald-500 text-3xl">
+            <FaApple />
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-sm font-bold text-slate-800">Sistema</h4>
+            <p className="text-xs font-medium text-slate-500">{notificationMessage}</p>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }
