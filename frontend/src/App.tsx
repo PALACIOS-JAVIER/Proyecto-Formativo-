@@ -219,7 +219,14 @@ function App() {
     } catch (error: any) {
       console.error('Registration error:', error)
       const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
+      let formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
+      if (typeof formattedMessage === 'string') {
+        if (formattedMessage.toLowerCase() === 'internal server error') {
+          formattedMessage = 'La cédula ingresada o el correo electrónico ya se encuentran registrados en el sistema.'
+        } else if (formattedMessage.toLowerCase().includes('network error') || !error.response) {
+          formattedMessage = 'No fue posible conectar con el servidor central. Verifique su conexión o intente nuevamente más tarde.'
+        }
+      }
       return { success: false, message: formattedMessage }
     }
   }
