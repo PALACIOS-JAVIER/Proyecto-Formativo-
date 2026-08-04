@@ -1,0 +1,10 @@
+{
+  "name": "proyecto-formativo-root",
+  "private": true,
+  "scripts": {
+    "db:seed": "npm run db:seed --prefix backend",
+    "db:dump": "npm run db:dump --prefix backend",
+    "dev:backend": "npm run start:dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  }
+}
