@@ -13,6 +13,8 @@ interface BackendInforme {
   mes: string
   anio: number
   estado: string
+  veredicto_ia?: string
+  analisis_ia?: string
   fecha_registro: string
   archivo_url: string
   usuario?: {
@@ -38,6 +40,8 @@ export function RevisarInformes(): ReactElement {
   const [correctionNote, setCorrectionNote] = useState('')
   const [isSubmittingNote, setIsSubmittingNote] = useState(false)
   const [actionAlert, setActionAlert] = useState('')
+  const [expandedIA, setExpandedIA] = useState<Record<string, boolean>>({})
+  const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({})
 
   const fetchAllReports = async () => {
     try {
@@ -130,6 +134,26 @@ export function RevisarInformes(): ReactElement {
       fetchAllReports()
     } catch (err: any) {
       alert(err.message || 'Ocurrió un error al aprobar.')
+    }
+  }
+
+  const handleReanalyzeIA = async (reportId: number, tipo: 'GC' | 'GF') => {
+    const key = `${tipo}-${reportId}`
+    try {
+      setAnalyzingIds((prev) => ({ ...prev, [key]: true }))
+      setActionAlert(`🤖 Consultando auditoría institucional a Sera 🦅 (n8n + OpenAI) para Informe ${tipo} #${reportId}. Espera unos 8 segundos...`)
+      const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
+      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/reanalizar-ia`, {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error('Error al solicitar reanálisis a la IA.')
+      await fetchAllReports()
+      setActionAlert(`✅ ¡Auditoría de Sera 🦅 completada y cargada en pantalla para el Informe ${tipo} #${reportId}!`)
+      setTimeout(() => setActionAlert(''), 5000)
+    } catch (err: any) {
+      alert(err.message || 'Error al conectar con IA.')
+    } finally {
+      setAnalyzingIds((prev) => ({ ...prev, [key]: false }))
     }
   }
 
@@ -328,6 +352,72 @@ export function RevisarInformes(): ReactElement {
                       </div>
                     </div>
 
+                    {/* Auditoría IA (Sera 🦅) */}
+                    <div className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 shadow-sm space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-lg">🤖</span>
+                          <h4 className="font-bold text-sm text-indigo-950">Auditoría IA (Sera 🦅)</h4>
+                          {r.veredicto_ia === 'aprobado_ia' && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              ✓ IA Validado - Sin observaciones
+                            </span>
+                          )}
+                          {r.veredicto_ia === 'requiere_correccion' && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                              ⚠️ IA Detectó Observaciones
+                            </span>
+                          )}
+                          {(!r.veredicto_ia || r.veredicto_ia === 'pendiente') && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300 animate-pulse">
+                              ⏳ Analizando o pendiente de IA...
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={analyzingIds[`${r.tipo}-${reportId}`]}
+                            onClick={() => handleReanalyzeIA(reportId, r.tipo)}
+                            className="button button--ghost px-3 py-1 text-xs font-bold text-sky-800 bg-sky-50/80 hover:bg-sky-100 disabled:opacity-60 disabled:cursor-wait rounded-xl border border-sky-300 shadow-sm transition-all"
+                            title="Disparar análisis de IA de nuevo al servidor n8n"
+                          >
+                            {analyzingIds[`${r.tipo}-${reportId}`] ? '⏳ Analizando (espérame 8s)...' : '🔄 Forzar análisis IA'}
+                          </button>
+                          {r.analisis_ia && (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedIA((prev) => ({ ...prev, [cardKey]: !prev[cardKey] }))}
+                              className="button button--ghost px-3 py-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-100/50 rounded-xl border border-indigo-200"
+                            >
+                              {expandedIA[cardKey] ? '▲ Ocultar reporte IA' : '▼ Ver reporte detallado IA'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {r.analisis_ia && expandedIA[cardKey] && (
+                        <div className="rounded-xl border border-indigo-200/80 bg-white p-4 text-xs font-mono whitespace-pre-wrap text-slate-800 shadow-inner max-h-96 overflow-y-auto leading-relaxed">
+                          {r.analisis_ia}
+                          {r.veredicto_ia === 'requiere_correccion' && normalizedStatus !== 'correccion' && (
+                            <div className="mt-4 pt-3 border-t border-slate-200 flex justify-end">
+                              <button
+                                type="button"
+                                className="button bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-1.5"
+                                onClick={() => {
+                                  setCorrectionTarget({ id: reportId, tipo: r.tipo });
+                                  setCorrectionNote(r.analisis_ia || '');
+                                  setExpandedIA((prev) => ({ ...prev, [cardKey]: false }));
+                                }}
+                              >
+                                ⚡ Usar este reporte como observación para el instructor
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Display existing observations if any */}
                     {r.observaciones && r.observaciones.length > 0 && (
                       <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-3 text-xs text-rose-900">
@@ -389,7 +479,7 @@ export function RevisarInformes(): ReactElement {
                           className="rounded-xl border bg-bg-card px-4 py-2 text-sm text-amber-700 border-amber-400 hover:bg-amber-50 font-semibold"
                           onClick={() => {
                             setCorrectionTarget({ id: reportId, tipo: r.tipo })
-                            setCorrectionNote('')
+                            setCorrectionNote(r.analisis_ia || '')
                           }}
                         >
                           Solicitar Corrección

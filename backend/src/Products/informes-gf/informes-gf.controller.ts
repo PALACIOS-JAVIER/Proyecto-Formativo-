@@ -85,6 +85,20 @@ export class InformesGfController {
     return this.informesGfService.addObservacion(+id, comentario, coordinadorId);
   }
 
+  @Patch(':id/resultado-ia')
+  updateResultadoIA(
+    @Param('id') id: string,
+    @Body('analisis_ia') analisis_ia: string,
+    @Body('veredicto_ia') veredicto_ia: string,
+  ) {
+    return this.informesGfService.saveResultadoIA(+id, analisis_ia, veredicto_ia || 'aprobado_ia');
+  }
+
+  @Post(':id/reanalizar-ia')
+  reanalizarIA(@Param('id') id: string) {
+    return this.informesGfService.reanalizarIA(+id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.informesGfService.remove(+id);
