@@ -49,8 +49,8 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
     telefono: '',
     correo: '',
     contraseña: '',
-    rol: 'campesena',
-    sede: 'Yamboro',
+    rol: '' as any,
+    sede: '',
     area: '',
     codigoContrato: '',
     codigoSiif: '',
@@ -64,23 +64,69 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
 
   useEffect(() => {
     if (mode === 'register') {
+      const fallbackSedes = [
+        { id_sede: 1, nombre: 'Yamboro' }
+      ]
+      const fallbackRoles = [
+        { id_rol: 1, nombre: 'Regular - Fic', sede: { id_sede: 1, nombre: 'Yamboro' } },
+        { id_rol: 2, nombre: 'CampeSena', sede: { id_sede: 1, nombre: 'Yamboro' } }
+      ]
+      const fallbackAreas = [
+        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 12, nombre: 'Produccion Pecuaria', rol: { id_rol: 2, nombre: 'CampeSena' } },
+        { id_area: 13, nombre: 'Agricola', rol: { id_rol: 2, nombre: 'CampeSena' } },
+        { id_area: 14, nombre: 'Opereciones Forestales', rol: { id_rol: 2, nombre: 'CampeSena' } },
+        { id_area: 15, nombre: 'Comunicación', rol: { id_rol: 2, nombre: 'CampeSena' } },
+        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
+        { id_area: 17, nombre: 'Idiomas', rol: { id_rol: 2, nombre: 'CampeSena' } }
+      ]
+
       Promise.all([
-        fetch('http://localhost:3000/api/sedes').then(r => r.json()),
-        fetch('http://localhost:3000/api/roles').then(r => r.json()),
-        fetch('http://localhost:3000/api/areas').then(r => r.json())
+        fetch('http://localhost:3000/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
+        fetch('http://localhost:3000/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
+        fetch('http://localhost:3000/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas)
       ]).then(([s, r, a]) => {
-        setSedesList(s)
-        setRolesList(r)
-        setAreasList(a)
-      }).catch(console.error)
+        const validSedes = ((s && s.length > 0) ? s : fallbackSedes).filter((sede: any) => sede.nombre?.toLowerCase() !== 'otra')
+        const validRoles = ((r && r.length > 0) ? r : fallbackRoles).filter((rol: any) => !rol.nombre?.toLowerCase().includes('apoyo'))
+        setSedesList(validSedes)
+        setRolesList(validRoles)
+        setAreasList((a && a.length > 0) ? a : fallbackAreas)
+      }).catch((error) => {
+        console.error('Error al cargar catálogos desde el servidor, usando respaldo:', error)
+        setSedesList(fallbackSedes)
+        setRolesList(fallbackRoles)
+        setAreasList(fallbackAreas)
+      })
     }
   }, [mode])
 
   const inputClasses = 'input-field'
   const labelClasses = 'label-field'
 
-  const filteredRoles = rolesList.filter(r => !registration.sede || r.sede?.id_sede?.toString() === registration.sede)
-  const filteredAreas = areasList.filter(a => !registration.rol || a.rol?.id_rol?.toString() === registration.rol)
+  const filteredRoles = rolesList.filter(r => {
+    const isNotApoyo = !r.nombre?.toLowerCase().includes('apoyo');
+    if (!isNotApoyo) return false;
+    return !registration.sede || 
+      r.sede?.id_sede?.toString() === registration.sede.toString() || 
+      r.sede?.nombre?.toLowerCase() === registration.sede.toLowerCase() || 
+      r.id_sede?.toString() === registration.sede.toString();
+  })
+  const filteredAreas = areasList.filter(a => 
+    !registration.rol || 
+    a.rol?.id_rol?.toString() === registration.rol.toString() || 
+    a.rol?.nombre?.toLowerCase() === registration.rol.toLowerCase() ||
+    a.id_rol?.toString() === registration.rol.toString()
+  )
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -125,6 +171,11 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
 
       if (new Date(registration.fechaInicioContrato) > new Date(registration.fechaFinContrato)) {
         setErrorMessage('La fecha de inicio debe ser anterior a la fecha fin del contrato.')
+        return
+      }
+
+      if (!registration.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
+        setErrorMessage('El correo debe pertenecer al dominio institucional (@sena.edu.co).')
         return
       }
 
@@ -325,7 +376,7 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
                   </label>
                   <label className={labelClasses}>
                     <span>Correo institucional</span>
-                    <input type="email" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
+                    <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" value={registration.correo} onChange={(event) => handleRegisterChange('correo', event.target.value)} className={inputClasses} required />
                   </label>
                   <label className={labelClasses}>
                     <span>Sede</span>
