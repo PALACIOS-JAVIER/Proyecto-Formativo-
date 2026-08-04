@@ -85,14 +85,14 @@ export class UsuariosService {
     delete dto.passwordConfirm;
 
     try {
-      const usuario = this.usuarioRepository.create({
+      const usuario: Usuario = this.usuarioRepository.create({
         ...dto,
         sede,
         rol,
         area,
         password: createUsuarioDto.password,
-      });
-      return await this.usuarioRepository.save(usuario);
+      } as any) as unknown as Usuario;
+      return (await this.usuarioRepository.save(usuario as any)) as unknown as Usuario;
     } catch (error: any) {
       console.error('Error en base de datos al guardar usuario:', error);
       throw new BadRequestException(`No se pudo registrar el usuario: ${error.message || error}`);
