@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -24,6 +24,27 @@ export class UsuariosService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+    const existente = await this.usuarioRepository.findOne({
+      where: [
+        { correo: createUsuarioDto.correo },
+        { cedula: Number(createUsuarioDto.cedula) },
+        { telefono: Number(createUsuarioDto.telefono) },
+      ],
+    });
+
+    if (existente) {
+      if (existente.correo === createUsuarioDto.correo) {
+        throw new ConflictException('Ya existe un usuario registrado con este correo institucional.');
+      }
+      if (Number(existente.cedula) === Number(createUsuarioDto.cedula)) {
+        throw new ConflictException('Ya existe un usuario registrado con esta cédula de ciudadanía.');
+      }
+      if (Number(existente.telefono) === Number(createUsuarioDto.telefono)) {
+        throw new ConflictException('Ya existe un usuario registrado con este número de teléfono.');
+      }
+      throw new ConflictException('El usuario, correo, cédula o teléfono ya se encuentra registrado en el sistema.');
+    }
+
     const sedeIdNum = Number(createUsuarioDto.id_sede);
     let sede = !isNaN(sedeIdNum)
       ? await this.sedeRepository.findOne({ where: { id_sede: sedeIdNum } })
@@ -57,15 +78,25 @@ export class UsuariosService {
       );
     }
 
-    const usuario = this.usuarioRepository.create({
-      ...createUsuarioDto,
-      sede,
-      rol,
-      area,
-      password: createUsuarioDto.password,
-    });
+    const dto: any = { ...createUsuarioDto };
+    delete dto.id_sede;
+    delete dto.id_rol;
+    delete dto.id_area;
+    delete dto.passwordConfirm;
 
-    return this.usuarioRepository.save(usuario);
+    try {
+      const usuario = this.usuarioRepository.create({
+        ...dto,
+        sede,
+        rol,
+        area,
+        password: createUsuarioDto.password,
+      });
+      return await this.usuarioRepository.save(usuario);
+    } catch (error: any) {
+      console.error('Error en base de datos al guardar usuario:', error);
+      throw new BadRequestException(`No se pudo registrar el usuario: ${error.message || error}`);
+    }
   }
 
   findAll(): Promise<Usuario[]> {
