@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { FaApple } from 'react-icons/fa'
 
 export interface ProfileData {
@@ -243,6 +242,10 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault()
+    if (data.correo && !data.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
+      showToast('El correo debe pertenecer al dominio institucional (@sena.edu.co)', 'error')
+      return
+    }
     setIsSaving(true)
     setSaveError('')
     const userId = getUserIdFromSession()
@@ -417,12 +420,6 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         </div>
       )}
 
-      {savedAlert && (
-        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-          ✓ Cambios guardados correctamente en la base de datos.
-        </div>
-      )}
-
       {saveError && (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-800">
           ⚠️ {saveError}
@@ -454,7 +451,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             <span className="font-medium text-xs text-secondary uppercase">Correo institucional</span>
-            <input type="email" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} disabled={isFieldDisabled('correo')} />
+            <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} disabled={isFieldDisabled('correo')} />
           </label>
 
           <label>
@@ -536,7 +533,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
               accept="image/*"
               onChange={(e) => {
                 const f = e.target.files?.[0]
-                if (f) handleFoto(f)
+                if (f) setFotoFile(f)
               }}
             />
             {preview ? <img src={preview} alt="preview" className="rounded-2xl max-h-36 object-cover" /> : null}
@@ -549,7 +546,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
               accept="image/*"
               onChange={(e) => {
                 const f = e.target.files?.[0]
-                if (f) handleFirma(f)
+                if (f) setFirmaFile(f)
               }}
             />
             {firmaPreview ? (

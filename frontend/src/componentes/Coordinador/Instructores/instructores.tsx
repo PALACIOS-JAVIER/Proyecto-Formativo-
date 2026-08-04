@@ -92,6 +92,11 @@ export function Instructores({
       return
     }
 
+    if (!supportStaffData.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
+      setNotificationMessage('⚠️ El correo debe pertenecer al dominio institucional (@sena.edu.co).')
+      return
+    }
+
     onCreateSupportStaff({
       ...supportStaffData,
       rol: 'apoyo administrativo',
@@ -311,7 +316,7 @@ export function Instructores({
               </label>
               <label>
                 Correo institucional
-                <input type="email" className="input-field" value={selectedInstructorForm.correo} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, correo: e.target.value })} disabled={!instructorEditAllowed} />
+                <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" className="input-field" value={selectedInstructorForm.correo} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, correo: e.target.value })} disabled={!instructorEditAllowed} />
               </label>
               <label>
                 Rol
@@ -357,7 +362,7 @@ export function Instructores({
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) { onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.toLowerCase().trim().endsWith('@sena.edu.co')) { setNotificationMessage('⚠️ El correo debe pertenecer al dominio institucional (@sena.edu.co).'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
                   <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
                   <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
                 </>
@@ -396,7 +401,7 @@ export function Instructores({
               </label>
               <label>
                 Correo institucional
-                <input type="email" className="input-field" value={supportStaffData.correo} onChange={(e) => handleSupportInput('correo', e.target.value)} />
+                <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" className="input-field" value={supportStaffData.correo} onChange={(e) => handleSupportInput('correo', e.target.value)} />
               </label>
               <label>
                 Contraseña

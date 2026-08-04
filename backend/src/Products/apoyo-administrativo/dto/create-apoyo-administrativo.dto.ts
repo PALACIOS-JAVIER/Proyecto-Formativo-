@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsEmail, IsOptional, Matches } from 'class-validator';
 
 export class CreateApoyoAdministrativoDto {
   @IsString()
@@ -18,6 +18,7 @@ export class CreateApoyoAdministrativoDto {
   telefono: number;
 
   @IsEmail()
+  @Matches(/@sena\.edu\.co$/i, { message: 'El correo debe pertenecer al dominio institucional @sena.edu.co' })
   correo: string;
 
   @IsString()

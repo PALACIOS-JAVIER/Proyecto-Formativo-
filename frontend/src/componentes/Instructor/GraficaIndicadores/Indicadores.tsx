@@ -11,7 +11,6 @@ function LineChart({ data = [] }: { data?: number[] }) {
   }
 
   const max = Math.max(...data, 1)
-  const min = 0
 
   const points = data
     .map((v, i) => {
