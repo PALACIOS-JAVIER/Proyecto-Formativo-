@@ -1,12 +1,12 @@
 -- sedes
 INSERT INTO sedes (id_sede, nombre) VALUES
-(1, 'Yamboro');
+(1, 'Yamboro') ON CONFLICT DO NOTHING;
 SELECT setval('sedes_id_sede_seq', (SELECT MAX(id_sede) FROM sedes));
 
 -- roles
 INSERT INTO roles (id_rol, nombre, id_sede) VALUES
 (1, 'Regular - Fic', 1),
-(2, 'CampeSena', 1);
+(2, 'CampeSena', 1) ON CONFLICT DO NOTHING;
 SELECT setval('roles_id_rol_seq', (SELECT MAX(id_rol) FROM roles));
 
 -- areas
@@ -27,7 +27,7 @@ INSERT INTO areas (id_area, nombre, id_rol) VALUES
 (14, 'Opereciones Forestales', 2),
 (15, 'Comunicación', 2),
 (16, 'Bilinguismo', 1),
-(17, 'Idiomas', 2);
+(17, 'Idiomas', 2) ON CONFLICT DO NOTHING;
 SELECT setval('areas_id_area_seq', (SELECT MAX(id_area) FROM areas));
 
 -- especialidades
@@ -58,7 +58,7 @@ INSERT INTO especialidades (id_especialidad, nombre, id_area) VALUES
 (24, 'Cultivos Agricolas', 13),
 (25, 'Ingles', 16),
 (26, 'Ingles', 17),
-(27, 'Afines del Instructor', 5);
+(27, 'Afines del Instructor', 5) ON CONFLICT DO NOTHING;
 SELECT setval('especialidades_id_especialidad_seq', (SELECT MAX(id_especialidad) FROM especialidades));
 
 -- objetos_contractuales
@@ -90,6 +90,6 @@ INSERT INTO objetos_contractuales (id_objeto, descripcion, id_area) VALUES
 (25, 'Prestar servicios profesionales en la planeación y ejecución de la formación, así como la evaluación de los resultados de aprendizaje definidos en los diseños curriculares asignados, para el desarrollo de habilidades y competencias técnicas de la población campesina- CampeSENA, en la especialidad de COMUNICACIÓN y afines del CGDSS.', 15),
 (26, 'Prestar servicios profesionales en la planeación y ejecución de la formación, así como la evaluación de los resultados de aprendizaje definidos en los diseños curriculares asignados, para el desarrollo de habilidades y competencias técnicas de la población campesina- CampeSENA, en la especialidad de AGRICOLA - CULTIVOS AGRICOLAS y afines del CGDSS', 13),
 (27, 'Prestar servicios profesionales de carácter temporal, en actividades de instructor del área BILINGUISMO-INGLES, impartiendo Formación Profesional Integral, la administración educativa y el seguimiento en la etapa productiva, en las diferentes áreas del conocimiento de la formación Titulada Presencial, Titulada Virtual, Complementaria Presencial, Complementaria Virtual y A Distancia en los programas regular que imparte el Centro de Gestión y Desarrollo Sostenible Surcolombiano.', 16),
-(28, 'Prestar servicios profesionales y/o de apoyo a la gestión, en la planeación y ejecución de la formación, así como la evaluación de los resultados de aprendizaje definidos en los diseños curriculares asignados, para el desarrollo de habilidades y competencias técnicas de la población campesina- CampeSENA, en la especialidad de IDIOMAS - INGLES del Centro de Gestión y Desarrollo Sostenible Surcolombiano, del SENA Regional Huila y su área de cobertura', 17);
+(28, 'Prestar servicios profesionales y/o de apoyo a la gestión, en la planeación y ejecución de la formación, así como la evaluación de los resultados de aprendizaje definidos en los diseños curriculares asignados, para el desarrollo de habilidades y competencias técnicas de la población campesina- CampeSENA, en la especialidad de IDIOMAS - INGLES del Centro de Gestión y Desarrollo Sostenible Surcolombiano, del SENA Regional Huila y su área de cobertura', 17) ON CONFLICT DO NOTHING;
 SELECT setval('objetos_contractuales_id_objeto_seq', (SELECT MAX(id_objeto) FROM objetos_contractuales));
 
