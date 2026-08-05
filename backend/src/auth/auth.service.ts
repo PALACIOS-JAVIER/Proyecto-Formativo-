@@ -7,6 +7,8 @@ import { Usuario } from '../Products/usuarios/entities/usuario.entity';
 import { Coordinador } from '../Products/coordinadores/entities/coordinador.entity';
 import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
+import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -27,22 +29,6 @@ export class AuthService {
     const usernameNormalizado = rawUsername.toLowerCase();
     const rawPassword = (loginDto.password || '').trim();
 
-    // 0. Demo fallback check FIRST for demo accounts
-    if (usernameNormalizado === 'instructor' && rawPassword === '123456') {
-      const payload = { sub: 0, correo: 'demo@sena.edu.co', rol: 'instructor' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: 0, nombre: 'Instructor Demo', rol: 'instructor' }
-      };
-    }
-    if (usernameNormalizado === 'coordinador' && rawPassword === '123456') {
-      const payload = { sub: -1, correo: 'admin@sena.edu.co', rol: 'coordinador' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: -1, nombre: 'Coordinador Demo', rol: 'coordinador' }
-      };
-    }
-    
     // 1. Try exact email match
     let user = await this.usuarioRepository.findOne({ 
       where: { correo: usernameNormalizado },
@@ -63,26 +49,17 @@ export class AuthService {
     // 3. Try partial email prefix match or case-insensitive search across all users
     if (!user) {
       const allUsers = await this.usuarioRepository.find({ relations: { rol: true } });
-      const emailPrefix = usernameNormalizado.includes('@') ? usernameNormalizado.split('@')[0] : '';
-      if (emailPrefix) {
-        user = allUsers.find(u => {
-          if (!u.correo) return false;
-          const dbEmail = u.correo.toLowerCase().trim();
-          const dbPrefix = dbEmail.split('@')[0];
-          return dbEmail === usernameNormalizado || dbPrefix === emailPrefix;
-        }) || null;
-      }
+      const userPrefix = usernameNormalizado.includes('@') ? usernameNormalizado.split('@')[0] : usernameNormalizado;
+      user = allUsers.find(u => {
+        if (!u.correo) return false;
+        const dbEmail = u.correo.toLowerCase().trim();
+        const dbPrefix = dbEmail.split('@')[0];
+        return dbEmail === usernameNormalizado || dbPrefix === userPrefix || dbEmail.startsWith(userPrefix);
+      }) || null;
     }
 
     if (!user) {
-      throw new UnauthorizedException('Usuario o correo no encontrado.');
-    }
-
-    // 5. Password verification (flexible for dev/migrated passwords)
-    const dbPassword = (user.password || '').trim();
-    // Allow login with user password, '123456', or any non-empty password in dev
-    if (dbPassword && rawPassword && dbPassword !== rawPassword && rawPassword !== '123456') {
-      console.log(`[AUTH] Allowing login for user ${user.correo} (Dev mode)`);
+      throw new UnauthorizedException('Usuario o contraseña incorrectos.');
     }
 
     // Determine dynamic role (coordinador, apoyo_administrativo, or instructor)
@@ -100,15 +77,41 @@ export class AuthService {
     // Verify account approval status for instructors
     if (rolExacto === 'instructor') {
       const estadoCuenta = (user.estado_cuenta || 'pendiente').toLowerCase().trim();
-      if (estadoCuenta === 'inactivo') {
-        throw new UnauthorizedException('Tu cuenta está desactivada por el coordinador.');
+      const isApproved = estadoCuenta === 'aprobado' || estadoCuenta === 'activo';
+      if (!isApproved) {
+        if (estadoCuenta === 'inactivo') {
+          throw new UnauthorizedException('Tu cuenta está desactivada por el coordinador.');
+        }
+        if (estadoCuenta === 'rechazado') {
+          throw new UnauthorizedException('Tu cuenta ha sido rechazada por el coordinador.');
+        }
+        throw new UnauthorizedException('El usuario ya ha sido registrado exitosamente, pero está en espera de que el coordinador active el usuario.');
       }
-      if (estadoCuenta === 'rechazado') {
-        throw new UnauthorizedException('Tu cuenta ha sido rechazada por el coordinador.');
+    }
+
+    // Password verification with bcrypt
+    const dbPassword = (user.password || '').trim();
+    if (!dbPassword || !rawPassword) {
+      throw new UnauthorizedException('Usuario o contraseña incorrectos.');
+    }
+
+    // Support both bcrypt hashed passwords and legacy plain text (for migration)
+    let passwordValid = false;
+    if (dbPassword.startsWith('$2b$') || dbPassword.startsWith('$2a$')) {
+      // Password is already hashed with bcrypt
+      passwordValid = await bcrypt.compare(rawPassword, dbPassword);
+    } else {
+      // Legacy plain text password — compare directly, then upgrade to hash
+      passwordValid = dbPassword === rawPassword;
+      if (passwordValid) {
+        // Auto-migrate: hash the plain text password for future logins
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+        await this.usuarioRepository.update(user.id_Usuario, { password: hashedPassword });
       }
-      if (estadoCuenta === 'pendiente') {
-        throw new UnauthorizedException('Tu cuenta está pendiente de aprobación por el coordinador.');
-      }
+    }
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Usuario o contraseña incorrectos.');
     }
 
     const payload = { sub: user.id_Usuario, correo: user.correo, rol: rolExacto };

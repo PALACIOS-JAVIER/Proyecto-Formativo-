@@ -31,7 +31,7 @@ services:
       DB_NAME: proyecto_formativo
       DB_SYNCHRONIZE: "true"
       PORT: 3000
-      JWT_SECRET: super-secret-jwt-key
+      JWT_SECRET: SRWv5qyFNC7PsQdmSzZjaGEosHg8pjGtuRBABcjti9YrIqaclYLCMRG7mxU3r6jE
       FRONTEND_URL: http://localhost:5173
     ports:
       - "3000:3000"

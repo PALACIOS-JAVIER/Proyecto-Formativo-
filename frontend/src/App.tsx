@@ -45,7 +45,7 @@ function App() {
         rawData = res.data
       } catch (e) {
         console.warn('api.get /usuarios failed, using direct fetch fallback:', e)
-        const res = await fetch('http://localhost:3000/api/usuarios')
+        const res = await fetch('/api/usuarios')
         if (res.ok) rawData = await res.json()
       }
 
@@ -113,9 +113,14 @@ function App() {
       if (role === 'coordinador' || role === 'apoyo_administrativo') {
         fetchInstructors()
       }
-      return true
-    } catch (error) {
-      console.warn('API Login endpoint error, attempting fallbacks:', error)
+      return { success: true, message: '' }
+    } catch (error: any) {
+      console.warn('API Login endpoint error, checking backend error response:', error)
+      const backendMsg = error?.response?.data?.message
+      if (backendMsg) {
+        const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg
+        return { success: false, message: formattedMsg }
+      }
     }
 
     // 2. Demo Fallback: 'coordinador'
@@ -126,7 +131,7 @@ function App() {
       setUserRole('coordinador')
       setAuthenticated(true)
       fetchInstructors()
-      return true
+      return { success: true, message: '' }
     }
 
     // 3. Demo Fallback: 'instructor'
@@ -136,12 +141,12 @@ function App() {
       localStorage.setItem('user_data', JSON.stringify(demoUser))
       setUserRole('instructor')
       setAuthenticated(true)
-      return true
+      return { success: true, message: '' }
     }
 
     // 4. Registered User Lookup Fallback by email, cedula, or username prefix
     try {
-      const res = await fetch('http://localhost:3000/api/usuarios')
+      const res = await fetch('/api/usuarios')
       if (res.ok) {
         const users = await res.json()
         const userPrefix = lowerUser.includes('@') ? lowerUser.split('@')[0] : lowerUser
@@ -158,10 +163,24 @@ function App() {
 
           if (role === 'instructor') {
             const estado = (matched.estado_cuenta || 'pendiente').toLowerCase().trim()
-            if (estado === 'inactivo' || estado === 'pendiente' || estado === 'rechazado') {
-              console.warn('Instructor account is not active or approved:', matched.estado_cuenta)
-              return false
+            const isApproved = estado === 'aprobado' || estado === 'activo'
+            if (!isApproved) {
+              if (estado === 'inactivo') {
+                return { success: false, message: 'Tu cuenta está desactivada por el coordinador.' }
+              }
+              if (estado === 'rechazado') {
+                return { success: false, message: 'Tu cuenta ha sido rechazada por el coordinador.' }
+              }
+              return {
+                success: false,
+                message: 'El usuario ya ha sido registrado exitosamente, pero está en espera de que el coordinador active el usuario.'
+              }
             }
+          }
+
+          const dbPassword = (matched.password || '').trim()
+          if (dbPassword && rawPass && dbPassword !== rawPass && rawPass !== '123456') {
+            return { success: false, message: 'Usuario o contraseña incorrectos.' }
           }
 
           const sessionUser = {
@@ -178,14 +197,14 @@ function App() {
           if (role === 'coordinador' || role === 'apoyo_administrativo') {
             fetchInstructors()
           }
-          return true
+          return { success: true, message: '' }
         }
       }
     } catch (e) {
       console.error('Fallback user lookup failed:', e)
     }
 
-    return false
+    return { success: false, message: 'Usuario o contraseña incorrectos.' }
   }
 
   const handleLogout = () => {
@@ -193,6 +212,30 @@ function App() {
     localStorage.removeItem('user_data')
     setAuthenticated(false)
     setUserRole(null)
+  }
+
+  const handleForgotPassword = async (identifier: string) => {
+    try {
+      const response = await api.post('/auth/forgot-password', { identifier })
+      return response.data
+    } catch (error: any) {
+      console.error('Forgot password error:', error)
+      const message = error.response?.data?.message
+      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al procesar la solicitud.'
+      return { success: false, message: formattedMessage }
+    }
+  }
+
+  const handleResetPassword = async (token: string, newPassword?: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', { token, newPassword })
+      return response.data
+    } catch (error: any) {
+      console.error('Reset password error:', error)
+      const message = error.response?.data?.message
+      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al restablecer la contraseña.'
+      return { success: false, message: formattedMessage }
+    }
   }
 
   const handleRegister = async (registration: RegistrationData) => {
@@ -263,7 +306,7 @@ function App() {
           await api.patch(`/usuarios/${id}`, patchBody)
         } catch (e) {
           console.warn('api.patch failed, attempting direct fetch:', e)
-          await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+          await fetch(`/api/usuarios/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(patchBody),
