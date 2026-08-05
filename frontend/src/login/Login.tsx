@@ -131,9 +131,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
       ]
 
       Promise.all([
-        fetch('http://localhost:3000/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
-        fetch('http://localhost:3000/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
-        fetch('http://localhost:3000/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas),
+        fetch('/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
+        fetch('/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
+        fetch('/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas),
       ]).then(([s, r, a]) => {
         const validSedes = ((s && s.length > 0) ? s : fallbackSedes).filter((sede: any) => sede.nombre?.toLowerCase() !== 'otra')
         const validRoles = ((r && r.length > 0) ? r : fallbackRoles).filter((rol: any) => !rol.nombre?.toLowerCase().includes('apoyo'))

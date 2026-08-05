@@ -24,9 +24,9 @@ export function Notificaciones(): ReactElement {
       setIsLoading(true)
 
       const requests: Promise<any>[] = [
-        userId ? fetch(`http://localhost:3000/api/notificaciones/usuario/${userId}`).then(r => r.ok ? r.json() : []) : Promise.resolve([]),
-        userId ? fetch(`http://localhost:3000/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('http://localhost:3000/api/informes-gc').then(r => r.ok ? r.json() : []),
-        userId ? fetch(`http://localhost:3000/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('http://localhost:3000/api/informes-gf').then(r => r.ok ? r.json() : []),
+        userId ? fetch(`/api/notificaciones/usuario/${userId}`).then(r => r.ok ? r.json() : []) : Promise.resolve([]),
+        userId ? fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
+        userId ? fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
       ]
 
       const [notifsData, gcRes, gfRes] = await Promise.all(requests)
@@ -71,7 +71,7 @@ export function Notificaciones(): ReactElement {
 
   const markAsRead = async (id: number) => {
     try {
-      await fetch(`http://localhost:3000/api/notificaciones/${id}/marcar-leida`, {
+      await fetch(`/api/notificaciones/${id}/marcar-leida`, {
         method: 'PATCH',
       })
       setNotifications((prev) => prev.map((n) => (n.id_notificacion === id ? { ...n, is_new: false } : n)))

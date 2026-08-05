@@ -7,7 +7,7 @@ import { Coordinador } from '../Products/coordinadores/entities/coordinador.enti
 import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'crypto';
-import * as nodemailer from 'nodemailer';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -26,22 +26,6 @@ export class AuthService {
     const usernameNormalizado = rawUsername.toLowerCase();
     const rawPassword = (loginDto.password || '').trim();
 
-    // 0. Demo fallback check FIRST for demo accounts
-    if (usernameNormalizado === 'instructor' && rawPassword === '123456') {
-      const payload = { sub: 0, correo: 'demo@sena.edu.co', rol: 'instructor' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: 0, nombre: 'Instructor Demo', rol: 'instructor' }
-      };
-    }
-    if (usernameNormalizado === 'coordinador' && rawPassword === '123456') {
-      const payload = { sub: -1, correo: 'admin@sena.edu.co', rol: 'coordinador' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: -1, nombre: 'Coordinador Demo', rol: 'coordinador' }
-      };
-    }
-    
     // 1. Try exact email match
     let user = await this.usuarioRepository.findOne({ 
       where: { correo: usernameNormalizado },
@@ -102,9 +86,28 @@ export class AuthService {
       }
     }
 
-    // Password verification for approved accounts
+    // Password verification with bcrypt
     const dbPassword = (user.password || '').trim();
-    if (dbPassword && rawPassword && dbPassword !== rawPassword && rawPassword !== '123456') {
+    if (!dbPassword || !rawPassword) {
+      throw new UnauthorizedException('Usuario o contraseña incorrectos.');
+    }
+
+    // Support both bcrypt hashed passwords and legacy plain text (for migration)
+    let passwordValid = false;
+    if (dbPassword.startsWith('$2b$') || dbPassword.startsWith('$2a$')) {
+      // Password is already hashed with bcrypt
+      passwordValid = await bcrypt.compare(rawPassword, dbPassword);
+    } else {
+      // Legacy plain text password — compare directly, then upgrade to hash
+      passwordValid = dbPassword === rawPassword;
+      if (passwordValid) {
+        // Auto-migrate: hash the plain text password for future logins
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+        await this.usuarioRepository.update(user.id_Usuario, { password: hashedPassword });
+      }
+    }
+
+    if (!passwordValid) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos.');
     }
 
@@ -163,7 +166,8 @@ export class AuthService {
     user.resetTokenExpires = expires;
     await this.usuarioRepository.save(user);
 
-    const resetLink = `http://localhost:5173/?token=${token}`; // Default Vite port
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/?token=${token}`;
 
     console.log('\n==================================================');
     console.log(`SIMULACIÓN RECUPERACIÓN DE CONTRASEÑA`);
@@ -173,13 +177,14 @@ export class AuthService {
     console.log('==================================================\n');
 
     // Try SMTP sending
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = process.env.SMTP_PORT;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    try {
+      const nodemailer = await import('nodemailer');
+      const smtpHost = process.env.SMTP_HOST;
+      const smtpPort = process.env.SMTP_PORT;
+      const smtpUser = process.env.SMTP_USER;
+      const smtpPass = process.env.SMTP_PASS;
 
-    if (smtpHost && smtpPort && smtpUser && smtpPass) {
-      try {
+      if (smtpHost && smtpPort && smtpUser && smtpPass) {
         const transporter = nodemailer.createTransport({
           host: smtpHost,
           port: Number(smtpPort),
@@ -206,9 +211,9 @@ export class AuthService {
             </div>
           `,
         });
-      } catch (mailError) {
-        console.error('Error al enviar correo por SMTP (se usó simulación en consola):', mailError.message || mailError);
       }
+    } catch (mailError: any) {
+      console.error('Error al enviar correo por SMTP (se usó simulación en consola):', mailError.message || mailError);
     }
 
     return {
@@ -224,6 +229,9 @@ export class AuthService {
     if (!newPassword || newPassword.trim() === '') {
       throw new BadRequestException('La nueva contraseña es obligatoria.');
     }
+    if (newPassword.trim().length < 8) {
+      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres.');
+    }
 
     const user = await this.usuarioRepository.findOne({
       where: { resetToken: token }
@@ -238,7 +246,9 @@ export class AuthService {
       throw new BadRequestException('El enlace de restablecimiento ha expirado.');
     }
 
-    user.password = newPassword.trim();
+    // Hash the new password with bcrypt before saving
+    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+    user.password = hashedPassword;
     user.resetToken = null;
     user.resetTokenExpires = null;
     await this.usuarioRepository.save(user);
