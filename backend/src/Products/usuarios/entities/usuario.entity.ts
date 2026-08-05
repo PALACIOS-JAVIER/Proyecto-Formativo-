@@ -67,6 +67,12 @@ export class Usuario {
     password: string;
 
     @Column({ type: 'varchar', nullable: true })
+    resetToken?: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetTokenExpires?: Date;
+
+    @Column({ type: 'varchar', nullable: true })
     fotoPerfil?: string;
 
     @Column({ type: 'varchar', nullable: true })
