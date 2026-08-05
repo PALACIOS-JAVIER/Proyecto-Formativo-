@@ -262,8 +262,33 @@ function App() {
     } catch (error: any) {
       console.error('Registration error:', error)
       const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
+      const fallbackMessage = !error.response 
+        ? 'No se pudo conectar al servidor. Verifica que el backend esté en ejecución.' 
+        : 'Error al guardar el usuario en el servidor.'
+      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || fallbackMessage
       return { success: false, message: formattedMessage }
+    }
+  }
+
+  const handleForgotPassword = async (identifier: string) => {
+    try {
+      const response = await api.post('/auth/forgot-password', { correo: identifier })
+      return response.data
+    } catch (error: any) {
+      console.error('Error in forgot-password:', error)
+      const message = error.response?.data?.message || 'No se encontró ningún usuario con ese correo institucional.'
+      return { success: false, message }
+    }
+  }
+
+  const handleResetPassword = async (correo: string, codigo: string, nuevaContrasena: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', { correo, codigo, nuevaContrasena })
+      return response.data
+    } catch (error: any) {
+      console.error('Error in reset-password:', error)
+      const message = error.response?.data?.message || 'El código de verificación es incorrecto o ha expirado.'
+      return { success: false, message }
     }
   }
 
@@ -325,14 +350,7 @@ function App() {
   }
 
   if (!authenticated) {
-    return (
-      <Login
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onForgotPassword={handleForgotPassword}
-        onResetPassword={handleResetPassword}
-      />
-    )
+    return <Login onLogin={handleLogin} onRegister={handleRegister} onForgotPassword={handleForgotPassword} onResetPassword={handleResetPassword} />
   }
 
   return userRole === 'coordinador' || userRole === 'apoyo_administrativo' ? (
