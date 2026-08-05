@@ -28,10 +28,11 @@ export interface RegistrationData {
 interface LoginProps {
   onLogin?: (credentials: LoginCredentials) => boolean | void | Promise<boolean | void>
   onRegister?: (data: RegistrationData) => Promise<{ success: boolean; message?: string } | void> | void
-  onForgotPassword?: (identifier: string) => boolean | void
+  onForgotPassword?: (identifier: string) => Promise<{ success: boolean; message?: string; correo?: string; devCode?: string }> | boolean | void
+  onResetPassword?: (correo: string, codigo: string, nuevaContrasena: string) => Promise<{ success: boolean; message?: string }> | void
 }
 
-export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
+export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }: LoginProps) {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -42,6 +43,10 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const [loading, setLoading] = useState(false)
   const [forgotIdentifier, setForgotIdentifier] = useState('')
   const [forgotSubmitted, setForgotSubmitted] = useState(false)
+  const [targetEmail, setTargetEmail] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
     apellido: '',
@@ -134,14 +139,64 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
     setSuccessMessage('')
 
     if (mode === 'forgot') {
-      if (!forgotIdentifier.trim()) {
-        setErrorMessage('Ingresa tu usuario o correo institucional.')
+      if (!forgotSubmitted) {
+        if (!forgotIdentifier.trim()) {
+          setErrorMessage('Ingresa tu usuario o correo institucional.')
+          return
+        }
+
+        setLoading(true)
+        const result = await onForgotPassword?.(forgotIdentifier)
+        setLoading(false)
+
+        if (result && typeof result === 'object') {
+          if (!result.success) {
+            setErrorMessage(result.message || 'No se encontró ningún usuario con ese correo institucional.')
+            return
+          }
+          if (result.correo) setTargetEmail(result.correo)
+          if (result.devCode) {
+            setSuccessMessage(`Código enviado al correo ${result.correo}. (Modo Dev de pruebas: tu código es ${result.devCode})`)
+          } else {
+            setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
+          }
+          setForgotSubmitted(true)
+        } else if (result === false) {
+          setErrorMessage('No se encontró ningún usuario registrado con ese correo institucional o usuario.')
+          return
+        } else {
+          setForgotSubmitted(true)
+        }
+        return
+      } else {
+        if (!verificationCode.trim() || !newPassword.trim() || !confirmNewPassword.trim()) {
+          setErrorMessage('Por favor completa todos los campos para cambiar tu contraseña.')
+          return
+        }
+        if (newPassword.length < 6) {
+          setErrorMessage('La nueva contraseña debe tener al menos 6 caracteres.')
+          return
+        }
+        if (newPassword !== confirmNewPassword) {
+          setErrorMessage('Las contraseñas ingresadas no coinciden.')
+          return
+        }
+
+        setLoading(true)
+        const resetResult = await onResetPassword?.(targetEmail || forgotIdentifier, verificationCode, newPassword)
+        setLoading(false)
+
+        if (resetResult && !resetResult.success) {
+          setErrorMessage(resetResult.message || 'Error al cambiar la contraseña. Verifica el código.')
+          return
+        }
+        setSuccessMessage('¡Contraseña restablecida con éxito! Redirigiendo al inicio de sesión...')
+        setTimeout(() => {
+          goToLogin()
+          setSuccessMessage('Contraseña actualizada con éxito. Ya puedes iniciar sesión con tu nueva clave.')
+        }, 2500)
         return
       }
-
-      onForgotPassword?.(forgotIdentifier)
-      setForgotSubmitted(true)
-      return
     }
 
     if (mode === 'login') {
@@ -216,13 +271,18 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
   const goToLogin = () => {
     setMode('login')
     setErrorMessage('')
+    setSuccessMessage('')
     setForgotSubmitted(false)
     setForgotIdentifier('')
+    setVerificationCode('')
+    setNewPassword('')
+    setConfirmNewPassword('')
   }
 
   const goToForgot = () => {
     setMode('forgot')
     setErrorMessage('')
+    setSuccessMessage('')
     setForgotSubmitted(false)
   }
 
@@ -249,8 +309,8 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
               {mode === 'register' && 'Completa tus datos para solicitar acceso a la plataforma.'}
               {mode === 'forgot' &&
                 (forgotSubmitted
-                  ? 'Revisa tu correo institucional para continuar con el proceso.'
-                  : 'Ingresa tu usuario o correo y te enviaremos instrucciones para restablecerla.')}
+                  ? 'Ingresa el código que te enviamos al correo institucional y escribe tu nueva contraseña.'
+                  : 'Ingresa tu usuario o correo institucional y te enviaremos un código de seguridad para restablecer tu contraseña.')}
             </p>
           </div>
 
@@ -260,11 +320,79 @@ export function Login({ onLogin, onRegister, onForgotPassword }: LoginProps) {
 
             {mode === 'forgot' ? (
               forgotSubmitted ? (
-                <div className="switch-mode-row">
-                  <button type="button" onClick={goToLogin} className="link-button">
-                    Volver a iniciar sesión
+                <>
+                  <div className="floating-field">
+                    <input
+                      id="verification-code"
+                      type="text"
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(event) => setVerificationCode(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="verification-code" className="floating-label">
+                      Código de verificación (6 dígitos)
+                    </label>
+                  </div>
+
+                  <div className="floating-field">
+                    <input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="new-password" className="floating-label">
+                      Nueva contraseña
+                    </label>
+                  </div>
+
+                  <div className="floating-field">
+                    <input
+                      id="confirm-new-password"
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(event) => setConfirmNewPassword(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="confirm-new-password" className="floating-label">
+                      Confirmar nueva contraseña
+                    </label>
+                  </div>
+
+                  <button type="submit" disabled={loading} className="button-primary">
+                    {loading ? 'Validando código...' : 'Guardar nueva contraseña'}
                   </button>
-                </div>
+
+                  <div className="switch-mode-row" style={{ marginTop: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForgotSubmitted(false)
+                        setVerificationCode('')
+                        setNewPassword('')
+                        setConfirmNewPassword('')
+                        setErrorMessage('')
+                        setSuccessMessage('')
+                      }}
+                      className="link-button"
+                    >
+                      Volver a solicitar código
+                    </button>
+                  </div>
+                  <div className="switch-mode-row">
+                    <button type="button" onClick={goToLogin} className="link-button">
+                      Volver a iniciar sesión
+                    </button>
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="floating-field">

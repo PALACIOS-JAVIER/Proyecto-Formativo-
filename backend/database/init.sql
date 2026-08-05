@@ -158,37 +158,7 @@ CREATE TABLE historial (
 -- DATOS INICIALES (SEMILLAS)
 -- ==========================================
 
-INSERT INTO sedes (nombre) VALUES ('Yamboro'), ('Otra');
-
-INSERT INTO roles (nombre, id_sede) VALUES
-('CampeSENA', 1),
-('Regular FIC', 1),
-('Apoyo Administrativo', 1);
-
-INSERT INTO areas (nombre, id_rol) VALUES
-('AGRÍCOLA', 1),
-('OPERACIONES FORESTALES', 1),
-('PRODUCCIÓN PECUARIA', 1),
-('COMUNICACIÓN', 1),
-('BILINGÜISMO-INGLES', 1),
-('ÉTICA', 2);
-
-INSERT INTO especialidades (nombre, id_area) VALUES
-('PRODUCCIÓN DE CAFES', 1),
-('CULTIVOS AGRÍCOLAS', 1),
-('IDIOMAS-INGLES', 5);
-
-INSERT INTO objetos_contractuales (descripcion, id_area) VALUES
-('Prestar servicios profesionales en la planeación y ejecución de la formación... población campesina- CampeSENA, en la especialidad de PRODUCCIÓN PECUARIA', 3),
-('Prestar servicios de apoyo a la gestión... población campesina- CampeSENA, en la especialidad de AGRICOLA - PRODUCCIÓN DE CAFES', 1),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de OPERACIONES FORESTALES', 2),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de COMUNICACIÓN', 4),
-('Prestar servicios profesionales... población campesina- CampeSENA, en la especialidad de AGRICOLA - CULTIVOS AGRÍCOLAS', 1);
 
 -- Insertar coordinador por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area) 
 VALUES ('Admin', 'Coordinador', 111111111, 3000000000, 'admin@sena.edu.co', 'CTR-000', 0, '2025-01-01', '2026-12-31', '123456', 'aprobado', 1, 3, NULL);
-
--- Insertar instructor por defecto
-INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area, id_especialidad) 
-VALUES ('Instructor', 'Demo', 222222222, 3000000001, 'instructor@sena.edu.co', 'CTR-111', 1, '2025-01-01', '2025-12-31', '123456', 'aprobado', 1, 1, 1, 1);
