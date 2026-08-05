@@ -262,7 +262,9 @@ function App() {
     } catch (error: any) {
       console.error('Registration error:', error)
       const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
+      const formattedMessage = Array.isArray(message) 
+        ? message.join(', ') 
+        : message || 'Error al conectar con el servidor. Por favor, asegúrate de que el backend esté corriendo y no haya bloqueos de CORS.'
       return { success: false, message: formattedMessage }
     }
   }

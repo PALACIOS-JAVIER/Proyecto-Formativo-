@@ -118,6 +118,14 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
     setTimeout(() => setToastMessage(''), 4000)
   }
 
+  const handleFoto = (file: File) => {
+    setFotoFile(file)
+  }
+
+  const handleFirma = (file: File) => {
+    setFirmaFile(file)
+  }
+
   const [especialidadesList, setEspecialidadesList] = useState<any[]>([])
   const [objetosList, setObjetosList] = useState<any[]>([])
   const [lockedEspecialidad, setLockedEspecialidad] = useState(false)
