@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # 1. Contenedor de Base de Datos
   db:
     image: postgres:15
     container_name: proyecto_formativo_db
@@ -12,7 +13,55 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - red_proyecto
+    restart: unless-stopped
+
+  # 2. Contenedor del Backend (NestJS + TypeORM)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: proyecto_formativo_backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: admin
+      DB_PASSWORD: secretpassword
+      DB_NAME: proyecto_formativo
+      DB_SYNCHRONIZE: "true"
+      PORT: 3000
+      JWT_SECRET: super-secret-jwt-key
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      - db
+    networks:
+      - red_proyecto
+    restart: unless-stopped
+
+  # 3. Contenedor del Frontend (React + Vite + Tailwind en Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: proyecto_formativo_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - red_proyecto
     restart: unless-stopped
 
 volumes:
   pgdata:
+  backend_uploads:
+
+networks:
+  red_proyecto:
+    driver: bridge
+
