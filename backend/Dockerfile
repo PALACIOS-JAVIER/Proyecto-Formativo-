@@ -24,8 +24,11 @@ RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 
 # Creamos directorio para las subidas de archivos (uploads)
-RUN mkdir -p uploads
+RUN mkdir -p uploads && chown -R node:node /app
+
+# Ejecutar como usuario no privilegiado
+USER node
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

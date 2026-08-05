@@ -9,6 +9,7 @@ import { Rol } from '../rol/entities/rol.entity';
 import { Area } from '../areas/entities/area.entity';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuariosService {
@@ -85,12 +86,14 @@ export class UsuariosService {
     delete dto.passwordConfirm;
 
     try {
+      // Hash the password before saving
+      const hashedPassword = await bcrypt.hash(createUsuarioDto.password, 10);
       const usuario: Usuario = this.usuarioRepository.create({
         ...dto,
         sede,
         rol,
         area,
-        password: createUsuarioDto.password,
+        password: hashedPassword,
       } as any) as unknown as Usuario;
       return (await this.usuarioRepository.save(usuario as any)) as unknown as Usuario;
     } catch (error: any) {

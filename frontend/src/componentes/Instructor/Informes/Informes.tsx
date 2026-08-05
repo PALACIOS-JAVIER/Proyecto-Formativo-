@@ -40,8 +40,8 @@ export function Informes(): ReactElement {
 
       setIsLoading(true)
       const [gcRes, gfRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
-        fetch(`http://localhost:3000/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
+        fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' as const }))
@@ -120,7 +120,7 @@ export function Informes(): ReactElement {
   const renderCard = (report: ReportWithVersion) => {
     const pdfFullUrl = report.archivo_url.startsWith('http')
       ? report.archivo_url
-      : `http://localhost:3000/${report.archivo_url}`
+      : `/${report.archivo_url}`
 
     const lastObs = report.observaciones && report.observaciones.length > 0
       ? report.observaciones[report.observaciones.length - 1]

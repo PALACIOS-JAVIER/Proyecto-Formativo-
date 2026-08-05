@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { existsSync, mkdirSync } from 'fs';
@@ -28,32 +29,38 @@ const uploadOptions = {
     }
     cb(null, true);
   },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB máximo para imágenes
 };
 
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
+  // Público: registro de nuevos usuarios
   @Post()
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
     return this.usuariosService.create(createUsuarioDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll() {
     return this.usuariosService.findAll();
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usuariosService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
     return this.usuariosService.update(+id, updateUsuarioDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id/foto')
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   uploadFoto(@Param('id') id: string, @UploadedFile() file: any) {
@@ -61,6 +68,7 @@ export class UsuariosController {
     return this.usuariosService.updateFiles(+id, { fotoPerfil: path });
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id/firma')
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   uploadFirma(@Param('id') id: string, @UploadedFile() file: any) {
@@ -68,6 +76,7 @@ export class UsuariosController {
     return this.usuariosService.updateFiles(+id, { firma: path });
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usuariosService.remove(+id);
