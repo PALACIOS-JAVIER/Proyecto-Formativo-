@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Sede } from '../../sede/entities/sede.entity';
 import { Rol } from '../../rol/entities/rol.entity';
 import { Area } from '../../areas/entities/area.entity';
@@ -63,12 +64,15 @@ export class Usuario {
     @Column({ type: 'varchar', default: 'pendiente', nullable: true })
     estado_cuenta: string;
 
+    @Exclude()
     @Column({ type: 'varchar' })
     password: string;
 
+    @Exclude()
     @Column({ type: 'varchar', nullable: true })
     resetToken?: string;
 
+    @Exclude()
     @Column({ type: 'timestamp', nullable: true })
     resetTokenExpires?: Date;
 

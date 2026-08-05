@@ -160,14 +160,14 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       setData(loaded)
       if (u.especialidad) setLockedEspecialidad(true)
       if (u.objetoContractual) setLockedObjeto(true)
-      if (u.fotoPerfil) setPreview(u.fotoPerfil.startsWith('http') ? u.fotoPerfil : `http://localhost:3000/${u.fotoPerfil}`)
-      if (u.firma) setFirmaPreview(u.firma.startsWith('http') ? u.firma : `http://localhost:3000/${u.firma}`)
+      if (u.fotoPerfil) setPreview(u.fotoPerfil.startsWith('http') ? u.fotoPerfil : `/${u.fotoPerfil}`)
+      if (u.firma) setFirmaPreview(u.firma.startsWith('http') ? u.firma : `/${u.firma}`)
     }
 
     const fetchProfile = async () => {
       try {
         if (userId && userId > 0) {
-          const res = await fetch(`http://localhost:3000/api/usuarios/${userId}`)
+          const res = await fetch(`/api/usuarios/${userId}`)
           if (res.ok) {
             const u = await res.json()
             mapUserData(u)
@@ -176,7 +176,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         }
 
         if (userEmail) {
-          const res = await fetch(`http://localhost:3000/api/usuarios`)
+          const res = await fetch(`/api/usuarios`)
           if (res.ok) {
             const list = await res.json()
             const match = list.find((item: any) => item.correo?.toLowerCase().trim() === userEmail.toLowerCase().trim())
@@ -203,8 +203,8 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   useEffect(() => {
     if (data.id_area_db) {
       Promise.all([
-        fetch(`http://localhost:3000/api/especialidades?id_area=${data.id_area_db}`).then(r => r.json()),
-        fetch(`http://localhost:3000/api/objeto-contractual?id_area=${data.id_area_db}`).then(r => r.json())
+        fetch(`/api/especialidades?id_area=${data.id_area_db}`).then(r => r.json()),
+        fetch(`/api/objeto-contractual?id_area=${data.id_area_db}`).then(r => r.json())
       ]).then(([e, o]) => {
         setEspecialidadesList(e)
         setObjetosList(o)
@@ -265,7 +265,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       if (data.id_objeto) payload.id_objeto = Number(data.id_objeto)
 
       if (userId) {
-        const response = await fetch(`http://localhost:3000/api/usuarios/${userId}`, {
+        const response = await fetch(`/api/usuarios/${userId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -280,7 +280,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         if (fotoFile) {
           const formData = new FormData()
           formData.append('file', fotoFile)
-          await fetch(`http://localhost:3000/api/usuarios/${userId}/foto`, {
+          await fetch(`/api/usuarios/${userId}/foto`, {
             method: 'PATCH',
             body: formData,
           })
@@ -290,7 +290,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         if (firmaFile) {
           const formData = new FormData()
           formData.append('file', firmaFile)
-          await fetch(`http://localhost:3000/api/usuarios/${userId}/firma`, {
+          await fetch(`/api/usuarios/${userId}/firma`, {
             method: 'PATCH',
             body: formData,
           })
@@ -360,7 +360,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       const userId = getUserIdFromSession()
       if (!userId) throw new Error("ID de usuario no encontrado")
 
-      const response = await fetch(`http://localhost:3000/api/usuarios/${userId}`, {
+      const response = await fetch(`/api/usuarios/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword }),

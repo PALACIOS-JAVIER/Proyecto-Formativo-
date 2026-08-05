@@ -18,9 +18,9 @@ export function Historial(): ReactElement {
     try {
       setIsLoading(true)
       const [gcRes, gfRes, usersRes] = await Promise.all([
-        fetch('http://localhost:3000/api/informes-gc').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:3000/api/informes-gf').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:3000/api/usuarios').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
+        fetch('/api/usuarios').then(r => r.ok ? r.json() : []),
       ])
 
       const logs: HistoryItem[] = []

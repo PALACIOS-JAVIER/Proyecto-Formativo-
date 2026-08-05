@@ -45,7 +45,7 @@ function App() {
         rawData = res.data
       } catch (e) {
         console.warn('api.get /usuarios failed, using direct fetch fallback:', e)
-        const res = await fetch('http://localhost:3000/api/usuarios')
+        const res = await fetch('/api/usuarios')
         if (res.ok) rawData = await res.json()
       }
 
@@ -146,7 +146,7 @@ function App() {
 
     // 4. Registered User Lookup Fallback by email, cedula, or username prefix
     try {
-      const res = await fetch('http://localhost:3000/api/usuarios')
+      const res = await fetch('/api/usuarios')
       if (res.ok) {
         const users = await res.json()
         const userPrefix = lowerUser.includes('@') ? lowerUser.split('@')[0] : lowerUser
@@ -281,7 +281,7 @@ function App() {
           await api.patch(`/usuarios/${id}`, patchBody)
         } catch (e) {
           console.warn('api.patch failed, attempting direct fetch:', e)
-          await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+          await fetch(`/api/usuarios/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(patchBody),

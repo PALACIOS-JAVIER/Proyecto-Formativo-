@@ -81,7 +81,7 @@ export function CargarInforme(): ReactElement {
       formData.append('anio', year)
       formData.append('id_usuario', userId.toString())
 
-      const response = await fetch('http://localhost:3000/api/informes-gc/upload', {
+      const response = await fetch('/api/informes-gc/upload', {
         method: 'POST',
         body: formData,
       })
@@ -129,7 +129,7 @@ export function CargarInforme(): ReactElement {
       formData.append('anio', year)
       formData.append('id_usuario', userId.toString())
 
-      const response = await fetch('http://localhost:3000/api/informes-gf/upload', {
+      const response = await fetch('/api/informes-gf/upload', {
         method: 'POST',
         body: formData,
       })
