@@ -123,6 +123,14 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   const [lockedEspecialidad, setLockedEspecialidad] = useState(false)
   const [lockedObjeto, setLockedObjeto] = useState(false)
 
+  // Crop states
+  const [imageSrcToCrop, setImageSrcToCrop] = useState<string | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const imgRef = React.useRef<HTMLImageElement | null>(null)
+
   // Load profile directly from Backend DB on mount (with ID & email fallback)
   useEffect(() => {
     let userId = getUserIdFromSession()
@@ -235,6 +243,95 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       setFirmaPreview(initialData.firma)
     }
   }, [initialData])
+
+  const handleCropFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageSrcToCrop(reader.result as string)
+        setZoom(1)
+        setOffset({ x: 0, y: 0 })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true)
+      setDragStart({
+        x: e.touches[0].clientX - offset.x,
+        y: e.touches[0].clientY - offset.y
+      })
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return
+    setOffset({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y
+    })
+  }
+
+  const handleCropSave = () => {
+    if (!imgRef.current || !imageSrcToCrop) return
+
+    const img = imgRef.current
+    const canvas = document.createElement('canvas')
+    canvas.width = 200
+    canvas.height = 200
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const renderedWidth = img.width
+    const renderedHeight = img.height
+    const naturalWidth = img.naturalWidth
+    const naturalHeight = img.naturalHeight
+
+    const imgLeft = 150 + offset.x - (renderedWidth * zoom) / 2
+    const imgTop = 150 + offset.y - (renderedHeight * zoom) / 2
+
+    const rx = 50 - imgLeft
+    const ry = 50 - imgTop
+
+    const scaleFactorX = naturalWidth / (renderedWidth * zoom)
+    const scaleFactorY = naturalHeight / (renderedHeight * zoom)
+
+    const sx = rx * scaleFactorX
+    const sy = ry * scaleFactorY
+    const sWidth = 200 * scaleFactorX
+    const sHeight = 200 * scaleFactorY
+
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, 200, 200)
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const croppedFile = new File([blob], 'foto_perfil.png', { type: 'image/png' })
+        setFotoFile(croppedFile)
+        setImageSrcToCrop(null)
+      }
+    }, 'image/png')
+  }
 
   const handleChange = (k: keyof ProfileData, v: string) => {
     setData((curr) => ({ ...curr, [k]: v } as ProfileData))
@@ -531,13 +628,102 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) setFotoFile(f)
-              }}
+              onChange={handleCropFileChange}
+              className="mb-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
             />
-            {preview ? <img src={preview} alt="preview" className="rounded-2xl max-h-36 object-cover" /> : null}
+            {preview ? <img src={preview} alt="preview" className="rounded-2xl max-h-36 object-cover border border-border" /> : null}
           </label>
+
+          {/* Modal para recortar foto de perfil */}
+          {imageSrcToCrop && (
+            <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
+              <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center gap-4 text-slate-900 border border-slate-100">
+                <h3 className="text-base font-bold text-center text-slate-800">Ajusta tu foto de perfil</h3>
+                <p className="text-[11px] text-slate-500 text-center -mt-2 leading-normal">
+                  Arrastra la imagen y usa la barra inferior para ajustar el tamaño dentro del círculo.
+                </p>
+                
+                {/* Contenedor del recorte */}
+                <div 
+                  className="relative w-[300px] h-[300px] bg-slate-950 overflow-hidden cursor-move border border-slate-200 rounded-2xl shadow-inner select-none touch-none"
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleMouseUp}
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageSrcToCrop}
+                    alt="A recortar"
+                    draggable={false}
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                      transformOrigin: 'center center',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      userSelect: 'none',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  {/* Máscara circular */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.75)',
+                      borderRadius: '50%',
+                      width: '200px',
+                      height: '200px',
+                      left: '50px',
+                      top: '50px',
+                      border: '2px dashed rgba(255, 255, 255, 0.8)'
+                    }}
+                  />
+                </div>
+
+                {/* Control deslizante de zoom */}
+                <div className="w-full flex flex-col gap-1.5 mt-1">
+                  <div className="flex justify-between text-xs font-semibold text-slate-600">
+                    <span>Acercamiento</span>
+                    <span>{Math.round(zoom * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.02"
+                    value={zoom}
+                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  />
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex justify-end gap-2.5 w-full mt-3">
+                  <button
+                    type="button"
+                    className="px-4 py-2 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors"
+                    onClick={() => setImageSrcToCrop(null)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition-colors"
+                    onClick={handleCropSave}
+                  >
+                    Recortar y Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <label className="foto-field">
             <span className="font-medium text-xs text-secondary uppercase">Firma digital</span>

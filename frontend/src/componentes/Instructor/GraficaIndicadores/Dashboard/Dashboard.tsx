@@ -17,9 +17,14 @@ export function Dashboard(): ReactElement {
     totalObservaciones: 0,
     cumplimiento: 0,
     topObservaciones: [] as string[],
-    pendingCorrections: [] as string[],
+    pendingCorrections: [] as Array<{ title: string; details: string }>,
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [expandedCorrections, setExpandedCorrections] = useState<Record<number, boolean>>({})
+
+  const toggleCorrection = (idx: number) => {
+    setExpandedCorrections((prev) => ({ ...prev, [idx]: !prev[idx] }))
+  }
 
   const fetchInstructorStats = async () => {
     if (!userId) {
@@ -43,7 +48,7 @@ export function Dashboard(): ReactElement {
       const cumplimiento = totalEntregas > 0 ? Math.round((approved / totalEntregas) * 100) : 100
 
       const obsList: string[] = []
-      const correctionsList: string[] = []
+      const correctionsList: Array<{ title: string; details: string }> = []
 
       allReports.forEach(r => {
         if (r.observaciones && r.observaciones.length > 0) {
@@ -53,7 +58,10 @@ export function Dashboard(): ReactElement {
         }
         if (r.estado === 'correccion' || r.estado === 'alert') {
           const lastNote = r.observaciones && r.observaciones.length > 0 ? r.observaciones[r.observaciones.length - 1].comentario : ''
-          correctionsList.push(`Informe ${r.tipo} de ${r.mes} ${r.anio}${lastNote ? `: "${lastNote}"` : ''}`)
+          correctionsList.push({
+            title: `Informe ${r.tipo} de ${r.mes} ${r.anio}`,
+            details: lastNote || 'El coordinador solicitó correcciones.'
+          })
         }
       })
 
@@ -124,11 +132,28 @@ export function Dashboard(): ReactElement {
             <div className="mt-4 rounded-2xl px-4 py-3 text-sm bg-slate-50 text-slate-500">Cargando...</div>
           ) : stats.pendingCorrections.length > 0 ? (
             <div className="mt-4 space-y-2">
-              {stats.pendingCorrections.map((corr, idx) => (
-                <div key={idx} className="rounded-2xl p-3 text-xs bg-rose-50 border border-rose-200 text-rose-900 font-medium">
-                  ⚠️ <strong>Pendiente de reenvío:</strong> {corr}
-                </div>
-              ))}
+              {stats.pendingCorrections.map((corr, idx) => {
+                const isExpanded = !!expandedCorrections[idx];
+                return (
+                  <div 
+                    key={idx} 
+                    onClick={() => toggleCorrection(idx)}
+                    className="cursor-pointer rounded-2xl p-3 text-xs bg-rose-50 border border-rose-200 text-rose-900 font-medium transition-all hover:bg-rose-100/70"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span>⚠️ <strong>Pendiente de reenvío:</strong> {corr.title}</span>
+                      <span className="text-[10px] text-rose-600 shrink-0 font-bold">
+                        {isExpanded ? '▲ Ocultar' : '▼ Ver observaciones'}
+                      </span>
+                    </div>
+                    {isExpanded && (
+                      <div className="mt-2 pl-3 border-l border-rose-350 text-rose-800 font-normal whitespace-pre-wrap animate-fadeIn">
+                        {corr.details}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <div className="mt-4 rounded-2xl px-4 py-3 text-sm bg-slate-50 text-slate-500">
