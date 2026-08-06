@@ -19,7 +19,15 @@ async function bootstrap() {
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
   app.enableCors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+      if (isLocal || origin === FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(null, false); // o callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

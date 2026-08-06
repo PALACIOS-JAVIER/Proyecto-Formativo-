@@ -238,10 +238,9 @@ function App() {
     } catch (error: any) {
       console.error('Registration error:', error)
       const message = error.response?.data?.message
-      const fallbackMessage = !error.response 
-        ? 'No se pudo conectar al servidor. Verifica que el backend esté en ejecución.' 
-        : 'Error al guardar el usuario en el servidor.'
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || fallbackMessage
+      const formattedMessage = Array.isArray(message) 
+        ? message.join(', ') 
+        : message || 'Error al conectar con el servidor. Por favor, asegúrate de que el backend esté corriendo y no haya bloqueos de CORS.'
       return { success: false, message: formattedMessage }
     }
   }
