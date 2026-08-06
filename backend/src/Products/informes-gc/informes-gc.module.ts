@@ -5,9 +5,10 @@ import { InformesGcController } from './informes-gc.controller';
 import { InformeGC } from './entities/informe-gc.entity';
 import { ObservacionGC } from './entities/observacion-gc.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
+import { Notificacion } from '../notificaciones/entities/notificacione.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InformeGC, ObservacionGC, Usuario])],
+  imports: [TypeOrmModule.forFeature([InformeGC, ObservacionGC, Usuario, Notificacion])],
   controllers: [InformesGcController],
   providers: [InformesGcService],
   exports: [InformesGcService],

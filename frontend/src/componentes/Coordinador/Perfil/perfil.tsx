@@ -5,7 +5,7 @@ export function Perfil(): ReactElement {
   const [profile, setProfile] = useState({
     nombre: 'Diana López',
     cargo: 'Coordinadora académica',
-    email: 'diana.lopez@institucion.edu.co',
+    email: 'diana.lopez@sena.edu.co',
     telefono: '300 123 4567',
     centro: 'Centro Agropecuario y Desarrollo Empresarial de Formación',
     regional: 'Huila'
@@ -20,6 +20,10 @@ export function Perfil(): ReactElement {
   }
 
   const handleSave = () => {
+    if (!profile.email.toLowerCase().trim().endsWith('@sena.edu.co')) {
+      alert('El correo debe pertenecer al dominio institucional (@sena.edu.co).')
+      return
+    }
     setIsSaving(true)
     setTimeout(() => {
       setIsSaving(false)
@@ -97,6 +101,9 @@ export function Perfil(): ReactElement {
             <span className="font-semibold text-text-secondary mb-1">Correo Electrónico</span>
             <input 
               type="email" 
+              pattern=".*@sena\.edu\.co$"
+              title="El correo debe terminar en @sena.edu.co"
+              placeholder="ejemplo@sena.edu.co"
               name="email"
               value={profile.email} 
               onChange={handleChange}

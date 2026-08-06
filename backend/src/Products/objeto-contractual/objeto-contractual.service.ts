@@ -33,6 +33,13 @@ export class ObjetoContractualService {
     return this.objetoRepository.find({ relations: { area: true } });
   }
 
+  async findByArea(id_area: number): Promise<ObjetoContractual[]> {
+    return this.objetoRepository.find({
+      where: { area: { id_area } },
+      relations: { area: true },
+    });
+  }
+
   async findOne(id: number): Promise<ObjetoContractual> {
     const objeto = await this.objetoRepository.findOne({ where: { id_objeto: id }, relations: { area: true } });
     if (!objeto) {

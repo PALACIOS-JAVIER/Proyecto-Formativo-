@@ -37,7 +37,7 @@ export class EspecialidadService {
   async findOne(id: number): Promise<Especialidad> {
     const esp = await this.especialidadRepository.findOne({
       where: { id_especialidad: id },
-      relations: { area: true, objetos: true },
+      relations: { area: true },
     });
     if (!esp) throw new NotFoundException(`Especialidad con ID ${id} no encontrada`);
     return esp;

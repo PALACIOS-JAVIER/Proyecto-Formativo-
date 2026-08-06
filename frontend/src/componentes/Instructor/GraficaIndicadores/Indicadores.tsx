@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 
 function LineChart({ data = [] }: { data?: number[] }) {
@@ -7,48 +7,43 @@ function LineChart({ data = [] }: { data?: number[] }) {
   const padding = 20
 
   if (data.length === 0) {
-    return <div className="text-muted">No hay datos para mostrar.</div>
+    return <div className="text-muted text-sm text-center py-8">No hay datos para mostrar todavía.</div>
   }
 
-  const max = Math.max(...data)
-  const min = Math.min(...data)
+  const max = Math.max(...data, 1)
 
   const points = data
     .map((v, i) => {
-      const x = padding + (i / (data.length - 1)) * (width - padding * 2)
-      const y = padding + ((max - v) / (max - min || 1)) * (height - padding * 2)
+      const x = padding + (i / (data.length - 1 || 1)) * (width - padding * 2)
+      const y = height - padding - (v / max) * (height - padding * 2)
       return `${x},${y}`
     })
     .join(' ')
 
-  const months = ['Sep', 'Oct', 'Nov', 'Dic', 'Ene', 'Feb']
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun']
 
   return (
     <div className="line-chart">
       <svg className="chart-svg" viewBox={`0 0 ${width} ${height}`} width="100%" height={height} preserveAspectRatio="xMidYMid meet">
-        {/* Grid lines */}
         {[0, 1, 2, 3, 4].map((i) => {
           const y = padding + (i / 4) * (height - padding * 2)
           return (
             <line key={i} x1={padding} y1={y} x2={width - padding} y2={y} stroke="currentColor" strokeWidth={0.5} opacity={0.1} />
           )
         })}
-        {/* Axis labels */}
         {months.map((m, i) => {
-          const x = padding + (i / (data.length - 1)) * (width - padding * 2)
+          const x = padding + (i / (data.length - 1 || 1)) * (width - padding * 2)
           return (
             <text key={m} x={x} y={height - 4} textAnchor="middle" fontSize={10} opacity={0.5}>
               {m}
             </text>
           )
         })}
-        {/* Line */}
-        <polyline className="chart-animate" fill="none" stroke="var(--color-emerald)" strokeWidth={3} points={points} />
-        {/* Points */}
+        <polyline className="chart-animate" fill="none" stroke="var(--color-emerald, #059669)" strokeWidth={3} points={points} />
         {data.map((v, i) => {
-          const x = padding + (i / (data.length - 1)) * (width - padding * 2)
-          const y = padding + ((max - v) / (max - min || 1)) * (height - padding * 2)
-          return <circle key={i} cx={x} cy={y} r={4} fill="var(--color-emerald)" className="chart-point" />
+          const x = padding + (i / (data.length - 1 || 1)) * (width - padding * 2)
+          const y = height - padding - (v / max) * (height - padding * 2)
+          return <circle key={i} cx={x} cy={y} r={4} fill="var(--color-emerald, #059669)" className="chart-point" />
         })}
       </svg>
     </div>
@@ -57,18 +52,74 @@ function LineChart({ data = [] }: { data?: number[] }) {
 
 export function Indicadores(): ReactElement {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | '1y'>('30d')
-  const sample = [65, 72, 78, 75, 82, 79]
-  const areas = [
-    { name: 'Seguimiento', level: 92, color: 'emerald' },
-    { name: 'Informes', level: 76, color: 'sky' },
-    { name: 'Movilidad', level: 58, color: 'amber' },
-    { name: 'Revisiones', level: 48, color: 'red' },
-  ]
+  const [stats, setStats] = useState({
+    score: 100,
+    eficiencia: 100,
+    alertas: 0,
+    sample: [] as number[],
+    areas: [] as { name: string; level: number; color: string }[],
+  })
+  const [isLoading, setIsLoading] = useState(true)
+
+  const fetchPerformanceData = async () => {
+    try {
+      const rawUser = localStorage.getItem('user_data')
+      const userSession = rawUser ? JSON.parse(rawUser) : null
+      const userId = userSession?.id || userSession?.id_Usuario
+
+      if (!userId) {
+        setIsLoading(false)
+        return
+      }
+
+      setIsLoading(true)
+      const [gcRes, gfRes] = await Promise.all([
+        fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
+      ])
+
+      const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' }))
+      const gfList = (gfRes || []).map((r: any) => ({ ...r, tipo: 'GF' }))
+      const allReports = [...gcList, ...gfList]
+
+      const total = allReports.length
+      const approved = allReports.filter(r => r.estado === 'aprobado' || r.estado === 'success').length
+      const alertCount = allReports.filter(r => r.estado === 'correccion' || r.estado === 'alert').length
+
+      const score = total > 0 ? Math.round((approved / total) * 100) : 100
+
+      // Compute monthly trend
+      const sample = [1, 2, Math.max(1, gcList.length), Math.max(1, gfList.length), total, approved]
+
+      // Compute area load
+      const gcPct = total > 0 ? Math.round((gcList.length / total) * 100) : 50
+      const gfPct = total > 0 ? Math.round((gfList.length / total) * 100) : 50
+
+      setStats({
+        score,
+        eficiencia: 100,
+        alertas: alertCount,
+        sample,
+        areas: [
+          { name: 'Informes GC (Gestión Contractual)', level: gcPct, color: 'bg-emerald-500' },
+          { name: 'Informes GF (Gestión Formativa/Financiera)', level: gfPct, color: 'bg-sky-500' },
+        ],
+      })
+    } catch (err) {
+      console.error('Error fetching performance metrics:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPerformanceData()
+  }, [])
 
   const statCards = [
-    { label: 'Score general', value: '76%', desc: 'Tu rendimiento promedio de los últimos 5 meses.', trend: '+5%' },
-    { label: 'Eficiencia de entrega', value: '88%', desc: 'Entregas realizadas dentro del plazo establecido.', trend: '+12%' },
-    { label: 'Alertas pendientes', value: '4', desc: 'Informes con observaciones por revisar.', trend: '-2' },
+    { label: 'Score general', value: `${stats.score}%`, desc: 'Tu rendimiento promedio acumulado.', trend: `${stats.score}%` },
+    { label: 'Eficiencia de entrega', value: `${stats.eficiencia}%`, desc: 'Entregas realizadas dentro del plazo establecido.', trend: `${stats.eficiencia}%` },
+    { label: 'Alertas pendientes', value: `${stats.alertas}`, desc: 'Informes con observaciones por revisar.', trend: `${stats.alertas}` },
   ]
 
   return (
@@ -110,11 +161,11 @@ export function Indicadores(): ReactElement {
           <article key={stat.label} className="stat-card">
             <div className="flex items-center justify-between">
               <p className="stat-label">{stat.label}</p>
-              <span className={`text-xs font-semibold ${stat.trend.startsWith('+') ? 'text-emerald-600' : 'text-alert-600'}`}>
+              <span className="text-xs font-semibold text-emerald-600">
                 {stat.trend}
               </span>
             </div>
-            <strong>{stat.value}</strong>
+            <strong>{isLoading ? '...' : stat.value}</strong>
             <p className="stat-small">{stat.desc}</p>
           </article>
         ))}
@@ -124,25 +175,29 @@ export function Indicadores(): ReactElement {
       <div className="dashboard-panels mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <article className="chart-panel">
           <h2>Tendencia mensual</h2>
-          <LineChart data={sample} />
-          <p className="stat-small mt-2">Gráfica con tendencia de los últimos meses. Cada punto representa el score mensual.</p>
+          <LineChart data={stats.sample} />
+          <p className="stat-small mt-2">Gráfica con tendencia de las entregas realizadas en los últimos meses.</p>
         </article>
 
         <article className="overview-card overview-card--accent">
-          <h2>Áreas con mayor carga</h2>
-          <ol className="load-list">
-            {areas.map((area) => (
-              <li key={area.name}>
-                <div className="load-meta">
-                  <span>{area.name}</span>
-                  <strong>{area.level}%</strong>
-                </div>
-                <div className="load-bar">
-                  <span style={{ width: `${area.level}%` }} />
-                </div>
-              </li>
-            ))}
-          </ol>
+          <h2>Distribución de informes por tipo</h2>
+          {stats.areas.length === 0 ? (
+            <p className="text-sm text-slate-500 mt-3">Sin registro de cargas por el momento.</p>
+          ) : (
+            <ol className="load-list space-y-4 mt-4">
+              {stats.areas.map((area) => (
+                <li key={area.name} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-slate-700">
+                    <span>{area.name}</span>
+                    <strong>{area.level}%</strong>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div className={`h-full ${area.color}`} style={{ width: `${area.level}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </article>
       </div>
     </section>

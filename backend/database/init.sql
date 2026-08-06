@@ -38,8 +38,7 @@ CREATE TABLE especialidades (
 CREATE TABLE objetos_contractuales (
     id_objeto SERIAL PRIMARY KEY,
     descripcion TEXT NOT NULL,
-    id_area INT REFERENCES areas(id_area) ON DELETE CASCADE,
-    id_especialidad INT REFERENCES especialidades(id_especialidad) ON DELETE SET NULL
+    id_area INT REFERENCES areas(id_area) ON DELETE CASCADE
 );
 
 CREATE TABLE usuarios (
@@ -60,7 +59,21 @@ CREATE TABLE usuarios (
     id_sede INT REFERENCES sedes(id_sede),
     id_rol INT REFERENCES roles(id_rol),
     id_area INT REFERENCES areas(id_area),
-    id_especialidad INT REFERENCES especialidades(id_especialidad)
+    id_especialidad INT REFERENCES especialidades(id_especialidad),
+    id_objeto INT REFERENCES objetos_contractuales(id_objeto)
+);
+
+CREATE TABLE coordinadores (
+    id_coordinador SERIAL PRIMARY KEY,
+    anio_ejercicio INT NOT NULL DEFAULT 2026,
+    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
+    id_sede INT REFERENCES sedes(id_sede) ON DELETE CASCADE
+);
+
+CREATE TABLE apoyos_administrativos (
+    id_apoyo SERIAL PRIMARY KEY,
+    id_coordinador INT REFERENCES coordinadores(id_coordinador) ON DELETE CASCADE,
+    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE
 );
 
 CREATE TABLE coordinadores (
@@ -158,32 +171,6 @@ CREATE TABLE historial (
 -- DATOS INICIALES (SEMILLAS)
 -- ==========================================
 
-INSERT INTO sedes (nombre) VALUES ('Yamboro'), ('Otra');
-
-INSERT INTO roles (nombre, id_sede) VALUES
-('CampeSENA', 1),
-('Regular FIC', 1),
-('Apoyo Administrativo', 1);
-
-INSERT INTO areas (nombre, id_rol) VALUES
-('AGRÍCOLA', 1),
-('OPERACIONES FORESTALES', 1),
-('PRODUCCIÓN PECUARIA', 1),
-('COMUNICACIÓN', 1),
-('BILINGÜISMO-INGLES', 1),
-('ÉTICA', 2);
-
-INSERT INTO especialidades (nombre, id_area) VALUES
-('PRODUCCIÓN DE CAFES', 1),
-('CULTIVOS AGRÍCOLAS', 1),
-('IDIOMAS-INGLES', 5);
-
-INSERT INTO objetos_contractuales (descripcion, id_area, id_especialidad) VALUES
-('Prestar servicios profesionales en la planeación y ejecución de la formación... población campesina- CampeSENA, en la especialidad de PRODUCCIÓN PECUARIA', 3, NULL),
-('Prestar servicios de apoyo a la gestión... población campesina- CampeSENA, en la especialidad de AGRICOLA - PRODUCCIÓN DE CAFES', 1, 1),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de OPERACIONES FORESTALES', 2, NULL),
-('Prestar servicios profesionales en la planeación... población campesina- CampeSENA, en la especialidad de COMUNICACIÓN', 4, NULL),
-('Prestar servicios profesionales... población campesina- CampeSENA, en la especialidad de AGRICOLA - CULTIVOS AGRÍCOLAS', 1, 2);
 
 -- Insertar coordinador por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area) 

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Area } from '../../areas/entities/area.entity';
-import { ObjetoContractual } from '../../objeto-contractual/entities/objeto-contractual.entity';
+
 
 @Entity('especialidades')
 export class Especialidad {
@@ -15,7 +15,4 @@ export class Especialidad {
     @JoinColumn({ name: 'id_area' })
     area: Area;
 
-    // Relación: Una especialidad tiene muchos objetos contractuales
-    @OneToMany(() => ObjetoContractual, (obj) => obj.especialidad)
-    objetos: ObjetoContractual[];
 }

@@ -1,112 +1,99 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 
 interface NotificationData {
-  id: number
-  title: string
-  description: string
-  date: string
-  time: string
-  isNew: boolean
-  type: 'pending' | 'info' | 'reminder' | 'observation'
-}
-
-interface NotificationItemProps extends NotificationData {
-  onMarkRead: () => void
-  onView: () => void
-}
-
-function NotificationItem({ title, description, date, time, isNew, type, onMarkRead, onView }: NotificationItemProps) {
-  const typeIcons = {
-    pending: '📋',
-    info: '📄',
-    reminder: '🔔',
-    observation: '⚠️',
-  }
-
-  return (
-    <div className={`notification-item ${isNew ? 'notification-pulse' : ''} notification-animate`}>
-      <div className="flex items-start gap-4">
-        <span className="text-2xl">{typeIcons[type]}</span>
-        <div>
-          <h2>{title}</h2>
-          <p>{description}</p>
-          <small className="muted">{date} • {time}</small>
-        </div>
-      </div>
-      <div className="notification-actions">
-        {isNew ? <span className="notification-tag">Nueva</span> : null}
-        <button type="button" className="button button--ghost" onClick={onView}>
-          Ver detalles
-        </button>
-        {isNew ? <button type="button" className="button button--ghost" onClick={onMarkRead}>Marcar como leída</button> : null}
-      </div>
-    </div>
-  )
+  id_notificacion: number
+  titulo: string
+  descripcion: string
+  tipo: string
+  is_new: boolean
+  fecha_creacion: string
 }
 
 export function Notificaciones(): ReactElement {
-  const [notifications, setNotifications] = useState<NotificationData[]>([
-    {
-      id: 1,
-      title: 'Tarea pendiente',
-      description: 'El informe de movilidad debe ser completado antes del viernes.',
-      date: '21/05/2026',
-      time: '09:15',
-      isNew: true,
-      type: 'pending',
-    },
-    {
-      id: 2,
-      title: 'Nueva plantilla',
-      description: 'Se agregó una nueva plantilla mensual para contratos SENA.',
-      date: '18/05/2026',
-      time: '12:02',
-      isNew: false,
-      type: 'info',
-    },
-    {
-      id: 3,
-      title: 'Recordatorio',
-      description: 'Revisa el estado de tus reportes antes de la próxima reunión.',
-      date: '16/05/2026',
-      time: '08:00',
-      isNew: false,
-      type: 'reminder',
-    },
-    {
-      id: 4,
-      title: 'Observación',
-      description: 'Se requieren ajustes en las evidencias de movilidad del contrato #1234.',
-      date: '15/05/2026',
-      time: '11:30',
-      isNew: true,
-      type: 'observation',
-    },
-  ])
-
+  const [notifications, setNotifications] = useState<NotificationData[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
 
+  const fetchUserNotifications = async () => {
+    try {
+      const rawUser = localStorage.getItem('user_data')
+      const userSession = rawUser ? JSON.parse(rawUser) : null
+      const userId = userSession?.id || userSession?.id_Usuario
+
+      setIsLoading(true)
+
+      const requests: Promise<any>[] = [
+        userId ? fetch(`/api/notificaciones/usuario/${userId}`).then(r => r.ok ? r.json() : []) : Promise.resolve([]),
+        userId ? fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
+        userId ? fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
+      ]
+
+      const [notifsData, gcRes, gfRes] = await Promise.all(requests)
+
+      const mergedList: NotificationData[] = [...(notifsData || [])]
+
+      // Fallback merge observations from reports
+      const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' }))
+      const gfList = (gfRes || []).map((r: any) => ({ ...r, tipo: 'GF' }))
+      const reports = [...gcList, ...gfList]
+
+      reports.forEach((r) => {
+        if (r.observaciones && r.observaciones.length > 0) {
+          r.observaciones.forEach((o: any) => {
+            const obsId = 900000 + (o.id_observacion_gc || o.id_observacion_gf || Math.floor(Math.random() * 10000))
+            if (!mergedList.some(n => n.descripcion.includes(o.comentario))) {
+              mergedList.push({
+                id_notificacion: obsId,
+                titulo: `⚠️ Corrección en Informe ${r.tipo} (${r.mes} ${r.anio})`,
+                descripcion: `Observación del coordinador: "${o.comentario}"`,
+                tipo: 'observation',
+                is_new: r.estado === 'correccion' || r.estado === 'alert',
+                fecha_creacion: o.fecha || r.fecha_registro || new Date().toISOString(),
+              })
+            }
+          })
+        }
+      })
+
+      mergedList.sort((a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime())
+      setNotifications(mergedList)
+    } catch (err) {
+      console.error('Error fetching user notifications:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUserNotifications()
+  }, [])
+
+  const markAsRead = async (id: number) => {
+    try {
+      await fetch(`/api/notificaciones/${id}/marcar-leida`, {
+        method: 'PATCH',
+      })
+      setNotifications((prev) => prev.map((n) => (n.id_notificacion === id ? { ...n, is_new: false } : n)))
+    } catch (err) {
+      console.error('Error marking notification as read:', err)
+    }
+  }
+
   const filteredNotifications = notifications.filter((n) => {
-    if (filter === 'unread') return n.isNew
-    if (filter === 'read') return !n.isNew
+    if (filter === 'unread') return n.is_new
+    if (filter === 'read') return !n.is_new
     return true
   })
 
-  const markAsRead = (id: number) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isNew: false } : n)))
-  }
-
-  const viewNotification = (title: string) => window.alert(`Detalles de: ${title}`)
-
-  const unreadCount = notifications.filter((n) => n.isNew).length
+  const unreadCount = notifications.filter((n) => n.is_new).length
 
   return (
     <section className="page-panel">
       <header className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="eyebrow">Alertas</p>
-          <h1>Gestiona tus avisos y solicitudes más recientes.</h1>
+          <p className="eyebrow">Alertas del Coordinador</p>
+          <h1>Gestiona tus avisos y solicitudes de corrección.</h1>
           <p className="subtext">Tienes {unreadCount} notificación{unreadCount !== 1 ? 'es' : ''} sin leer.</p>
         </div>
         <div className="flex gap-2">
@@ -134,19 +121,47 @@ export function Notificaciones(): ReactElement {
         </div>
       </header>
 
-      {filteredNotifications.length === 0 ? (
-        <article className="card">
-          <p className="text-muted">No hay notificaciones que mostrar con el filtro actual.</p>
+      {isLoading ? (
+        <article className="card p-6 text-center text-secondary">Cargando alertas...</article>
+      ) : filteredNotifications.length === 0 ? (
+        <article className="card p-6 text-center text-secondary">
+          <p className="text-muted">No hay notificaciones u observaciones que mostrar con el filtro actual.</p>
         </article>
       ) : (
-        <article className="card notifications-card">
-          {filteredNotifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              {...notification}
-              onMarkRead={() => markAsRead(notification.id)}
-              onView={() => viewNotification(notification.title)}
-            />
+        <article className="card notifications-card space-y-3">
+          {filteredNotifications.map((n) => (
+            <div
+              key={n.id_notificacion}
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${n.is_new ? 'border-amber-300 bg-amber-50/80 shadow-sm' : 'border-border bg-bg-alt'}`}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-2xl mt-0.5">{n.tipo === 'observation' ? '⚠️' : '🔔'}</span>
+                <div>
+                  <h2 className="text-base font-bold text-foreground">{n.titulo}</h2>
+                  <p className="text-sm text-secondary mt-1">{n.descripcion}</p>
+                  <small className="text-xs text-text-muted mt-2 block">
+                    {new Date(n.fecha_creacion).toLocaleString()}
+                  </small>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {n.is_new && (
+                  <span className="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-bold text-xs">
+                    Nueva
+                  </span>
+                )}
+                {n.is_new && (
+                  <button
+                    type="button"
+                    className="button button--ghost text-xs py-1.5 px-3"
+                    onClick={() => markAsRead(n.id_notificacion)}
+                  >
+                    Marcar como leída
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </article>
       )}

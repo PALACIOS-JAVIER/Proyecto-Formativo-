@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsDateString, IsNumber, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsNumber, IsEmail, IsOptional, Matches, MinLength } from 'class-validator';
 
 export class CreateUsuarioDto {
 
@@ -19,6 +19,7 @@ export class CreateUsuarioDto {
     telefono: number;
 
     @IsEmail()
+    @Matches(/@sena\.edu\.co$/i, { message: 'El correo debe pertenecer al dominio institucional @sena.edu.co' })
     correo:string;
 
     @IsString()
@@ -33,24 +34,38 @@ export class CreateUsuarioDto {
     @IsNotEmpty()
     id_area: string;
 
-    @IsString()
-    @IsNotEmpty()
-    codigoContrato: string;
+    @IsNumber()
+    @IsOptional()
+    id_especialidad?: number;
 
     @IsNumber()
-    @IsNotEmpty()
-    codigoSiif: number;
+    @IsOptional()
+    id_objeto?: number;
+
+    @IsString()
+    @IsOptional()
+    codigoContrato?: string;
+
+    @IsNumber()
+    @IsOptional()
+    codigoSiif?: number;
 
     @IsDateString()
-    @IsNotEmpty()
-    fechaInicioContrato: Date;
+    @IsOptional()
+    fechaInicioContrato?: Date;
 
     @IsDateString()
-    @IsNotEmpty()   
-    fechaFinContrato: Date;
+    @IsOptional()   
+    fechaFinContrato?: Date;
+
+    @IsString()
+    @IsOptional()
+    estado_cuenta?: string;
 
     @IsString()
     @IsNotEmpty()
+    @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
+    @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, { message: 'La contraseña debe contener al menos una letra y un número.' })
     password: string;
 
     @IsString()
@@ -62,7 +77,6 @@ export class CreateUsuarioDto {
     firma?: string;
 
     @IsString()
-    @IsNotEmpty()
-    passwordConfirm: string;
-
+    @IsOptional()
+    passwordConfirm?: string;
 }

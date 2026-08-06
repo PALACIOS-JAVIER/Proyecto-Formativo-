@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.ts';
 import { AppService } from './app.service.ts';
 import { AreasModule } from './Products/areas/areas.module';
@@ -34,12 +35,19 @@ import { InformeGF } from './Products/informes-gf/entities/informe-gf.entity';
 import { ObservacionGF } from './Products/informes-gf/entities/observacion-gf.entity';
 import { NotificacionesModule } from './Products/notificaciones/notificaciones.module';
 import { Notificacion } from './Products/notificaciones/entities/notificacione.entity';
+import { Coordinador } from './Products/coordinadores/entities/coordinador.entity';
+import { ApoyoAdministrativo } from './Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
+import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo-administrativo.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -66,6 +74,7 @@ import { Notificacion } from './Products/notificaciones/entities/notificacione.e
     InformesGfModule,
     NotificacionesModule,
     AuthModule,
+    ApoyoAdministrativoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

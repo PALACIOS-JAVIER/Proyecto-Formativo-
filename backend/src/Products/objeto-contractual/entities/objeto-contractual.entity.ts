@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Area } from '../../areas/entities/area.entity';
-import { Especialidad } from '../../especialidad/entities/especialidad.entity';
+
 
 @Entity('objetos_contractuales')
 export class ObjetoContractual {
@@ -15,8 +15,4 @@ export class ObjetoContractual {
     @JoinColumn({ name: 'id_area' })
     area: Area;
 
-    // Relación: Muchos objetos pueden pertenecer a una especialidad (opcional)
-    @ManyToOne(() => Especialidad, (esp) => esp.objetos, { onDelete: 'SET NULL', nullable: true })
-    @JoinColumn({ name: 'id_especialidad' })
-    especialidad: Especialidad | null;
 }
