@@ -35,9 +35,6 @@ import { InformeGF } from './Products/informes-gf/entities/informe-gf.entity';
 import { ObservacionGF } from './Products/informes-gf/entities/observacion-gf.entity';
 import { NotificacionesModule } from './Products/notificaciones/notificaciones.module';
 import { Notificacion } from './Products/notificaciones/entities/notificacione.entity';
-import { Coordinador } from './Products/coordinadores/entities/coordinador.entity';
-import { ApoyoAdministrativo } from './Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
-import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo-administrativo.module';
 
 @Module({
   imports: [
@@ -74,7 +71,6 @@ import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo
     InformesGfModule,
     NotificacionesModule,
     AuthModule,
-    ApoyoAdministrativoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

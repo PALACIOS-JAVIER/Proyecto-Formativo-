@@ -23,7 +23,7 @@ export class ApoyoAdministrativoService {
             // Verificar que el coordinador existe usando el id_usuario
             const coordinador = await this.coordinadorRepository.findOne({
                 where: { usuario: { id_Usuario: createApoyoDto.id_usuario } },
-                relations: ['sede']
+                relations: { sede: true }
             });
 
             if (!coordinador) {
@@ -38,8 +38,8 @@ export class ApoyoAdministrativoService {
                 telefono: createApoyoDto.telefono,
                 correo: createApoyoDto.correo,
                 password: createApoyoDto.password,
-                rol: { id_rol: 3 }, // 3 = Apoyo Administrativo
-                sede: { id_sede: coordinador.sede.id_sede },
+                rol: { id_rol: 3 } as any, // 3 = Apoyo Administrativo
+                sede: { id_sede: coordinador.sede.id_sede } as any,
                 estado_cuenta: 'aprobado'
             });
 
@@ -47,8 +47,8 @@ export class ApoyoAdministrativoService {
 
             // 2. Crear el registro en apoyos_administrativos
             const nuevoApoyo = this.apoyoRepository.create({
-                coordinador: { id_coordinador: coordinador.id_coordinador },
-                usuario: usuarioGuardado
+                coordinador: { id_coordinador: coordinador.id_coordinador } as any,
+                usuario: usuarioGuardado as any
             });
             return await this.apoyoRepository.save(nuevoApoyo);
         } catch (error) {
@@ -77,9 +77,6 @@ export class ApoyoAdministrativoService {
     async update(id: number, updateApoyoDto: UpdateApoyoAdministrativoDto): Promise<ApoyoAdministrativo> {
         const apoyo = await this.findOne(id);
         
-        if (updateApoyoDto.id_coordinador) {
-            apoyo.coordinador = { id_coordinador: updateApoyoDto.id_coordinador } as any;
-        }
 
         try {
             return await this.apoyoRepository.save(apoyo);

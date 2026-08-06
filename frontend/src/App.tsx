@@ -292,6 +292,24 @@ function App() {
     }
   }
 
+  const handleForgotPassword = async (identifier: string) => {
+    try {
+      const response = await api.post('/auth/forgot-password', { identifier })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error?.response?.data?.message || 'Error al solicitar cambio de contraseña' }
+    }
+  }
+
+  const handleResetPassword = async (correo: string, codigo: string, nueva: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', { correo, codigo, nuevaContrasena: nueva })
+      return response.data
+    } catch (error: any) {
+      return { success: false, message: error?.response?.data?.message || 'Error al restablecer contraseña' }
+    }
+  }
+
   if (!authenticated) {
     return <Login onLogin={handleLogin} onRegister={handleRegister} onForgotPassword={handleForgotPassword} onResetPassword={handleResetPassword} />
   }

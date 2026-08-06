@@ -38,7 +38,7 @@ interface LoginProps {
 }
 
 export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }: LoginProps) {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -76,6 +76,30 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   // ── Touched states para validación en tiempo real ───────────────────
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const touch = (field: string) => setTouched(p => ({ ...p, [field]: true }))
+
+  // --- Constantes UI extraídas para evitar errores TS ---
+  const LABEL = "flex flex-col gap-1.5 text-sm font-semibold text-slate-700"
+  const Req = () => <span className="text-red-500 ml-0.5">*</span>
+  const BASE_INPUT = "w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-[#39A900]/20 focus:border-[#39A900]"
+  
+  const fieldState = (value: string, isValid: boolean, isTouched: boolean) => {
+    if (!isTouched) return 'default'
+    return isValid ? 'valid' : 'invalid'
+  }
+  
+  const dynInput = (state: string) => {
+    let classes = BASE_INPUT
+    if (state === 'invalid') classes += ' border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500/20'
+    else if (state === 'valid') classes += ' border-[#39A900]/50 bg-[#39A900]/5 focus:border-[#39A900]'
+    return classes
+  }
+
+  const SelectWrap = ({ children }: { children: React.ReactNode }) => (
+    <div className="relative">
+      {children}
+      <LuChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+    </div>
+  )
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
