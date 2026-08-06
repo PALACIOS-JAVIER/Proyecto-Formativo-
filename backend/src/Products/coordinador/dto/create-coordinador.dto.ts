@@ -1,9 +1,9 @@
-import { IsInt, IsNotEmpty, IsString, IsEmail, IsOptional, IsDateString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
 
-export class CreateApoyoAdministrativoDto {
+export class CreateCoordinadorDto {
     @IsInt()
     @IsNotEmpty()
-    id_usuario: number;
+    id_sede: number;
 
     @IsString()
     @IsNotEmpty()
@@ -29,4 +29,7 @@ export class CreateApoyoAdministrativoDto {
     @IsNotEmpty()
     password: string;
 
+    @IsInt()
+    @IsOptional()
+    anio_ejercicio?: number;
 }

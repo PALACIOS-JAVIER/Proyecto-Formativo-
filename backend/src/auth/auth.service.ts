@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from '../Products/usuarios/entities/usuario.entity';
-import { Coordinador } from '../Products/coordinadores/entities/coordinador.entity';
+import { Coordinador } from '../Products/coordinador/entities/coordinador.entity';
 import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'crypto';
@@ -114,14 +114,30 @@ export class AuthService {
       throw new UnauthorizedException('Usuario o contraseña incorrectos.');
     }
 
-    const payload = { sub: user.id_Usuario, correo: user.correo, rol: rolExacto };
+    // Determinar si es coordinador o apoyo administrativo
+    let specificRole = user.rol?.nombre;
+    if (specificRole === 'Apoyo Administrativo') {
+        const isCoordinador = await this.coordinadorRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+        if (isCoordinador) {
+            specificRole = 'coordinador';
+        } else {
+            const isApoyo = await this.apoyoRepository.findOne({ where: { usuario: { id_Usuario: user.id_Usuario } } });
+            if (isApoyo) {
+                specificRole = 'apoyo_administrativo';
+            }
+        }
+    } else if (specificRole === 'Campesina' || specificRole === 'Regular Fic') {
+        specificRole = 'instructor';
+    }
+
+    const payload = { sub: user.id_Usuario, correo: user.correo, rol: specificRole };
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
         id: user.id_Usuario,
         nombre: `${user.nombre} ${user.apellido}`,
         correo: user.correo,
-        rol: rolExacto,
+        rol: specificRole,
       }
     };
   }

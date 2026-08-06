@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { Usuario } from '../Products/usuarios/entities/usuario.entity';
-import { Coordinador } from '../Products/coordinadores/entities/coordinador.entity';
+import { Coordinador } from '../Products/coordinador/entities/coordinador.entity';
 import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { JwtStrategy } from './jwt.strategy';
 

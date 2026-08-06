@@ -12,6 +12,10 @@ import { Rol } from './Products/rol/entities/rol.entity';
 import { Sede } from './Products/sede/entities/sede.entity';
 import { ObjetoContractualModule } from './Products/objeto-contractual/objeto-contractual.module';
 import { ObjetoContractual } from './Products/objeto-contractual/entities/objeto-contractual.entity';
+import { CoordinadorModule } from './Products/coordinador/coordinador.module';
+import { Coordinador } from './Products/coordinador/entities/coordinador.entity';
+import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo-administrativo.module';
+import { ApoyoAdministrativo } from './Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { UsuariosModule } from './Products/usuarios/usuarios.module';
 import { Usuario } from './Products/usuarios/entities/usuario.entity';
 import { EspecialidadModule } from './Products/especialidad/especialidad.module';
@@ -46,12 +50,12 @@ import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo
     }]),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_HOST === 'db' ? 5432 : parseInt(process.env.DB_PORT || '5433', 10),
-      username: process.env.DB_USERNAME || 'admin',
-      password: String(process.env.DB_PASSWORD || 'secretpassword'),
-      database: process.env.DB_NAME || 'proyecto_formativo',
-      entities: [Area, Rol, Sede, ObjetoContractual, Usuario, Especialidad, Historial, CampesenaObligacione, RegularFicObligacione, InformeGC, ObservacionGC, InformeGF, ObservacionGF, Notificacion, Coordinador, ApoyoAdministrativo],
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      entities: [Area, Rol, Sede, ObjetoContractual, Coordinador, ApoyoAdministrativo, Usuario, Especialidad, Historial, CampesenaObligacione, RegularFicObligacione, InformeGC, ObservacionGC, InformeGF, ObservacionGF, Notificacion],
       synchronize: process.env.DB_SYNCHRONIZE === 'true',
       logging: false,
     }),
@@ -59,6 +63,8 @@ import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo
     RolModule,
     SedeModule,
     ObjetoContractualModule,
+    CoordinadorModule,
+    ApoyoAdministrativoModule,
     UsuariosModule,
     EspecialidadModule,
     HistorialModule,
