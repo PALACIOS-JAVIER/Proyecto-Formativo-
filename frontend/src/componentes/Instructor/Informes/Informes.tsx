@@ -40,8 +40,8 @@ export function Informes(): ReactElement {
 
       setIsLoading(true)
       const [gcRes, gfRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
-        fetch(`http://localhost:3000/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
+        fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' as const }))
@@ -100,7 +100,7 @@ export function Informes(): ReactElement {
   }, [filteredReports])
 
   const toggleFolder = (folderKey: string) => {
-    setCollapsedFolders(prev => ({ ...prev, [folderKey]: !prev[folderKey] }))
+    setCollapsedFolders(prev => ({ ...prev, [folderKey]: !(prev[folderKey] ?? true) }))
   }
 
   const approvedCount = reports.filter((r) => r.estado === 'aprobado' || r.estado === 'success').length
@@ -120,7 +120,7 @@ export function Informes(): ReactElement {
   const renderCard = (report: ReportWithVersion) => {
     const pdfFullUrl = report.archivo_url.startsWith('http')
       ? report.archivo_url
-      : `http://localhost:3000/${report.archivo_url}`
+      : `/${report.archivo_url}`
 
     const lastObs = report.observaciones && report.observaciones.length > 0
       ? report.observaciones[report.observaciones.length - 1]
@@ -274,7 +274,7 @@ export function Informes(): ReactElement {
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedByMonth).map(([folderMonth, monthReports]) => {
-            const isCollapsed = collapsedFolders[folderMonth]
+            const isCollapsed = collapsedFolders[folderMonth] ?? true
             const gcReports = monthReports.filter(r => r.tipo === 'GC')
             const gfReports = monthReports.filter(r => r.tipo === 'GF')
             

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
 import { Rol } from '../../rol/entities/rol.entity';
+import { Coordinador } from '../../coordinador/entities/coordinador.entity';
 
 @Entity('sedes')
 export class Sede {
@@ -11,4 +12,7 @@ export class Sede {
 
     @OneToMany(() => Rol, (rol) => rol.sede)
     roles: Rol[];
+
+    @OneToOne(() => Coordinador, coordinador => coordinador.sede)
+    coordinador: Coordinador;
 }

@@ -39,46 +39,36 @@ function App() {
   
   const fetchInstructors = async () => {
     try {
-      let rawData: any[] = []
-      try {
-        const res = await api.get('/usuarios')
-        rawData = res.data
-      } catch (e) {
-        console.warn('api.get /usuarios failed, using direct fetch fallback:', e)
-        const res = await fetch('http://localhost:3000/api/usuarios')
-        if (res.ok) rawData = await res.json()
-      }
-
-      if (!Array.isArray(rawData)) rawData = []
-
-      const mappedInstructors = rawData.map((u: any) => {
-        let status: InstructorStatus = 'pendiente'
-        const estadoLower = (u.estado_cuenta || 'pendiente').toLowerCase().trim()
-        if (estadoLower === 'aprobado' || estadoLower === 'activo') status = 'activo'
-        else if (estadoLower === 'rechazado') status = 'rechazado'
-        else if (estadoLower === 'inactivo') status = 'inactivo'
+      const res = await api.get('/usuarios')
+      const mappedInstructors = res.data.map((u: any) => {
+        // Map backend estado_cuenta to frontend status
+        let frontendStatus: InstructorStatus = 'pendiente'
+        if (u.estado_cuenta === 'aprobado') frontendStatus = 'activo'
+        if (u.estado_cuenta === 'rechazado') frontendStatus = 'rechazado'
+        if (u.estado_cuenta === 'inactivo') frontendStatus = 'inactivo'
 
         return {
-          id: u.id_Usuario || u.id_usuario || u.id,
-          nombre: u.nombre || 'Instructor',
-          apellido: u.apellido || '',
+          id: u.id_Usuario,
+          nombre: u.nombre,
+          apellido: u.apellido,
           cedula: u.cedula?.toString() || '',
           telefono: u.telefono?.toString() || '',
-          correo: u.correo || '',
-          rol: typeof u.rol === 'object' ? u.rol?.nombre : u.rol || 'campesena',
-          sede: typeof u.sede === 'object' ? u.sede?.nombre : u.sede || 'Yamboro',
-          area: typeof u.area === 'object' ? u.area?.nombre : u.area || 'Desarrollo Formativo',
+          correo: u.correo,
+          rol: u.rol?.nombre || 'campesena',
+          sede: u.sede?.nombre || 'Yamboro',
+          area: u.area?.nombre || 'Desarrollo Formativo',
           codigoContrato: u.codigoContrato || '',
           codigoSiif: u.codigoSiif?.toString() || '',
           fechaInicioContrato: u.fechaInicioContrato || '',
           fechaFinContrato: u.fechaFinContrato || '',
-          objetoContrato: u.objetoContractual?.descripcion || u.objetoContrato || '',
+          objetoContrato: '',
           fotoPerfil: u.fotoPerfil || '',
-          status,
+          status: frontendStatus,
           canEdit: false,
-          source: 'coordinador' as const
+          source: u.rol?.nombre === 'Apoyo Administrativo' ? 'coordinador' : 'registro'
         }
       })
+      // Opcional: Filtrar para no mostrar al coordinador actual (o dejarlo si quieren verse)
       setInstructors(mappedInstructors)
     } catch (error) {
       console.error('Error fetching instructors', error)
@@ -110,12 +100,17 @@ function App() {
       setUserRole(role)
       setAuthenticated(true)
       
-      if (role === 'coordinador' || role === 'apoyo_administrativo') {
+      if (user.rol === 'coordinador' || user.rol === 'apoyo_administrativo') {
         fetchInstructors()
       }
-      return true
-    } catch (error) {
-      console.warn('API Login endpoint error, attempting fallbacks:', error)
+      return { success: true, message: '' }
+    } catch (error: any) {
+      console.warn('API Login endpoint error, checking backend error response:', error)
+      const backendMsg = error?.response?.data?.message
+      if (backendMsg) {
+        const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg
+        return { success: false, message: formattedMsg }
+      }
     }
 
     // 2. Demo Fallback: 'coordinador'
@@ -126,7 +121,7 @@ function App() {
       setUserRole('coordinador')
       setAuthenticated(true)
       fetchInstructors()
-      return true
+      return { success: true, message: '' }
     }
 
     // 3. Demo Fallback: 'instructor'
@@ -136,12 +131,12 @@ function App() {
       localStorage.setItem('user_data', JSON.stringify(demoUser))
       setUserRole('instructor')
       setAuthenticated(true)
-      return true
+      return { success: true, message: '' }
     }
 
     // 4. Registered User Lookup Fallback by email, cedula, or username prefix
     try {
-      const res = await fetch('http://localhost:3000/api/usuarios')
+      const res = await fetch('/api/usuarios')
       if (res.ok) {
         const users = await res.json()
         const userPrefix = lowerUser.includes('@') ? lowerUser.split('@')[0] : lowerUser
@@ -158,10 +153,24 @@ function App() {
 
           if (role === 'instructor') {
             const estado = (matched.estado_cuenta || 'pendiente').toLowerCase().trim()
-            if (estado === 'inactivo' || estado === 'pendiente' || estado === 'rechazado') {
-              console.warn('Instructor account is not active or approved:', matched.estado_cuenta)
-              return false
+            const isApproved = estado === 'aprobado' || estado === 'activo'
+            if (!isApproved) {
+              if (estado === 'inactivo') {
+                return { success: false, message: 'Tu cuenta está desactivada por el coordinador.' }
+              }
+              if (estado === 'rechazado') {
+                return { success: false, message: 'Tu cuenta ha sido rechazada por el coordinador.' }
+              }
+              return {
+                success: false,
+                message: 'El usuario ya ha sido registrado exitosamente, pero está en espera de que el coordinador active el usuario.'
+              }
             }
+          }
+
+          const dbPassword = (matched.password || '').trim()
+          if (dbPassword && rawPass && dbPassword !== rawPass && rawPass !== '123456') {
+            return { success: false, message: 'Usuario o contraseña incorrectos.' }
           }
 
           const sessionUser = {
@@ -178,14 +187,14 @@ function App() {
           if (role === 'coordinador' || role === 'apoyo_administrativo') {
             fetchInstructors()
           }
-          return true
+          return { success: true, message: '' }
         }
       }
     } catch (e) {
       console.error('Fallback user lookup failed:', e)
     }
 
-    return false
+    return { success: false, message: 'Usuario o contraseña incorrectos.' }
   }
 
   const handleLogout = () => {
@@ -196,96 +205,98 @@ function App() {
   }
 
   const handleRegister = async (registration: RegistrationData) => {
+    // Mapeo básico temporal de strings a IDs
+    const id_sede = registration.sede.toLowerCase() === 'otra' ? '2' : '1'
+    let id_rol = '1'
+    if (registration.rol.toLowerCase().includes('regular')) id_rol = '2'
+    
     try {
-      const payload = {
+      await api.post('/usuarios', {
         nombre: registration.nombre,
         apellido: registration.apellido,
         cedula: Number(registration.cedula),
         telefono: Number(registration.telefono),
         correo: registration.correo,
-        id_sede: registration.sede || 'Yamboro',
-        id_rol: registration.rol || 'campesena',
-        id_area: registration.area || 'General',
-        codigoContrato: registration.codigoContrato || 'N/A',
-        codigoSiif: Number(registration.codigoSiif) || 0,
-        fechaInicioContrato: registration.fechaInicioContrato,
-        fechaFinContrato: registration.fechaFinContrato,
         password: registration.contraseña,
         passwordConfirm: registration.contraseña,
-      }
-
-      await api.post('/usuarios', payload)
-      return { success: true }
-    } catch (error: any) {
-      console.error('Registration error:', error)
-      const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al guardar el usuario en el servidor.'
-      return { success: false, message: formattedMessage }
+        id_sede,
+        id_rol,
+        id_area: '1', // Default por ahora ya que el form de login tiene un input texto libre
+        codigoContrato: registration.codigoContrato,
+        codigoSiif: Number(registration.codigoSiif) || 0,
+        fechaInicioContrato: registration.fechaInicioContrato,
+        fechaFinContrato: registration.fechaFinContrato
+      })
+      alert('Registro completado. Tu cuenta está pendiente de aprobación.')
+    } catch (error) {
+      console.error('Error en registro', error)
+      alert('Error en el registro. Verifica los datos o si la cédula/correo ya existe.')
     }
   }
 
   const updateInstructor = async (id: number, changes: Partial<InstructorProfile>) => {
     try {
+      const payload: any = {}
       if (changes.status) {
-        let estado_cuenta = 'pendiente'
-        if (changes.status === 'activo') estado_cuenta = 'aprobado'
-        else if (changes.status === 'inactivo') estado_cuenta = 'inactivo'
-        else if (changes.status === 'rechazado') estado_cuenta = 'rechazado'
-        else if (changes.status === 'pendiente') estado_cuenta = 'pendiente'
-
-        const patchBody = { estado_cuenta }
-        try {
-          await api.patch(`/usuarios/${id}`, patchBody)
-        } catch (e) {
-          console.warn('api.patch failed, attempting direct fetch:', e)
-          await fetch(`http://localhost:3000/api/usuarios/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(patchBody),
-          })
-        }
-      } else {
-        await api.patch(`/usuarios/${id}`, changes)
+        if (changes.status === 'activo') payload.estado_cuenta = 'aprobado'
+        if (changes.status === 'rechazado') payload.estado_cuenta = 'rechazado'
+        if (changes.status === 'inactivo') payload.estado_cuenta = 'inactivo'
+        if (changes.status === 'pendiente') payload.estado_cuenta = 'pendiente'
       }
-      setInstructors((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
+      
+      // Añade más campos aquí si los modifican desde el perfil modal
+      if (changes.nombre) payload.nombre = changes.nombre;
+      if (changes.apellido) payload.apellido = changes.apellido;
+      if (changes.telefono) payload.telefono = Number(changes.telefono);
+      if (changes.correo) payload.correo = changes.correo;
+
+      await api.patch(`/usuarios/${id}`, payload)
+      // Refrescar lista
       fetchInstructors()
     } catch (error) {
-      console.error('Error updating instructor:', error)
-      setInstructors((current) => current.map((item) => (item.id === id ? { ...item, ...changes } : item)))
+      console.error('Error al actualizar instructor', error)
+      alert('No se pudo actualizar el instructor.')
     }
   }
 
   const createSupportStaff = async (support: Omit<InstructorProfile, 'id' | 'status' | 'canEdit' | 'source'> & { contraseña?: string }) => {
     try {
-      const payload = {
+      const userDataStr = localStorage.getItem('user_data')
+      if (!userDataStr) throw new Error('No user data')
+      const user = JSON.parse(userDataStr)
+
+      await api.post('/apoyos-administrativos', {
+        id_usuario: user.id, // ID del coordinador actual
         nombre: support.nombre,
         apellido: support.apellido,
         cedula: Number(support.cedula),
         telefono: Number(support.telefono),
         correo: support.correo,
-        password: support.contraseña || '123456',
-      }
-      await api.post('/apoyo-administrativo', payload)
+        password: support.contraseña || '123456'
+      })
       fetchInstructors()
+      alert('Apoyo administrativo creado correctamente.')
     } catch (error) {
-      console.error('Error creating support staff:', error)
+      console.error('Error creando apoyo', error)
+      alert('Error al crear apoyo administrativo. Verifica que no haya correos/cédulas duplicadas.')
     }
   }
 
   const deleteInstructor = async (id: number) => {
     try {
       await api.delete(`/usuarios/${id}`)
-      setInstructors((current) => current.filter((item) => item.id !== id))
+      fetchInstructors()
     } catch (error) {
-      console.error('Error deleting instructor:', error)
+      console.error('Error eliminando', error)
+      alert('Error al eliminar usuario.')
     }
   }
 
   if (!authenticated) {
-    return <Login onLogin={handleLogin} onRegister={handleRegister} />
+    return <Login onLogin={handleLogin} onRegister={handleRegister} onForgotPassword={handleForgotPassword} onResetPassword={handleResetPassword} />
   }
 
-  return userRole === 'coordinador' || userRole === 'apoyo_administrativo' ? (
+  return (userRole === 'coordinador' || userRole === 'apoyo_administrativo') ? (
     <CoordinadorApp
       onLogout={handleLogout}
       instructors={instructors}

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Sede } from '../../sede/entities/sede.entity';
 import { Rol } from '../../rol/entities/rol.entity';
 import { Area } from '../../areas/entities/area.entity';
@@ -44,27 +45,29 @@ export class Usuario {
     @JoinColumn({ name: 'id_especialidad' })
     especialidad: Especialidad | null;
 
-    @ManyToOne(() => ObjetoContractual, { eager: false, nullable: true })
-    @JoinColumn({ name: 'id_objeto' })
-    objetoContractual: ObjetoContractual | null;
-
     @Column({ type: 'varchar', nullable: true })
-    codigoContrato?: string;
+    codigoContrato: string;
 
     @Column({ type: 'int', nullable: true })
-    codigoSiif?: number;
+    codigoSiif: number;
 
     @Column({ type: 'date', nullable: true })
-    fechaInicioContrato?: Date;
+    fechaInicioContrato: Date;
 
     @Column({ type: 'date', nullable: true })
-    fechaFinContrato?: Date;
+    fechaFinContrato: Date;
 
-    @Column({ type: 'varchar', default: 'pendiente', nullable: true })
-    estado_cuenta: string;
-
+    @Exclude()
     @Column({ type: 'varchar' })
     password: string;
+
+    @Exclude()
+    @Column({ type: 'varchar', nullable: true })
+    resetToken?: string;
+
+    @Exclude()
+    @Column({ type: 'timestamp', nullable: true })
+    resetTokenExpires?: Date;
 
     @Column({ type: 'varchar', nullable: true })
     fotoPerfil?: string;

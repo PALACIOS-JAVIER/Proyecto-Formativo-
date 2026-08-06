@@ -1,31 +1,32 @@
-import { IsString, IsNotEmpty, IsNumber, IsEmail, IsOptional, Matches } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsEmail, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateApoyoAdministrativoDto {
-  @IsString()
-  @IsNotEmpty()
-  nombre: string;
+    @IsInt()
+    @IsNotEmpty()
+    id_usuario: number;
 
-  @IsString()
-  @IsNotEmpty()
-  apellido: string;
+    @IsString()
+    @IsNotEmpty()
+    nombre: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  cedula: number;
+    @IsString()
+    @IsNotEmpty()
+    apellido: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  telefono: number;
+    @IsInt()
+    @IsNotEmpty()
+    cedula: number;
 
-  @IsEmail()
-  @Matches(/@sena\.edu\.co$/i, { message: 'El correo debe pertenecer al dominio institucional @sena.edu.co' })
-  correo: string;
+    @IsInt()
+    @IsNotEmpty()
+    telefono: number;
 
-  @IsString()
-  @IsOptional()
-  password?: string;
+    @IsEmail()
+    @IsNotEmpty()
+    correo: string;
 
-  @IsNumber()
-  @IsOptional()
-  id_coordinador_usuario?: number;
+    @IsString()
+    @IsNotEmpty()
+    password: string;
+
 }

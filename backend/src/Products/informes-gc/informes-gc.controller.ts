@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, BadRequestException, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { existsSync, mkdirSync } from 'fs';
@@ -26,8 +27,10 @@ const pdfUploadOptions = {
     }
     cb(null, true);
   },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB máximo para PDFs
 };
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('informes-gc')
 export class InformesGcController {
   constructor(private readonly informesGcService: InformesGcService) {}
