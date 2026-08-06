@@ -17,19 +17,10 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-      if (isLocal || origin === FRONTEND_URL) {
-        callback(null, true);
-      } else {
-        callback(null, false); // o callback(new Error('Not allowed by CORS'))
-      }
-    },
+    origin: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,
   });
 
