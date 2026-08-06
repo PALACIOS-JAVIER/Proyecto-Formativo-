@@ -214,30 +214,6 @@ function App() {
     setUserRole(null)
   }
 
-  const handleForgotPassword = async (identifier: string) => {
-    try {
-      const response = await api.post('/auth/forgot-password', { identifier })
-      return response.data
-    } catch (error: any) {
-      console.error('Forgot password error:', error)
-      const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al procesar la solicitud.'
-      return { success: false, message: formattedMessage }
-    }
-  }
-
-  const handleResetPassword = async (token: string, newPassword?: string) => {
-    try {
-      const response = await api.post('/auth/reset-password', { token, newPassword })
-      return response.data
-    } catch (error: any) {
-      console.error('Reset password error:', error)
-      const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al restablecer la contraseña.'
-      return { success: false, message: formattedMessage }
-    }
-  }
-
   const handleRegister = async (registration: RegistrationData) => {
     try {
       const payload = {
