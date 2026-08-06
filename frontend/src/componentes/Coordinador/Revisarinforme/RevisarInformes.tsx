@@ -59,9 +59,12 @@ export function RevisarInformes(): ReactElement {
   const fetchAllReports = async () => {
     try {
       setIsLoading(true)
+      const token = localStorage.getItem('access_token') || ''
+      const headers = { 'Authorization': `Bearer ${token}` }
+      
       const [gcRes, gfRes] = await Promise.all([
-        fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
-        fetch('/api/informes-gf').then(r => r.ok ? r.json() : [])
+        fetch('/api/informes-gc', { headers }).then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gf', { headers }).then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' as const }))
@@ -153,10 +156,14 @@ export function RevisarInformes(): ReactElement {
 
   const handleApprove = async (reportId: number, tipo: 'GC' | 'GF') => {
     try {
+      const token = localStorage.getItem('access_token') || ''
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
       const res = await fetch(`/api/${endpoint}/${reportId}/estado`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ estado: 'aprobado' }),
       })
 
@@ -175,9 +182,13 @@ export function RevisarInformes(): ReactElement {
     try {
       setAnalyzingIds((prev) => ({ ...prev, [key]: true }))
       setActionAlert(`🤖 Consultando auditoría institucional a Sera 🦅 (n8n + OpenAI) para Informe ${tipo} #${reportId}. Espera unos 8 segundos...`)
+      const token = localStorage.getItem('access_token') || ''
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
       const res = await fetch(`/api/${endpoint}/${reportId}/reanalizar-ia`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
       if (!res.ok) throw new Error('Error al solicitar reanálisis a la IA.')
       await fetchAllReports()
@@ -202,10 +213,14 @@ export function RevisarInformes(): ReactElement {
       const userSession = rawUser ? JSON.parse(rawUser) : null
       const coordId = userSession?.id || userSession?.id_Usuario
 
+      const token = localStorage.getItem('access_token') || ''
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
       const res = await fetch(`/api/${endpoint}/${reportId}/observacion`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           comentario: correctionNote.trim(),
           coordinadorId: coordId || undefined,
