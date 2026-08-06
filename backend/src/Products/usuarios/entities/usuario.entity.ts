@@ -74,4 +74,11 @@ export class Usuario {
 
     @Column({ type: 'varchar', nullable: true })
     firma?: string;
+
+    @Column({ type: 'varchar', default: 'pendiente' })
+    estado_cuenta: string;
+
+    @ManyToOne(() => ObjetoContractual, { eager: false, nullable: true })
+    @JoinColumn({ name: 'id_objeto' })
+    objetoContractual: ObjetoContractual | null;
 }

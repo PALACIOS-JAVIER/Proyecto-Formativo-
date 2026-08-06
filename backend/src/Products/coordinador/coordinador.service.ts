@@ -25,8 +25,8 @@ export class CoordinadorService {
                 telefono: createCoordinadorDto.telefono,
                 correo: createCoordinadorDto.correo,
                 password: createCoordinadorDto.password,
-                rol: { id_rol: 3 }, // Asumimos id_rol 3 es Apoyo Administrativo / Coordinador
-                sede: { id_sede: createCoordinadorDto.id_sede },
+                rol: { id_rol: 3 } as any, // Asumimos id_rol 3 es Apoyo Administrativo / Coordinador
+                sede: { id_sede: createCoordinadorDto.id_sede } as any,
                 estado_cuenta: 'aprobado' // Un coordinador creado directamente está aprobado
             });
 
@@ -34,8 +34,8 @@ export class CoordinadorService {
 
             // 2. Crear el registro en coordinadores
             const nuevoCoordinador = this.coordinadorRepository.create({
-                sede: { id_sede: createCoordinadorDto.id_sede },
-                usuario: usuarioGuardado,
+                sede: { id_sede: createCoordinadorDto.id_sede } as any,
+                usuario: usuarioGuardado as any,
                 anio_ejercicio: createCoordinadorDto.anio_ejercicio
             });
             return await this.coordinadorRepository.save(nuevoCoordinador);
@@ -67,9 +67,6 @@ export class CoordinadorService {
         
         if (updateCoordinadorDto.id_sede) {
             coordinador.sede = { id_sede: updateCoordinadorDto.id_sede } as any;
-        }
-        if (updateCoordinadorDto.id_usuario) {
-            coordinador.usuario = { id_Usuario: updateCoordinadorDto.id_usuario } as any;
         }
 
         try {
