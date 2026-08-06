@@ -64,8 +64,7 @@ export class CreateUsuarioDto {
 
     @IsString()
     @IsNotEmpty()
-    @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
-    @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, { message: 'La contraseña debe contener al menos una letra y un número.' })
+    @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres.' })
     password: string;
 
     @IsString()

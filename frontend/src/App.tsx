@@ -228,9 +228,15 @@ function App() {
         fechaFinContrato: registration.fechaFinContrato
       })
       alert('Registro completado. Tu cuenta está pendiente de aprobación.')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error en registro', error)
-      alert('Error en el registro. Verifica los datos o si la cédula/correo ya existe.')
+      const backendMsg = error?.response?.data?.message
+      if (backendMsg) {
+        const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join('\\n') : backendMsg
+        alert(`Error en el registro:\\n${formattedMsg}`)
+      } else {
+        alert('Error en el registro. Verifica los datos o si la cédula/correo ya existe.')
+      }
     }
   }
 
