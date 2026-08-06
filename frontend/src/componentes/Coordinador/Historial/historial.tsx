@@ -17,10 +17,13 @@ export function Historial(): ReactElement {
   const fetchAuditHistory = async () => {
     try {
       setIsLoading(true)
+      const token = localStorage.getItem('access_token') || ''
+      const headers = { 'Authorization': `Bearer ${token}` }
+
       const [gcRes, gfRes, usersRes] = await Promise.all([
-        fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
-        fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
-        fetch('/api/usuarios').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gc', { headers }).then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gf', { headers }).then(r => r.ok ? r.json() : []),
+        fetch('/api/usuarios', { headers }).then(r => r.ok ? r.json() : []),
       ])
 
       const logs: HistoryItem[] = []
