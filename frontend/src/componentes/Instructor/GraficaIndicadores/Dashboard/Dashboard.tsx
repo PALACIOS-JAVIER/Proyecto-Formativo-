@@ -35,8 +35,8 @@ export function Dashboard(): ReactElement {
     try {
       setIsLoading(true)
       const [gcRes, gfRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
-        fetch(`http://localhost:3000/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
+        fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' }))

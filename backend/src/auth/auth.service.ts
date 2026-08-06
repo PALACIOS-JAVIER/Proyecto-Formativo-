@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,7 +8,7 @@ import { Coordinador } from '../Products/coordinadores/entities/coordinador.enti
 import { ApoyoAdministrativo } from '../Products/apoyo-administrativo/entities/apoyo-administrativo.entity';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'crypto';
-import * as nodemailer from 'nodemailer';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -21,27 +22,13 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private recoveryCodes = new Map<string, { code: string; expiresAt: number }>();
+
   async login(loginDto: LoginDto) {
     const rawUsername = (loginDto.username || '').trim();
     const usernameNormalizado = rawUsername.toLowerCase();
     const rawPassword = (loginDto.password || '').trim();
 
-    // 0. Demo fallback check FIRST for demo accounts
-    if (usernameNormalizado === 'instructor' && rawPassword === '123456') {
-      const payload = { sub: 0, correo: 'demo@sena.edu.co', rol: 'instructor' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: 0, nombre: 'Instructor Demo', rol: 'instructor' }
-      };
-    }
-    if (usernameNormalizado === 'coordinador' && rawPassword === '123456') {
-      const payload = { sub: -1, correo: 'admin@sena.edu.co', rol: 'coordinador' };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: { id: -1, nombre: 'Coordinador Demo', rol: 'coordinador' }
-      };
-    }
-    
     // 1. Try exact email match
     let user = await this.usuarioRepository.findOne({ 
       where: { correo: usernameNormalizado },
@@ -102,9 +89,28 @@ export class AuthService {
       }
     }
 
-    // Password verification for approved accounts
+    // Password verification with bcrypt
     const dbPassword = (user.password || '').trim();
-    if (dbPassword && rawPassword && dbPassword !== rawPassword && rawPassword !== '123456') {
+    if (!dbPassword || !rawPassword) {
+      throw new UnauthorizedException('Usuario o contraseña incorrectos.');
+    }
+
+    // Support both bcrypt hashed passwords and legacy plain text (for migration)
+    let passwordValid = false;
+    if (dbPassword.startsWith('$2b$') || dbPassword.startsWith('$2a$')) {
+      // Password is already hashed with bcrypt
+      passwordValid = await bcrypt.compare(rawPassword, dbPassword);
+    } else {
+      // Legacy plain text password — compare directly, then upgrade to hash
+      passwordValid = dbPassword === rawPassword;
+      if (passwordValid) {
+        // Auto-migrate: hash the plain text password for future logins
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+        await this.usuarioRepository.update(user.id_Usuario, { password: hashedPassword });
+      }
+    }
+
+    if (!passwordValid) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos.');
     }
 
@@ -120,132 +126,130 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(identifier: string) {
-    if (!identifier) {
-      throw new BadRequestException('El usuario o correo es obligatorio.');
-    }
-    const term = identifier.trim().toLowerCase();
-
-    // Search by correo, cedula, or prefix
-    let user = await this.usuarioRepository.findOne({
-      where: { correo: term }
-    });
-
+  async forgotPassword(usernameOrEmail: string) {
+    const usernameNormalizado = (usernameOrEmail || '').trim().toLowerCase();
+    
+    let user = await this.usuarioRepository.findOne({ where: { correo: usernameNormalizado } });
     if (!user) {
-      const cedula = parseInt(term);
+      const cedula = parseInt(usernameNormalizado);
       if (!isNaN(cedula)) {
-        user = await this.usuarioRepository.findOne({
-          where: { cedula }
-        });
+        user = await this.usuarioRepository.findOne({ where: { cedula } });
+      }
+    }
+    if (!user) {
+      const allUsers = await this.usuarioRepository.find();
+      const emailPrefix = usernameNormalizado.includes('@') ? usernameNormalizado.split('@')[0] : '';
+      if (emailPrefix) {
+        user = allUsers.find(u => {
+          if (!u.correo) return false;
+          const dbEmail = u.correo.toLowerCase().trim();
+          return dbEmail === usernameNormalizado || dbEmail.split('@')[0] === emailPrefix;
+        }) || null;
       }
     }
 
     if (!user) {
-      const allUsers = await this.usuarioRepository.find();
-      const prefix = term.includes('@') ? term.split('@')[0] : term;
-      user = allUsers.find(u => {
-        if (!u.correo) return false;
-        const dbEmail = u.correo.toLowerCase().trim();
-        const dbPrefix = dbEmail.split('@')[0];
-        return dbEmail === term || dbPrefix === prefix || dbEmail.startsWith(prefix);
-      }) || null;
+      throw new BadRequestException('No se encontró ningún usuario registrado con ese correo institucional o usuario en el sistema.');
     }
 
-    if (!user) {
-      throw new NotFoundException('No se encontró ninguna cuenta asociada a este usuario o correo.');
-    }
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000;
 
-    // Generate token
-    const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 hour expiration
+    const targetEmail = user.correo;
+    this.recoveryCodes.set(targetEmail.toLowerCase().trim(), { code: verificationCode, expiresAt });
 
-    user.resetToken = token;
-    user.resetTokenExpires = expires;
-    await this.usuarioRepository.save(user);
+    console.log(`\n======================================================`);
+    console.log(`[AUTH RECOVERY CODE] CÓDIGO DE VERIFICACIÓN GENERADO:`);
+    console.log(`Usuario: ${user.nombre} ${user.apellido} (${targetEmail})`);
+    console.log(`Código de 6 dígitos: ${verificationCode}`);
+    console.log(`======================================================\n`);
 
-    const resetLink = `http://localhost:5173/?token=${token}`; // Default Vite port
-
-    console.log('\n==================================================');
-    console.log(`SIMULACIÓN RECUPERACIÓN DE CONTRASEÑA`);
-    console.log(`Usuario: ${user.nombre} ${user.apellido}`);
-    console.log(`Correo Destino: ${user.correo}`);
-    console.log(`Enlace de restablecimiento: ${resetLink}`);
-    console.log('==================================================\n');
-
-    // Try SMTP sending
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = process.env.SMTP_PORT;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-
-    if (smtpHost && smtpPort && smtpUser && smtpPass) {
+    if (process.env.SMTP_USER && process.env.SMTP_PASS && !process.env.SMTP_USER.includes('tu-correo-sena')) {
       try {
         const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: Number(smtpPort),
-          secure: Number(smtpPort) === 465,
+          host: process.env.SMTP_HOST || 'smtp.gmail.com',
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: false,
           auth: {
-            user: smtpUser,
-            pass: smtpPass,
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
           },
         });
 
         await transporter.sendMail({
-          from: `"SENA Soporte" <${smtpUser}>`,
-          to: user.correo,
-          subject: 'Recuperación de contraseña - SENA',
+          from: `"SENA - Proyecto Formativo" <${process.env.SMTP_USER}>`,
+          to: targetEmail,
+          subject: 'Código de Verificación - Restablecer Contraseña SENA',
           html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded-lg;">
-              <h2 style="color: #2D8600; text-align: center;">Recuperar Contraseña - SENA</h2>
-              <p>Hola <strong>${user.nombre}</strong>,</p>
-              <p>Has solicitado restablecer tu contraseña para la plataforma. Por favor, haz clic en el siguiente botón para continuar:</p>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetLink}" style="background-color: #39A900; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Restablecer Contraseña</a>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #39A900; padding: 20px; text-align: center; color: white;">
+                <h2 style="margin: 0; font-size: 24px;">SENA - Restablecimiento de Contraseña</h2>
               </div>
-              <p style="color: #64748b; font-size: 12px;">Este enlace expirará en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+              <div style="padding: 30px; color: #333333;">
+                <p>Hola <strong>${user.nombre}</strong>,</p>
+                <p>Has solicitado restablecer la contraseña de tu cuenta en la plataforma del Proyecto Formativo SENA.</p>
+                <p>Utiliza el siguiente código de verificación para completar el proceso. Este código expirará en 15 minutos:</p>
+                <div style="margin: 30px 0; text-align: center;">
+                  <span style="background-color: #f4f4f4; border: 2px dashed #39A900; padding: 15px 30px; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #222;">
+                    ${verificationCode}
+                  </span>
+                </div>
+                <p style="font-size: 14px; color: #777;">Si no solicitaste este cambio, puedes ignorar este correo; tu cuenta permanece segura.</p>
+              </div>
+              <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eeeeee;">
+                Servicio Nacional de Aprendizaje SENA &copy; 2026
+              </div>
             </div>
           `,
         });
-      } catch (mailError) {
-        console.error('Error al enviar correo por SMTP (se usó simulación en consola):', mailError.message || mailError);
+        console.log(`[EMAIL ENVIADO] Código de verificación enviado exitosamente a ${targetEmail}`);
+      } catch (err: any) {
+        console.error(`[EMAIL ERROR] No se pudo enviar el correo por SMTP (${err.message}). Se usará el código en consola.`);
       }
+    } else {
+      console.log(`[INFO] Credenciales SMTP no configuradas o en modo desarrollo. Puedes usar el código mostrado arriba en consola.`);
     }
 
-    return {
-      success: true,
-      message: 'Instrucciones enviadas al correo institucional.',
+    return { 
+      success: true, 
+      message: 'Código de verificación generado y enviado al correo institucional.',
+      correo: targetEmail,
+      devCode: verificationCode
     };
   }
 
-  async resetPassword(token: string, newPassword?: string) {
-    if (!token) {
-      throw new BadRequestException('El token de restablecimiento es obligatorio.');
-    }
-    if (!newPassword || newPassword.trim() === '') {
-      throw new BadRequestException('La nueva contraseña es obligatoria.');
+  async resetPassword(correo: string, codigo: string, nuevaContrasena: string) {
+    if (!correo || !codigo || !nuevaContrasena) {
+      throw new BadRequestException('Por favor ingrese el correo, el código de verificación y la nueva contraseña.');
     }
 
-    const user = await this.usuarioRepository.findOne({
-      where: { resetToken: token }
-    });
+    const cleanCorreo = correo.toLowerCase().trim();
+    const record = this.recoveryCodes.get(cleanCorreo);
 
+    if (!record) {
+      throw new BadRequestException('No se ha solicitado ningún código de verificación para este correo o el código ya expiró.');
+    }
+
+    if (Date.now() > record.expiresAt) {
+      this.recoveryCodes.delete(cleanCorreo);
+      throw new BadRequestException('El código de verificación ha expirado (límite 15 minutos). Por favor solicite uno nuevo.');
+    }
+
+    if (record.code !== codigo.trim()) {
+      throw new BadRequestException('El código de verificación ingresado es incorrecto.');
+    }
+
+    const user = await this.usuarioRepository.findOne({ where: { correo: cleanCorreo } });
     if (!user) {
-      throw new BadRequestException('El enlace de restablecimiento es inválido o ya ha sido utilizado.');
+      throw new BadRequestException('Usuario no encontrado en el sistema.');
     }
 
-    const now = new Date();
-    if (user.resetTokenExpires && user.resetTokenExpires < now) {
-      throw new BadRequestException('El enlace de restablecimiento ha expirado.');
-    }
-
-    user.password = newPassword.trim();
-    user.resetToken = null;
-    user.resetTokenExpires = null;
+    user.password = nuevaContrasena.trim();
     await this.usuarioRepository.save(user);
 
-    return {
-      success: true,
-      message: 'Contraseña restablecida exitosamente.',
-    };
+    this.recoveryCodes.delete(cleanCorreo);
+    console.log(`[PASSWORD RESET SUCCESS] La contraseña de ${cleanCorreo} fue actualizada con éxito.`);
+
+    return { success: true, message: '¡Contraseña actualizada exitosamente! Ya puedes iniciar sesión con tu nueva clave.' };
   }
 }

@@ -45,7 +45,7 @@ function App() {
         rawData = res.data
       } catch (e) {
         console.warn('api.get /usuarios failed, using direct fetch fallback:', e)
-        const res = await fetch('http://localhost:3000/api/usuarios')
+        const res = await fetch('/api/usuarios')
         if (res.ok) rawData = await res.json()
       }
 
@@ -146,7 +146,7 @@ function App() {
 
     // 4. Registered User Lookup Fallback by email, cedula, or username prefix
     try {
-      const res = await fetch('http://localhost:3000/api/usuarios')
+      const res = await fetch('/api/usuarios')
       if (res.ok) {
         const users = await res.json()
         const userPrefix = lowerUser.includes('@') ? lowerUser.split('@')[0] : lowerUser
@@ -214,30 +214,6 @@ function App() {
     setUserRole(null)
   }
 
-  const handleForgotPassword = async (identifier: string) => {
-    try {
-      const response = await api.post('/auth/forgot-password', { identifier })
-      return response.data
-    } catch (error: any) {
-      console.error('Forgot password error:', error)
-      const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al procesar la solicitud.'
-      return { success: false, message: formattedMessage }
-    }
-  }
-
-  const handleResetPassword = async (token: string, newPassword?: string) => {
-    try {
-      const response = await api.post('/auth/reset-password', { token, newPassword })
-      return response.data
-    } catch (error: any) {
-      console.error('Reset password error:', error)
-      const message = error.response?.data?.message
-      const formattedMessage = Array.isArray(message) ? message.join(', ') : message || 'Error al restablecer la contraseña.'
-      return { success: false, message: formattedMessage }
-    }
-  }
-
   const handleRegister = async (registration: RegistrationData) => {
     try {
       const payload = {
@@ -269,6 +245,28 @@ function App() {
     }
   }
 
+  const handleForgotPassword = async (identifier: string) => {
+    try {
+      const response = await api.post('/auth/forgot-password', { correo: identifier })
+      return response.data
+    } catch (error: any) {
+      console.error('Error in forgot-password:', error)
+      const message = error.response?.data?.message || 'No se encontró ningún usuario con ese correo institucional.'
+      return { success: false, message }
+    }
+  }
+
+  const handleResetPassword = async (correo: string, codigo: string, nuevaContrasena: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', { correo, codigo, nuevaContrasena })
+      return response.data
+    } catch (error: any) {
+      console.error('Error in reset-password:', error)
+      const message = error.response?.data?.message || 'El código de verificación es incorrecto o ha expirado.'
+      return { success: false, message }
+    }
+  }
+
   const updateInstructor = async (id: number, changes: Partial<InstructorProfile>) => {
     try {
       if (changes.status) {
@@ -283,7 +281,7 @@ function App() {
           await api.patch(`/usuarios/${id}`, patchBody)
         } catch (e) {
           console.warn('api.patch failed, attempting direct fetch:', e)
-          await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+          await fetch(`/api/usuarios/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(patchBody),
@@ -327,14 +325,7 @@ function App() {
   }
 
   if (!authenticated) {
-    return (
-      <Login
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onForgotPassword={handleForgotPassword}
-        onResetPassword={handleResetPassword}
-      />
-    )
+    return <Login onLogin={handleLogin} onRegister={handleRegister} onForgotPassword={handleForgotPassword} onResetPassword={handleResetPassword} />
   }
 
   return userRole === 'coordinador' || userRole === 'apoyo_administrativo' ? (

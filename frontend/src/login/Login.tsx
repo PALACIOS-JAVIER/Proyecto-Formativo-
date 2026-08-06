@@ -33,30 +33,12 @@ export interface RegistrationData {
 interface LoginProps {
   onLogin?: (credentials: LoginCredentials) => boolean | void | Promise<boolean | void | { success: boolean; message?: string }>
   onRegister?: (data: RegistrationData) => Promise<{ success: boolean; message?: string } | void> | void
-  onForgotPassword?: (identifier: string) => Promise<{ success: boolean; message?: string } | void> | void
-  onResetPassword?: (token: string, newPassword?: string) => Promise<{ success: boolean; message?: string } | void> | void
+  onForgotPassword?: (identifier: string) => Promise<{ success: boolean; message?: string; correo?: string; devCode?: string }> | boolean | void
+  onResetPassword?: (correo: string, codigo: string, nuevaContrasena: string) => Promise<{ success: boolean; message?: string }> | void
 }
-
-// ── Utilidades de validación en tiempo real ─────────────────────────
-
-function fieldState(value: string, valid: boolean, touched: boolean) {
-  if (!touched || value === '') return 'neutral'
-  return valid ? 'valid' : 'invalid'
-}
-
-function inputBorder(state: 'neutral' | 'valid' | 'invalid') {
-  if (state === 'valid') return 'border-[#39A900] ring-2 ring-[#39A900]/20'
-  if (state === 'invalid') return 'border-red-400 ring-2 ring-red-400/20'
-  return 'border-slate-300 hover:border-slate-400'
-}
-
-const BASE_INPUT = 'w-full h-10 px-3.5 bg-white border rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#39A900] focus:ring-2 focus:ring-[#39A900]/20 transition-all duration-150 shadow-2xs disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed'
-const LABEL = 'flex flex-col gap-1.5 text-xs font-semibold text-slate-700 tracking-wide'
-
-const Req = () => <span className="text-red-500 ml-0.5">*</span>
 
 export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }: LoginProps) {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -66,6 +48,10 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   const [loading, setLoading] = useState(false)
   const [forgotIdentifier, setForgotIdentifier] = useState('')
   const [forgotSubmitted, setForgotSubmitted] = useState(false)
+  const [targetEmail, setTargetEmail] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [registration, setRegistration] = useState<RegistrationData>({
     nombre: '',
     apellido: '',
@@ -131,9 +117,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
       ]
 
       Promise.all([
-        fetch('http://localhost:3000/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
-        fetch('http://localhost:3000/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
-        fetch('http://localhost:3000/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas),
+        fetch('/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
+        fetch('/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
+        fetch('/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas),
       ]).then(([s, r, a]) => {
         const validSedes = ((s && s.length > 0) ? s : fallbackSedes).filter((sede: any) => sede.nombre?.toLowerCase() !== 'otra')
         const validRoles = ((r && r.length > 0) ? r : fallbackRoles).filter((rol: any) => !rol.nombre?.toLowerCase().includes('apoyo'))
@@ -178,63 +164,64 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     setSuccessMessage('')
 
     if (mode === 'forgot') {
-      if (!forgotIdentifier.trim()) {
-        setErrorMessage('Ingresa tu usuario o correo institucional.')
-        return
-      }
-      try {
+      if (!forgotSubmitted) {
+        if (!forgotIdentifier.trim()) {
+          setErrorMessage('Ingresa tu usuario o correo institucional.')
+          return
+        }
+
         setLoading(true)
         const result = await onForgotPassword?.(forgotIdentifier)
-        if (result && result.success === false) {
-          setErrorMessage(result.message || 'Error al procesar la solicitud.')
-          return
-        }
-        setForgotSubmitted(true)
-        setSuccessMessage('Instrucciones enviadas al correo institucional.')
-      } catch (err: any) {
-        const msg = err?.response?.data?.message || err?.message || 'Error al procesar la solicitud.'
-        setErrorMessage(Array.isArray(msg) ? msg.join(', ') : msg)
-      } finally {
         setLoading(false)
-      }
-      return
-    }
 
-    if (mode === 'reset') {
-      if (!registration.contraseña || registration.contraseña.length < 6) {
-        setErrorMessage('La contraseña debe tener al menos 6 caracteres.')
+        if (result && typeof result === 'object') {
+          if (!result.success) {
+            setErrorMessage(result.message || 'No se encontró ningún usuario con ese correo institucional.')
+            return
+          }
+          if (result.correo) setTargetEmail(result.correo)
+          if (result.devCode) {
+            setSuccessMessage(`Código enviado al correo ${result.correo}. (Modo Dev de pruebas: tu código es ${result.devCode})`)
+          } else {
+            setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
+          }
+          setForgotSubmitted(true)
+        } else if (result === false) {
+          setErrorMessage('No se encontró ningún usuario registrado con ese correo institucional o usuario.')
+          return
+        } else {
+          setForgotSubmitted(true)
+        }
         return
-      }
-      if (registration.contraseña !== confirmPassword) {
-        setErrorMessage('Las contraseñas no coinciden.')
-        return
-      }
-      const params = new URLSearchParams(window.location.search)
-      const token = params.get('token')
-      if (!token) {
-        setErrorMessage('Token de restablecimiento no encontrado en la URL.')
-        return
-      }
-      try {
-        setLoading(true)
-        const result = await onResetPassword?.(token, registration.contraseña)
-        if (result && result.success === false) {
-          setErrorMessage(result.message || 'Error al restablecer la contraseña.')
+      } else {
+        if (!verificationCode.trim() || !newPassword.trim() || !confirmNewPassword.trim()) {
+          setErrorMessage('Por favor completa todos los campos para cambiar tu contraseña.')
           return
         }
-        setSuccessMessage('¡Contraseña restablecida exitosamente! Redirigiendo...')
-        setTimeout(() => {
-          window.history.replaceState({}, document.title, window.location.pathname)
-          goToLogin()
-          setSuccessMessage('')
-        }, 2000)
-      } catch (err: any) {
-        const msg = err?.response?.data?.message || err?.message || 'Error al restablecer la contraseña.'
-        setErrorMessage(Array.isArray(msg) ? msg.join(', ') : msg)
-      } finally {
+        if (newPassword.length < 6) {
+          setErrorMessage('La nueva contraseña debe tener al menos 6 caracteres.')
+          return
+        }
+        if (newPassword !== confirmNewPassword) {
+          setErrorMessage('Las contraseñas ingresadas no coinciden.')
+          return
+        }
+
+        setLoading(true)
+        const resetResult = await onResetPassword?.(targetEmail || forgotIdentifier, verificationCode, newPassword)
         setLoading(false)
+
+        if (resetResult && !resetResult.success) {
+          setErrorMessage(resetResult.message || 'Error al cambiar la contraseña. Verifica el código.')
+          return
+        }
+        setSuccessMessage('¡Contraseña restablecida con éxito! Redirigiendo al inicio de sesión...')
+        setTimeout(() => {
+          goToLogin()
+          setSuccessMessage('Contraseña actualizada con éxito. Ya puedes iniciar sesión con tu nueva clave.')
+        }, 2500)
+        return
       }
-      return
     }
 
     if (mode === 'login') {
@@ -318,17 +305,23 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     </button>
   )
 
-  // ── Helper select wrapper con icono chevron ────────────────────────
-  const SelectWrap = ({ children }: { children: React.ReactNode }) => (
-    <div className="relative">
-      {children}
-      <LuChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-    </div>
-  )
+  const goToLogin = () => {
+    setMode('login')
+    setErrorMessage('')
+    setSuccessMessage('')
+    setForgotSubmitted(false)
+    setForgotIdentifier('')
+    setVerificationCode('')
+    setNewPassword('')
+    setConfirmNewPassword('')
+  }
 
-  // ── Clases de input dinámico por estado de validación ─────────────
-  const dynInput = (state: 'neutral' | 'valid' | 'invalid') =>
-    `${BASE_INPUT} ${inputBorder(state)}`
+  const goToForgot = () => {
+    setMode('forgot')
+    setErrorMessage('')
+    setSuccessMessage('')
+    setForgotSubmitted(false)
+  }
 
   return (
     <main className="login-shell">
@@ -364,9 +357,8 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
               {mode === 'register' && 'Diligencia la información correspondiente para solicitar acceso a la plataforma.'}
               {mode === 'forgot' &&
                 (forgotSubmitted
-                  ? 'Revisa tu correo institucional para continuar con el proceso.'
-                  : 'Ingresa tu usuario o correo y te enviaremos instrucciones para restablecerla.')}
-              {mode === 'reset' && 'Ingresa tu nueva contraseña para actualizar tu acceso.'}
+                  ? 'Ingresa el código que te enviamos al correo institucional y escribe tu nueva contraseña.'
+                  : 'Ingresa tu usuario o correo institucional y te enviaremos un código de seguridad para restablecer tu contraseña.')}
             </p>
           </div>
 
@@ -375,9 +367,79 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             {/* ════════════════════ MODO FORGOT ════════════════════ */}
             {mode === 'forgot' ? (
               forgotSubmitted ? (
-                <div className="switch-mode-row">
-                  <button type="button" onClick={goToLogin} className="link-button">Volver a iniciar sesión</button>
-                </div>
+                <>
+                  <div className="floating-field">
+                    <input
+                      id="verification-code"
+                      type="text"
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(event) => setVerificationCode(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="verification-code" className="floating-label">
+                      Código de verificación (6 dígitos)
+                    </label>
+                  </div>
+
+                  <div className="floating-field">
+                    <input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="new-password" className="floating-label">
+                      Nueva contraseña
+                    </label>
+                  </div>
+
+                  <div className="floating-field">
+                    <input
+                      id="confirm-new-password"
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(event) => setConfirmNewPassword(event.target.value)}
+                      placeholder=" "
+                      required
+                      className={`${inputClasses} floating-input`}
+                    />
+                    <label htmlFor="confirm-new-password" className="floating-label">
+                      Confirmar nueva contraseña
+                    </label>
+                  </div>
+
+                  <button type="submit" disabled={loading} className="button-primary">
+                    {loading ? 'Validando código...' : 'Guardar nueva contraseña'}
+                  </button>
+
+                  <div className="switch-mode-row" style={{ marginTop: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForgotSubmitted(false)
+                        setVerificationCode('')
+                        setNewPassword('')
+                        setConfirmNewPassword('')
+                        setErrorMessage('')
+                        setSuccessMessage('')
+                      }}
+                      className="link-button"
+                    >
+                      Volver a solicitar código
+                    </button>
+                  </div>
+                  <div className="switch-mode-row">
+                    <button type="button" onClick={goToLogin} className="link-button">
+                      Volver a iniciar sesión
+                    </button>
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="floating-field">

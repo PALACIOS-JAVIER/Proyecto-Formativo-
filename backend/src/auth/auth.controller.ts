@@ -14,13 +14,17 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
-  forgotPassword(@Body() body: { identifier: string; email?: string; username?: string }) {
-    return this.authService.forgotPassword(body.identifier || body.email || body.username);
+  forgotPassword(@Body('correo') correo: string, @Body('username') username: string) {
+    return this.authService.forgotPassword(correo || username);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('reset-password')
-  resetPassword(@Body() body: { token: string; newPassword?: string; password?: string }) {
-    return this.authService.resetPassword(body.token, body.newPassword || body.password);
+  resetPassword(
+    @Body('correo') correo: string,
+    @Body('codigo') codigo: string,
+    @Body('nuevaContrasena') nuevaContrasena: string,
+  ) {
+    return this.authService.resetPassword(correo, codigo, nuevaContrasena);
   }
 }

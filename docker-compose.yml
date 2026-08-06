@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB: proyecto_formativo
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -25,13 +25,13 @@ services:
     container_name: proyecto_formativo_backend
     environment:
       DB_HOST: db
-      DB_PORT: 5432
+      DB_PORT: 5433
       DB_USERNAME: admin
       DB_PASSWORD: secretpassword
       DB_NAME: proyecto_formativo
       DB_SYNCHRONIZE: "true"
       PORT: 3000
-      JWT_SECRET: super-secret-jwt-key
+      JWT_SECRET: SRWv5qyFNC7PsQdmSzZjaGEosHg8pjGtuRBABcjti9YrIqaclYLCMRG7mxU3r6jE
       FRONTEND_URL: http://localhost:5173
     ports:
       - "3000:3000"

@@ -60,8 +60,8 @@ export function RevisarInformes(): ReactElement {
     try {
       setIsLoading(true)
       const [gcRes, gfRes] = await Promise.all([
-        fetch('http://localhost:3000/api/informes-gc').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:3000/api/informes-gf').then(r => r.ok ? r.json() : [])
+        fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gf').then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' as const }))
@@ -154,7 +154,7 @@ export function RevisarInformes(): ReactElement {
   const handleApprove = async (reportId: number, tipo: 'GC' | 'GF') => {
     try {
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
-      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/estado`, {
+      const res = await fetch(`/api/${endpoint}/${reportId}/estado`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: 'aprobado' }),
@@ -176,7 +176,7 @@ export function RevisarInformes(): ReactElement {
       setAnalyzingIds((prev) => ({ ...prev, [key]: true }))
       setActionAlert(`🤖 Consultando auditoría institucional a Sera 🦅 (n8n + OpenAI) para Informe ${tipo} #${reportId}. Espera unos 8 segundos...`)
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
-      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/reanalizar-ia`, {
+      const res = await fetch(`/api/${endpoint}/${reportId}/reanalizar-ia`, {
         method: 'POST',
       })
       if (!res.ok) throw new Error('Error al solicitar reanálisis a la IA.')
@@ -203,7 +203,7 @@ export function RevisarInformes(): ReactElement {
       const coordId = userSession?.id || userSession?.id_Usuario
 
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
-      const res = await fetch(`http://localhost:3000/api/${endpoint}/${reportId}/observacion`, {
+      const res = await fetch(`/api/${endpoint}/${reportId}/observacion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

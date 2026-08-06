@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.ts';
 import { AppService } from './app.service.ts';
 import { AreasModule } from './Products/areas/areas.module';
@@ -39,10 +40,14 @@ import { ApoyoAdministrativoModule } from './Products/apoyo-administrativo/apoyo
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
+      port: process.env.DB_HOST === 'db' ? 5432 : parseInt(process.env.DB_PORT || '5433', 10),
       username: process.env.DB_USERNAME || 'admin',
       password: String(process.env.DB_PASSWORD || 'secretpassword'),
       database: process.env.DB_NAME || 'proyecto_formativo',
