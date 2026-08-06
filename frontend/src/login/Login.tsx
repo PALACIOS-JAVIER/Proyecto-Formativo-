@@ -82,7 +82,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   const Req = () => <span className="text-red-500 ml-0.5">*</span>
   const BASE_INPUT = "w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-[#39A900]/20 focus:border-[#39A900]"
   
-  const fieldState = (value: string, isValid: boolean, isTouched: boolean) => {
+  const fieldState = (_value: string, isValid: boolean, isTouched: boolean) => {
     if (!isTouched) return 'default'
     return isValid ? 'valid' : 'invalid'
   }

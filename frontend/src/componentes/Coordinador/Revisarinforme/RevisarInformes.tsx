@@ -33,7 +33,7 @@ export function RevisarInformes(): ReactElement {
   const [isLoading, setIsLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [periodo, setPeriodo] = useState('Todos los periodos')
-  const [filter, setFilter] = useState<'revision' | 'aprobado' | 'correccion'>('revision')
+  const [filter, setFilter] = useState<'todos' | 'revision' | 'aprobado' | 'correccion'>('revision')
 
   // Folders collapse state (collapsed by default)
   const [collapsedMonths, setCollapsedMonths] = useState<Record<string, boolean>>({})
@@ -98,10 +98,11 @@ export function RevisarInformes(): ReactElement {
   }, [reports])
 
   const counts = useMemo(() => {
-    const out = { revision: 0, aprobado: 0, correccion: 0 }
+    const out = { todos: 0, revision: 0, aprobado: 0, correccion: 0 }
     for (const r of reportsWithVersions) {
       const st = r.estado === 'success' ? 'aprobado' : r.estado === 'alert' ? 'correccion' : (r.estado === 'aprobado' ? 'aprobado' : r.estado === 'correccion' ? 'correccion' : 'revision')
       out[st]++
+      out.todos++
     }
     return out
   }, [reportsWithVersions])
@@ -109,7 +110,7 @@ export function RevisarInformes(): ReactElement {
   const filtered = useMemo(() => {
     return reportsWithVersions.filter((r) => {
       const normalizedStatus = r.estado === 'success' ? 'aprobado' : r.estado === 'alert' ? 'correccion' : (r.estado === 'aprobado' ? 'aprobado' : r.estado === 'correccion' ? 'correccion' : 'revision')
-      if (filter !== normalizedStatus) return false
+      if (filter !== 'todos' && filter !== normalizedStatus) return false
       
       const pText = `${r.mes} ${r.anio}`
       if (periodo !== 'Todos los periodos' && pText !== periodo) return false
@@ -321,21 +322,27 @@ export function RevisarInformes(): ReactElement {
           </div>
 
           {/* tabs */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 overflow-x-auto pb-2">
             <button
-              className={`px-4 py-2 rounded-full font-semibold ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'todos' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              onClick={() => setFilter('todos')}
+            >
+              Todos ({counts.todos})
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
               onClick={() => setFilter('revision')}
             >
               En Revisión ({counts.revision})
             </button>
             <button
-              className={`px-4 py-2 rounded-full font-semibold ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
               onClick={() => setFilter('aprobado')}
             >
               Aprobados ({counts.aprobado})
             </button>
             <button
-              className={`px-4 py-2 rounded-full font-semibold ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
               onClick={() => setFilter('correccion')}
             >
               Correcciones ({counts.correccion})
