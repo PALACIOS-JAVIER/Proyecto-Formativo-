@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -79,26 +79,36 @@ export class UsuariosService {
       );
     }
 
-    const dto: any = { ...createUsuarioDto };
-    delete dto.id_sede;
-    delete dto.id_rol;
-    delete dto.id_area;
-    delete dto.passwordConfirm;
+    const existingCedula = await this.usuarioRepository.findOne({ where: { cedula: createUsuarioDto.cedula } });
+    if (existingCedula) {
+      throw new BadRequestException('La cédula ingresada ya se encuentra registrada en el sistema.');
+    }
+    const existingCorreo = await this.usuarioRepository.findOne({ where: { correo: createUsuarioDto.correo } });
+    if (existingCorreo) {
+      throw new BadRequestException('El correo institucional ya se encuentra registrado.');
+    }
+
+    const usuario = this.usuarioRepository.create({
+      ...createUsuarioDto,
+      sede,
+      rol,
+      area,
+      password: createUsuarioDto.password,
+    });
 
     try {
-      // Hash the password before saving
-      const hashedPassword = await bcrypt.hash(createUsuarioDto.password, 10);
-      const usuario: Usuario = this.usuarioRepository.create({
-        ...dto,
-        sede,
-        rol,
-        area,
-        password: hashedPassword,
-      } as any) as unknown as Usuario;
-      return (await this.usuarioRepository.save(usuario as any)) as unknown as Usuario;
+      return await this.usuarioRepository.save(usuario);
     } catch (error: any) {
-      console.error('Error en base de datos al guardar usuario:', error);
-      throw new BadRequestException(`No se pudo registrar el usuario: ${error.message || error}`);
+      if (error.code === '23505' || error.detail?.includes('already exists')) {
+        if (error.detail?.includes('cedula')) {
+          throw new BadRequestException('La cédula ingresada ya se encuentra registrada en el sistema.');
+        }
+        if (error.detail?.includes('correo')) {
+          throw new BadRequestException('El correo institucional ya se encuentra registrado.');
+        }
+        throw new BadRequestException('El usuario ya se encuentra registrado en el sistema.');
+      }
+      throw new BadRequestException('Ocurrió un error al registrar el usuario. Verifique los datos ingresados.');
     }
   }
 

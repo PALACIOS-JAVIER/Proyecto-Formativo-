@@ -103,7 +103,7 @@ export function Informes(): ReactElement {
   }, [filteredReports])
 
   const toggleFolder = (folderKey: string) => {
-    setCollapsedFolders(prev => ({ ...prev, [folderKey]: !prev[folderKey] }))
+    setCollapsedFolders(prev => ({ ...prev, [folderKey]: !(prev[folderKey] ?? true) }))
   }
 
   const approvedCount = reports.filter((r) => r.estado === 'aprobado' || r.estado === 'success').length
@@ -277,7 +277,7 @@ export function Informes(): ReactElement {
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedByMonth).map(([folderMonth, monthReports]) => {
-            const isCollapsed = collapsedFolders[folderMonth]
+            const isCollapsed = collapsedFolders[folderMonth] ?? true
             const gcReports = monthReports.filter(r => r.tipo === 'GC')
             const gfReports = monthReports.filter(r => r.tipo === 'GF')
             

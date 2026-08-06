@@ -45,24 +45,17 @@ export class Usuario {
     @JoinColumn({ name: 'id_especialidad' })
     especialidad: Especialidad | null;
 
-    @ManyToOne(() => ObjetoContractual, { eager: false, nullable: true })
-    @JoinColumn({ name: 'id_objeto' })
-    objetoContractual: ObjetoContractual | null;
-
     @Column({ type: 'varchar', nullable: true })
-    codigoContrato?: string;
+    codigoContrato: string;
 
     @Column({ type: 'int', nullable: true })
-    codigoSiif?: number;
+    codigoSiif: number;
 
     @Column({ type: 'date', nullable: true })
-    fechaInicioContrato?: Date;
+    fechaInicioContrato: Date;
 
     @Column({ type: 'date', nullable: true })
-    fechaFinContrato?: Date;
-
-    @Column({ type: 'varchar', default: 'pendiente', nullable: true })
-    estado_cuenta: string;
+    fechaFinContrato: Date;
 
     @Exclude()
     @Column({ type: 'varchar' })

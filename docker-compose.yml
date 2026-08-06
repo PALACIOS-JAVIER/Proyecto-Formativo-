@@ -9,7 +9,8 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB: proyecto_formativo
-    # Puerto NO expuesto al exterior: solo accesible por backend via red_proyecto
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:

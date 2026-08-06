@@ -17,11 +17,10 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
   app.enableCors({
-    origin: FRONTEND_URL,
+    origin: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,
   });
 
