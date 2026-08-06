@@ -290,9 +290,6 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   }
 
   const goToRegister = () => { setMode('register'); setErrorMessage('') }
-  const goToLogin = () => { setMode('login'); setErrorMessage(''); setForgotSubmitted(false); setForgotIdentifier('') }
-  const goToForgot = () => { setMode('forgot'); setErrorMessage(''); setForgotSubmitted(false) }
-
   // ── Helpers para campo con icono ojo ───────────────────────────────
   const PwdToggle = ({ show, onToggle }: { show: boolean; onToggle: () => void }) => (
     <button

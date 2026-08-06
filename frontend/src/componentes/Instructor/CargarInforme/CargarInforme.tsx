@@ -83,6 +83,9 @@ export function CargarInforme(): ReactElement {
 
       const response = await fetch('/api/informes-gc/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userSession?.token}`
+        },
         body: formData,
       })
 
@@ -131,6 +134,9 @@ export function CargarInforme(): ReactElement {
 
       const response = await fetch('/api/informes-gf/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userSession?.token}`
+        },
         body: formData,
       })
 

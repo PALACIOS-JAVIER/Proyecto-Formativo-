@@ -10,7 +10,6 @@ const navigationItems: Array<{ id: PageKey; label: string; icon: string }> = [
   { id: 'indicadores', label: 'Indicadores', icon: '📈' },
   { id: 'notificaciones', label: 'Alertas', icon: '🔔' },
   { id: 'perfil', label: 'Perfil', icon: '⚙️' },
-  { id: 'asistente', label: 'Asistente IA', icon: '🤖' },
 ]
 
 interface NavegacionProps {
