@@ -9,6 +9,7 @@ import { Rol } from '../rol/entities/rol.entity';
 import { Area } from '../areas/entities/area.entity';
 import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuariosService {
@@ -24,6 +25,27 @@ export class UsuariosService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+    const existente = await this.usuarioRepository.findOne({
+      where: [
+        { correo: createUsuarioDto.correo },
+        { cedula: Number(createUsuarioDto.cedula) },
+        { telefono: Number(createUsuarioDto.telefono) },
+      ],
+    });
+
+    if (existente) {
+      if (existente.correo === createUsuarioDto.correo) {
+        throw new ConflictException('Ya existe un usuario registrado con este correo institucional.');
+      }
+      if (Number(existente.cedula) === Number(createUsuarioDto.cedula)) {
+        throw new ConflictException('Ya existe un usuario registrado con esta cédula de ciudadanía.');
+      }
+      if (Number(existente.telefono) === Number(createUsuarioDto.telefono)) {
+        throw new ConflictException('Ya existe un usuario registrado con este número de teléfono.');
+      }
+      throw new ConflictException('El usuario, correo, cédula o teléfono ya se encuentra registrado en el sistema.');
+    }
+
     const sedeIdNum = Number(createUsuarioDto.id_sede);
     let sede = !isNaN(sedeIdNum)
       ? await this.sedeRepository.findOne({ where: { id_sede: sedeIdNum } })

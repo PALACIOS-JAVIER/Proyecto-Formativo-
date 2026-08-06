@@ -5,6 +5,8 @@ import { InformeGF } from './entities/informe-gf.entity';
 import { ObservacionGF } from './entities/observacion-gf.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
 import { Notificacion } from '../notificaciones/entities/notificacione.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class InformesGfService {
@@ -29,11 +31,14 @@ export class InformesGfService {
       mes: dto.mes,
       anio: Number(dto.anio),
       estado: 'revisando',
+      veredicto_ia: 'pendiente',
       archivo_url: dto.archivo_url,
       usuario,
     });
 
-    return this.informeGfRepository.save(informe);
+    const saved = await this.informeGfRepository.save(informe);
+    this.enviarAFlujoN8N(saved, 'GF', usuario);
+    return saved;
   }
 
   async findAll(): Promise<InformeGF[]> {
@@ -115,5 +120,78 @@ export class InformesGfService {
   async remove(id: number): Promise<void> {
     const informe = await this.findOne(id);
     await this.informeGfRepository.remove(informe);
+  }
+
+  async saveResultadoIA(id: number, analisis_ia: string, veredicto_ia: string): Promise<InformeGF> {
+    const informe = await this.findOne(id);
+    informe.analisis_ia = analisis_ia;
+    informe.veredicto_ia = veredicto_ia;
+    return this.informeGfRepository.save(informe);
+  }
+
+  async reanalizarIA(id: number): Promise<{ message: string; informe: InformeGF }> {
+    const informe = await this.findOne(id);
+    if (!informe || !informe.usuario) {
+      throw new NotFoundException('Informe o usuario no encontrado para reenviar a IA');
+    }
+    await this.enviarAFlujoN8N(informe, 'GF', informe.usuario);
+    const updated = await this.findOne(id);
+    return { message: 'Análisis de IA procesado y guardado exitosamente', informe: updated };
+  }
+
+  private async enviarAFlujoN8N(informe: InformeGF, tipo: string, usuario: Usuario): Promise<void> {
+    try {
+      const filePath = path.join(process.cwd(), informe.archivo_url);
+      if (!fs.existsSync(filePath)) {
+        console.warn(`Archivo no encontrado para enviar a n8n: ${filePath}`);
+        return;
+      }
+      const fileBuffer = fs.readFileSync(filePath);
+      const base64File = fileBuffer.toString('base64');
+      const nombreArchivo = path.basename(filePath);
+      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv1849571.hstgr.cloud/webhook/revisar-informe';
+
+      console.log(`🚀 Enviando Informe ${tipo} #${informe.id_informe_gf} al flujo n8n en ${webhookUrl}...`);
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_informe: informe.id_informe_gf,
+          tipo: tipo,
+          cedula: String(usuario.cedula),
+          telefono: String(usuario.telefono || '0000000000'),
+          mes: informe.mes,
+          anio: informe.anio,
+          nombre_archivo: nombreArchivo,
+          archivo_base64: base64File,
+        }),
+      }).catch((err) => {
+        console.error(`❌ Error al contactar webhook de n8n: ${err.message || err}`);
+        return null;
+      });
+
+      if (!res) return;
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Sin detalles');
+        console.error(`❌ n8n respondió con error HTTP ${res.status}: ${errText}`);
+        return;
+      }
+      const responseData = await res.json().catch(() => null);
+      console.log(`✅ Respuesta directa recibida de n8n para Informe ${tipo} #${informe.id_informe_gf}:`, responseData);
+
+      if (responseData) {
+        const item = Array.isArray(responseData) ? responseData[0] : responseData;
+        const analisis = item.mensaje || item.analisis_ia || item.mensaje_coordinador || item.text || item.output || (typeof item === 'string' ? item : null);
+        const veredicto = item.veredicto_ia || (analisis && (analisis.includes('✅') || analisis.includes('COMPLETO')) ? 'aprobado_ia' : 'requiere_correccion');
+
+        if (analisis && typeof analisis === 'string') {
+          await this.saveResultadoIA(informe.id_informe_gf, analisis, veredicto);
+          console.log(`🎉 Diagnóstico IA guardado exitosamente en base de datos para Informe ${tipo} #${informe.id_informe_gf}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error al preparar archivo para n8n:', error);
+    }
   }
 }

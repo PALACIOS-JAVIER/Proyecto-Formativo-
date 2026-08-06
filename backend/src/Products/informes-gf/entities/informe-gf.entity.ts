@@ -22,6 +22,12 @@ export class InformeGF {
     @Column({ nullable: true })
     archivo_url: string;
 
+    @Column({ type: 'text', nullable: true })
+    analisis_ia: string;
+
+    @Column({ type: 'varchar', nullable: true, default: 'pendiente' })
+    veredicto_ia: string;
+
     @ManyToOne(() => Usuario, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'id_usuario' })
     usuario: Usuario;

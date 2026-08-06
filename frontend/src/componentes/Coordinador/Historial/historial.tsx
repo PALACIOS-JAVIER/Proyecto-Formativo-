@@ -13,14 +13,19 @@ interface HistoryItem {
 export function Historial(): ReactElement {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+
+  const toggleItem = (id: string) => {
+    setExpandedItems((prev) => ({ ...prev, [id]: !prev[id] }))
+  }
 
   const fetchAuditHistory = async () => {
     try {
       setIsLoading(true)
       const [gcRes, gfRes, usersRes] = await Promise.all([
-        fetch('http://localhost:3000/api/informes-gc').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:3000/api/informes-gf').then(r => r.ok ? r.json() : []),
-        fetch('http://localhost:3000/api/usuarios').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
+        fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
+        fetch('/api/usuarios').then(r => r.ok ? r.json() : []),
       ])
 
       const logs: HistoryItem[] = []
@@ -129,21 +134,37 @@ export function Historial(): ReactElement {
           <p className="text-center text-text-muted">Sin registros en la bitácora de historial.</p>
         ) : (
           <div className="space-y-6">
-            {history.map((item) => (
-              <div key={item.id} className="relative pl-6 border-l-2 border-emerald-500/30 pb-2">
-                <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ${item.type === 'approval' ? 'bg-emerald-500' : item.type === 'correction' ? 'bg-rose-500' : 'bg-sky-500'}`}></div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <h3 className="font-bold text-[1.05rem] text-foreground">{item.action}</h3>
-                    <p className="text-sm font-semibold text-emerald-700 mt-0.5">{item.target}</p>
+            {history.map((item) => {
+              const isCorrection = item.type === 'correction';
+              const isExpanded = !!expandedItems[item.id];
+              return (
+                <div key={item.id} className={`relative pl-6 border-l-2 pb-2 ${isCorrection ? 'border-rose-500/30' : 'border-emerald-500/30'}`}>
+                  <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ${item.type === 'approval' ? 'bg-emerald-500' : item.type === 'correction' ? 'bg-rose-500' : 'bg-sky-500'}`}></div>
+                  <div 
+                    className={`flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 ${isCorrection ? 'cursor-pointer select-none hover:opacity-85' : ''}`}
+                    onClick={() => isCorrection && toggleItem(item.id)}
+                  >
+                    <div>
+                      <h3 className="font-bold text-[1.05rem] text-foreground flex items-center gap-2">
+                        {item.action}
+                        {isCorrection && (
+                          <span className="text-[10px] font-normal text-secondary bg-bg-alt px-2 py-0.5 rounded border border-border">
+                            {isExpanded ? '▲ Ocultar' : '▼ Ver detalles'}
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-sm font-semibold text-emerald-700 mt-0.5">{item.target}</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-bg-alt text-text-secondary border border-border whitespace-nowrap">
+                      {item.date}
+                    </span>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-bg-alt text-text-secondary border border-border whitespace-nowrap">
-                    {item.date}
-                  </span>
+                  {(!isCorrection || isExpanded) && (
+                    <p className="mt-2 text-sm text-text-muted leading-relaxed transition-all animate-fadeIn">{item.details}</p>
+                  )}
                 </div>
-                <p className="mt-2 text-sm text-text-muted leading-relaxed">{item.details}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </article>

@@ -197,7 +197,7 @@ export function Instructores({
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-600 text-white font-semibold overflow-hidden border border-emerald-500">
                       {inst.fotoPerfil ? (
-                        <img src={inst.fotoPerfil.startsWith('http') ? inst.fotoPerfil : `http://localhost:3000/${inst.fotoPerfil}`} alt="Perfil" className="h-full w-full object-cover" />
+                        <img src={inst.fotoPerfil.startsWith('http') ? inst.fotoPerfil : `/${inst.fotoPerfil}`} alt="Perfil" className="h-full w-full object-cover" />
                       ) : (
                         (inst.nombre[0] || '') + (inst.apellido[0] || '')
                       )}
