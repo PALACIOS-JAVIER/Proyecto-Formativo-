@@ -34,9 +34,12 @@ export function Dashboard(): ReactElement {
 
     try {
       setIsLoading(true)
+      const token = localStorage.getItem('access_token') || ''
+      const headers = { 'Authorization': `Bearer ${token}` }
+
       const [gcRes, gfRes] = await Promise.all([
-        fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []),
-        fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : [])
+        fetch(`/api/informes-gc/usuario/${userId}`, { headers }).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`, { headers }).then(r => r.ok ? r.json() : [])
       ])
 
       const gcList = (gcRes || []).map((r: any) => ({ ...r, tipo: 'GC' }))
