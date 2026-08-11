@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { ReactElement } from 'react'
 
 export function CargarInforme(): ReactElement {
@@ -18,6 +18,37 @@ export function CargarInforme(): ReactElement {
   const monthOptions = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
   const yearOptions = ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
   const selectedPeriod = `${month} ${year}`
+
+  const [reportsGC, setReportsGC] = useState<any[]>([])
+  const [reportsGF, setReportsGF] = useState<any[]>([])
+
+  const fetchReports = useCallback(async () => {
+    const rawUser = localStorage.getItem('user_data')
+    const userSession = rawUser ? JSON.parse(rawUser) : null
+    const userId = userSession?.id || userSession?.id_Usuario
+    if (!userId) return
+
+    const token = localStorage.getItem('access_token') || ''
+    const headers = { 'Authorization': `Bearer ${token}` }
+
+    try {
+      const [gcRes, gfRes] = await Promise.all([
+        fetch(`/api/informes-gc/usuario/${userId}`, { headers }).then(r => r.ok ? r.json() : []),
+        fetch(`/api/informes-gf/usuario/${userId}`, { headers }).then(r => r.ok ? r.json() : [])
+      ])
+      setReportsGC(gcRes || [])
+      setReportsGF(gfRes || [])
+    } catch (err) {
+      console.error('Error fetching reports:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchReports()
+  }, [fetchReports])
+
+  const isGcApproved = reportsGC.some(r => r.mes === month && String(r.anio) === year && (r.estado === 'aprobado' || r.estado === 'success'))
+  const isGfApproved = reportsGF.some(r => r.mes === month && String(r.anio) === year && (r.estado === 'aprobado' || r.estado === 'success'))
 
   const handleGcFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -99,6 +130,7 @@ export function CargarInforme(): ReactElement {
       setIsGcError(false)
       setGcMessage(`✓ Informe GC (${month} ${year}) en PDF subido exitosamente.`)
       setGcFile(null)
+      fetchReports()
     } catch (err: any) {
       console.error('Error uploading GC report:', err)
       setIsGcError(true)
@@ -152,6 +184,7 @@ export function CargarInforme(): ReactElement {
       setIsGfError(false)
       setGfMessage(`✓ Informe GF (${month} ${year}) en PDF subido exitosamente.`)
       setGfFile(null)
+      fetchReports()
     } catch (err: any) {
       console.error('Error uploading GF report:', err)
       setIsGfError(true)
@@ -215,12 +248,18 @@ export function CargarInforme(): ReactElement {
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GC</h2>
               <p className="text-xs text-secondary mt-1">Formato Institucional GC. Adjunta el archivo en formato PDF.</p>
 
-              <label className="button button--primary cursor-pointer mt-4 inline-flex items-center gap-2">
+              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGcApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GC
-                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGcFileChange} />
+                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGcFileChange} disabled={isGcApproved} />
               </label>
 
-              {gcFile && (
+              {isGcApproved && (
+                <div className="mt-4 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
+                  ✓ Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                </div>
+              )}
+
+              {gcFile && !isGcApproved && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
                   <span>📄 {gcFile.name} ({formatFileSize(gcFile.size)})</span>
                 </div>
@@ -242,8 +281,8 @@ export function CargarInforme(): ReactElement {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmittingGc}
-                  className="button button--primary text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+                  disabled={isSubmittingGc || isGcApproved}
+                  className={`button button--primary text-xs font-bold text-white ${isGcApproved ? 'bg-emerald-400 cursor-not-allowed opacity-50' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                   onClick={handleGcSubmit}
                 >
                   {isSubmittingGc ? 'Subiendo GC...' : 'Cargar informe GC'}
@@ -268,12 +307,18 @@ export function CargarInforme(): ReactElement {
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GF</h2>
               <p className="text-xs text-secondary mt-1">Formato Institucional GF. Adjunta el archivo en formato PDF.</p>
 
-              <label className="button button--primary cursor-pointer mt-4 inline-flex items-center gap-2">
+              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGfApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GF
-                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGfFileChange} />
+                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGfFileChange} disabled={isGfApproved} />
               </label>
 
-              {gfFile && (
+              {isGfApproved && (
+                <div className="mt-4 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 p-2.5 rounded-xl">
+                  ✓ Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                </div>
+              )}
+
+              {gfFile && !isGfApproved && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 shadow-sm">
                   <span>📄 {gfFile.name} ({formatFileSize(gfFile.size)})</span>
                 </div>
@@ -295,8 +340,8 @@ export function CargarInforme(): ReactElement {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmittingGf}
-                  className="button button--primary text-xs font-bold bg-sky-600 text-white hover:bg-sky-700"
+                  disabled={isSubmittingGf || isGfApproved}
+                  className={`button button--primary text-xs font-bold text-white ${isGfApproved ? 'bg-sky-400 cursor-not-allowed opacity-50' : 'bg-sky-600 hover:bg-sky-700'}`}
                   onClick={handleGfSubmit}
                 >
                   {isSubmittingGf ? 'Subiendo GF...' : 'Cargar informe GF'}

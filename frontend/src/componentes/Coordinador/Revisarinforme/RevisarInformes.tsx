@@ -253,14 +253,14 @@ export function RevisarInformes(): ReactElement {
 
   return (
     <section className="mx-auto flex max-w-7xl flex-col gap-6">
-      <header className="rounded-[28px] border border-transparent page-hero-bg p-6 shadow-md">
+      <header className="rounded-[28px] border px-6 py-6 shadow-sm border-slate-200 bg-white text-slate-900">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald">Revisar informes PDF</p>
-            <h1 className="mt-2 text-3xl font-semibold text-foreground">Evalúa, aprueba o solicita correcciones a las entregas mensuales en PDF</h1>
-            <p className="mt-3 max-w-2xl text-sm text-secondary">Abre el archivo PDF original de cada instructor y envía retroalimentación oportuna.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-700">Revisar informes PDF</p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900">Evalúa, aprueba o solicita correcciones a las entregas mensuales en PDF</h1>
+            <p className="mt-3 max-w-2xl text-sm text-slate-600">Abre el archivo PDF original de cada instructor y envía retroalimentación oportuna.</p>
           </div>
-          <button type="button" onClick={fetchAllReports} className="button button--ghost text-xs">
+          <button type="button" onClick={fetchAllReports} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
             🔄 Actualizar lista
           </button>
         </div>
@@ -274,29 +274,29 @@ export function RevisarInformes(): ReactElement {
 
       {/* stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
-          <div className="text-2xl font-bold text-sky">{counts.revision}</div>
-          <div className="text-sm text-secondary">En Revisión</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between">
+          <div className="text-3xl font-bold text-sky-600">{counts.revision}</div>
+          <div className="text-sm font-medium text-slate-500 mt-1">En Revisión</div>
         </div>
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
-          <div className="text-2xl font-bold text-emerald">{counts.aprobado}</div>
-          <div className="text-sm text-secondary">Aprobados</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between">
+          <div className="text-3xl font-bold text-emerald-600">{counts.aprobado}</div>
+          <div className="text-sm font-medium text-slate-500 mt-1">Aprobados</div>
         </div>
-        <div className="rounded-2xl border bg-bg-card p-5 shadow-md">
-          <div className="text-2xl font-bold text-warning">{counts.correccion}</div>
-          <div className="text-sm text-secondary">Correcciones</div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between">
+          <div className="text-3xl font-bold text-rose-500">{counts.correccion}</div>
+          <div className="text-sm font-medium text-slate-500 mt-1">Correcciones</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-5">
           {/* controls */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex w-full flex-col sm:flex-row gap-3">
-              <div className="flex flex-1 items-center rounded-lg border border-border bg-bg-card px-3 py-2">
-                <span className="text-secondary mr-2">🔎</span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full flex-col sm:flex-row gap-4">
+              <div className="flex flex-1 items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500">
+                <span className="text-slate-400 mr-3 text-lg">🔎</span>
                 <input
-                  className="w-full border-none bg-transparent outline-none text-sm text-foreground"
+                  className="w-full border-none bg-transparent outline-none text-sm text-slate-800 placeholder-slate-400"
                   placeholder="Buscar por instructor, cédula, área o ID..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -304,12 +304,12 @@ export function RevisarInformes(): ReactElement {
               </div>
 
               {/* Month Selector Filter */}
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-bold text-secondary uppercase">Mes:</span>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Mes:</span>
                 <select
                   value={periodo}
                   onChange={(e) => setPeriodo(e.target.value)}
-                  className="rounded-lg border border-border bg-bg-card px-3 py-2 text-sm font-semibold text-foreground focus:border-emerald-500 focus:outline-none"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none shadow-sm cursor-pointer"
                 >
                   {monthOptions.map((opt) => (
                     <option key={opt} value={opt}>
@@ -322,27 +322,27 @@ export function RevisarInformes(): ReactElement {
           </div>
 
           {/* tabs */}
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
-              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'todos' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${filter === 'todos' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
               onClick={() => setFilter('todos')}
             >
               Todos ({counts.todos})
             </button>
             <button
-              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'revision' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${filter === 'revision' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
               onClick={() => setFilter('revision')}
             >
               En Revisión ({counts.revision})
             </button>
             <button
-              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'aprobado' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${filter === 'aprobado' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
               onClick={() => setFilter('aprobado')}
             >
               Aprobados ({counts.aprobado})
             </button>
             <button
-              className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${filter === 'correccion' ? 'bg-emerald text-white shadow' : 'bg-bg-alt text-secondary border border-border'}`}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${filter === 'correccion' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
               onClick={() => setFilter('correccion')}
             >
               Correcciones ({counts.correccion})
@@ -362,50 +362,50 @@ export function RevisarInformes(): ReactElement {
                   const totalReportsInMonth = Object.values(instructorsMap).reduce((sum, list) => sum + list.length, 0);
                   
                   return (
-                    <div key={monthKey} className="rounded-2xl border border-border bg-bg-card p-4 shadow-sm space-y-3">
+                    <div key={monthKey} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
                       {/* Month Folder Header */}
                       <div 
                         onClick={() => toggleMonth(monthKey)}
-                        className="flex items-center justify-between cursor-pointer hover:bg-bg-alt/50 p-2 rounded-xl transition-all"
+                        className="flex items-center justify-between cursor-pointer group"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">📁</span>
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-2xl border border-amber-200 shadow-sm">📁</div>
                           <div>
-                            <h3 className="font-bold text-base text-foreground">Periodo: {monthKey}</h3>
-                            <p className="text-xs text-secondary">
+                            <h3 className="text-lg font-bold text-slate-800">Periodo: {monthKey}</h3>
+                            <p className="text-sm text-slate-500 mt-0.5">
                               {Object.keys(instructorsMap).length} instructor(es) · {totalReportsInMonth} informe(s)
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs font-semibold px-3 py-1 bg-bg-alt rounded-lg text-secondary border border-border">
+                        <span className="text-xs font-semibold px-4 py-2 bg-slate-50 rounded-xl text-slate-600 border border-slate-200 transition-colors group-hover:bg-slate-100">
                           {isMonthCollapsed ? 'Abrir Periodo 📂' : 'Contraer 📁'}
                         </span>
                       </div>
 
                       {/* Month Folders Content */}
                       {!isMonthCollapsed && (
-                        <div className="pl-6 border-l border-dashed border-border space-y-3 pt-2">
+                        <div className="pl-8 border-l-2 border-slate-100 space-y-4 pt-2">
                           {Object.entries(instructorsMap).map(([instructorName, reportsList]) => {
                             const instKey = `${monthKey}-${instructorName}`;
                             const isInstCollapsed = collapsedInstructors[instKey] ?? true;
                             
                             return (
-                              <div key={instructorName} className="rounded-xl border border-border bg-bg-alt/20 p-3 space-y-2">
+                              <div key={instructorName} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3">
                                 {/* Instructor Folder Header */}
                                 <div 
                                   onClick={() => toggleInstructor(monthKey, instructorName)}
-                                  className="flex items-center justify-between cursor-pointer hover:bg-bg-alt/60 p-1.5 rounded-lg transition-all"
+                                  className="flex items-center justify-between cursor-pointer group"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <span className="text-xl">📁</span>
+                                    <span className="text-xl opacity-80">📁</span>
                                     <div>
-                                      <h4 className="font-semibold text-sm text-foreground">{instructorName}</h4>
-                                      <p className="text-xs text-secondary">
+                                      <h4 className="font-semibold text-sm text-slate-800">{instructorName}</h4>
+                                      <p className="text-xs text-slate-500 mt-0.5">
                                         {reportsList.length} informe(s)
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-xs font-semibold px-2.5 py-1 bg-bg-card rounded-md text-secondary border border-border">
+                                  <span className="text-xs font-semibold px-3 py-1.5 bg-white rounded-lg text-slate-600 border border-slate-200 shadow-sm transition-colors group-hover:bg-slate-50">
                                     {isInstCollapsed ? 'Ver Informes 📂' : 'Ocultar 📁'}
                                   </span>
                                 </div>
@@ -427,41 +427,41 @@ export function RevisarInformes(): ReactElement {
                                       const isCorrectionOpen = correctionTarget?.id === reportId && correctionTarget?.tipo === r.tipo
 
                                       return (
-                                        <div key={cardKey} className="rounded-xl border border-border bg-bg-card p-4 shadow-sm space-y-3">
+                                        <div key={cardKey} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                           {/* Card Header */}
                                           <div className="flex items-start justify-between gap-4">
                                             <div>
-                                              <div className="flex items-center gap-2 mb-1">
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${r.tipo === 'GC' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sky-100 text-sky-800 border border-sky-300'}`}>
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${r.tipo === 'GC' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-sky-100 text-sky-800 border border-sky-200'}`}>
                                                   Informe {r.tipo}
                                                 </span>
-                                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                                <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
                                                   Versión {r.version}
                                                 </span>
                                               </div>
-                                              <h5 className="font-bold text-foreground">v{r.version} - {r.tipo === 'GC' ? 'Gestión Clave' : 'Gestión Formativa'}</h5>
-                                              <p className="text-xs text-secondary">
+                                              <h5 className="font-bold text-base text-slate-800">v{r.version} - {r.tipo === 'GC' ? 'Gestión Clave' : 'Gestión Formativa'}</h5>
+                                              <p className="text-xs text-slate-500 mt-1">
                                                 Cédula: {r.usuario?.cedula || 'N/A'} · Área: {areaName}
                                               </p>
                                             </div>
-                                            <span className={`status-chip ${normalizedStatus === 'revision' ? 'status-chip--info' : normalizedStatus === 'aprobado' ? 'status-chip--success' : 'status-chip--alert'}`}>
+                                            <span className={`px-3 py-1.5 rounded-xl font-bold text-xs border ${normalizedStatus === 'revision' ? 'bg-sky-50 text-sky-700 border-sky-200' : normalizedStatus === 'aprobado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                                               {normalizedStatus === 'revision' ? '⏳ En Revisión' : normalizedStatus === 'aprobado' ? '✓ Aprobado' : '⚠️ Corrección'}
                                             </span>
                                           </div>
 
                                           {/* Card Details */}
-                                          <div className="grid gap-2 grid-cols-1 sm:grid-cols-3 bg-bg-alt rounded-lg p-2.5 border border-border text-xs">
+                                          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100 text-sm">
                                             <div>
-                                              <p className="text-[10px] text-secondary uppercase font-semibold">ID Informe</p>
-                                              <p className="font-semibold text-foreground">#INF-{r.tipo}-{reportId}</p>
+                                              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">ID Informe</p>
+                                              <p className="font-medium text-slate-800">#INF-{r.tipo}-{reportId}</p>
                                             </div>
                                             <div>
-                                              <p className="text-[10px] text-secondary uppercase font-semibold">Periodo</p>
-                                              <p className="font-semibold text-foreground">{r.mes} {r.anio}</p>
+                                              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Periodo</p>
+                                              <p className="font-medium text-slate-800">{r.mes} {r.anio}</p>
                                             </div>
                                             <div>
-                                              <p className="text-[10px] text-secondary uppercase font-semibold">Fecha Registro</p>
-                                              <p className="font-semibold text-foreground">{new Date(r.fecha_registro).toLocaleDateString()}</p>
+                                              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Fecha Registro</p>
+                                              <p className="font-medium text-slate-800">{new Date(r.fecha_registro).toLocaleDateString()}</p>
                                             </div>
                                           </div>
 
@@ -574,31 +574,31 @@ export function RevisarInformes(): ReactElement {
                                           )}
 
                                           {/* Actions */}
-                                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
+                                          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                                             <a
                                               href={pdfFullUrl}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="px-3 py-1.5 text-xs border rounded-lg hover:bg-bg-alt transition-colors"
+                                              className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 text-slate-700"
                                             >
-                                              📄 Ver PDF
+                                              <span>📄</span> Ver PDF
                                             </a>
                                             {normalizedStatus !== 'correccion' && (
                                               <button
                                                 type="button"
-                                                className="px-3 py-1.5 text-xs border border-amber-400 text-amber-700 bg-white hover:bg-amber-50 rounded-lg font-semibold"
+                                                className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors"
                                                 onClick={() => {
                                                   setCorrectionTarget({ id: reportId, tipo: r.tipo })
-                                                  setCorrectionNote('') // Blank/empty as requested!
+                                                  setCorrectionNote('') 
                                                 }}
                                               >
-                                                Solicitar Corrección
+                                                ⚠️ Solicitar Corrección
                                               </button>
                                             )}
                                             {normalizedStatus !== 'aprobado' && (
                                               <button
                                                 type="button"
-                                                className="px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg"
+                                                className="px-4 py-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
                                                 onClick={() => handleApprove(reportId, r.tipo)}
                                               >
                                                 ✓ Aprobar
@@ -625,15 +625,21 @@ export function RevisarInformes(): ReactElement {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-emerald-300 bg-bg-card p-5 shadow-sm">
-            <h3 className="font-semibold text-lg text-emerald-800 mb-2">Instrucciones de Revisión</h3>
-            <p className="text-xs text-secondary leading-relaxed">
-              1. Haz clic en <strong>Ver Informe PDF</strong> para inspeccionar el documento institucional adjuntado.
-              <br/><br/>
-              2. Si todo cumple, haz clic en <strong>Aprobar Informe</strong>.
-              <br/><br/>
-              3. Si requiere correcciones, selecciona <strong>Solicitar Corrección</strong> y describe detalladamente lo que el instructor debe modificar.
-            </p>
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm">
+            <h3 className="font-bold text-lg text-emerald-900 mb-4 flex items-center gap-2">
+              <span className="text-xl">💡</span> Instrucciones
+            </h3>
+            <div className="text-sm text-emerald-800/80 leading-relaxed space-y-4">
+              <p>
+                1. Haz clic en <strong>Ver Informe PDF</strong> para inspeccionar el documento institucional adjuntado.
+              </p>
+              <p>
+                2. Si todo cumple, haz clic en <strong>Aprobar Informe</strong>.
+              </p>
+              <p>
+                3. Si requiere correcciones, selecciona <strong>Solicitar Corrección</strong> y describe detalladamente lo que el instructor debe modificar.
+              </p>
+            </div>
           </div>
         </div>
       </div>
