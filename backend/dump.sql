@@ -6,7 +6,8 @@ SELECT setval('sedes_id_sede_seq', (SELECT MAX(id_sede) FROM sedes));
 -- roles
 INSERT INTO roles (id_rol, nombre, id_sede) VALUES
 (1, 'Regular - Fic', 1),
-(2, 'CampeSena', 1) ON CONFLICT DO NOTHING;
+(2, 'CampeSena', 1),
+(3, 'Apoyo Administrativo', 1) ON CONFLICT DO NOTHING;
 SELECT setval('roles_id_rol_seq', (SELECT MAX(id_rol) FROM roles));
 
 -- areas
@@ -107,7 +108,7 @@ VALUES (
     'ContraseñaSegura123', 
     'aprobado', 
     1, 
-    1, 
+    3, 
     1
 ) 
 ON CONFLICT (correo) DO NOTHING;
