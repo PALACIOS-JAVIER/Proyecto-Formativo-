@@ -7,7 +7,7 @@ interface HistoryItem {
   target: string
   date: string
   details: string
-  type: 'approval' | 'correction' | 'user'
+  type: 'approval' | 'correction' | 'user' | 'broadcast'
 }
 
 export function Historial(): ReactElement {
@@ -24,11 +24,15 @@ export function Historial(): ReactElement {
       setIsLoading(true)
       const token = localStorage.getItem('access_token') || ''
       const headers = { 'Authorization': `Bearer ${token}` }
+      const rawUser = localStorage.getItem('user_data')
+      const userSession = rawUser ? JSON.parse(rawUser) : null
+      const userId = userSession?.id || userSession?.id_Usuario
 
-      const [gcRes, gfRes, usersRes] = await Promise.all([
+      const [gcRes, gfRes, usersRes, broadcastsRes] = await Promise.all([
         fetch('/api/informes-gc', { headers }).then(r => r.ok ? r.json() : []),
         fetch('/api/informes-gf', { headers }).then(r => r.ok ? r.json() : []),
         fetch('/api/usuarios', { headers }).then(r => r.ok ? r.json() : []),
+        userId ? fetch(`/api/notificaciones/broadcasts/${userId}`, { headers }).then(r => r.ok ? r.json() : []) : Promise.resolve([]),
       ])
 
       const logs: HistoryItem[] = []
@@ -104,7 +108,25 @@ export function Historial(): ReactElement {
         }
       })
 
+      // 4. Audit log for Broadcasts
+      ;(broadcastsRes || []).forEach((b: any) => {
+        logs.push({
+          id: `broadcast-${b.id_notificacion || Math.random()}`,
+          action: '📢 Aviso General Enviado',
+          target: b.titulo,
+          date: new Date(b.fecha_creacion).toLocaleString(),
+          details: b.descripcion,
+          type: 'broadcast',
+        })
+      })
+
       // Sort by date / timestamp descending
+      logs.sort((a, b) => {
+        // We parse date, fallback to 0 if invalid
+        const timeA = new Date(a.date.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, '$2/$1/$3')).getTime() || 0
+        const timeB = new Date(b.date.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, '$2/$1/$3')).getTime() || 0
+        return timeB - timeA
+      })
       setHistory(logs)
     } catch (err) {
       console.error('Error fetching audit history:', err)
@@ -140,9 +162,12 @@ export function Historial(): ReactElement {
             {history.map((item) => {
               const isCorrection = item.type === 'correction';
               const isExpanded = !!expandedItems[item.id];
+              const borderColor = item.type === 'correction' ? 'border-rose-500/30' : item.type === 'broadcast' ? 'border-sky-500/30' : 'border-emerald-500/30';
+              const dotColor = item.type === 'approval' ? 'bg-emerald-500' : item.type === 'correction' ? 'bg-rose-500' : 'bg-sky-500';
+              
               return (
-                <div key={item.id} className={`relative pl-6 border-l-2 pb-2 ${isCorrection ? 'border-rose-500/30' : 'border-emerald-500/30'}`}>
-                  <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ${item.type === 'approval' ? 'bg-emerald-500' : item.type === 'correction' ? 'bg-rose-500' : 'bg-sky-500'}`}></div>
+                <div key={item.id} className={`relative pl-6 border-l-2 pb-2 ${borderColor}`}>
+                  <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ${dotColor}`}></div>
                   <div 
                     className={`flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 ${isCorrection ? 'cursor-pointer select-none hover:opacity-85' : ''}`}
                     onClick={() => isCorrection && toggleItem(item.id)}
@@ -156,7 +181,9 @@ export function Historial(): ReactElement {
                           </span>
                         )}
                       </h3>
-                      <p className="text-sm font-semibold text-emerald-700 mt-0.5">{item.target}</p>
+                      <p className={`text-sm font-semibold mt-0.5 ${item.type === 'broadcast' ? 'text-sky-700' : 'text-emerald-700'}`}>
+                        {item.target}
+                      </p>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-bg-alt text-text-secondary border border-border whitespace-nowrap">
                       {item.date}

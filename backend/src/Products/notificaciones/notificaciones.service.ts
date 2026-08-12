@@ -45,6 +45,67 @@ export class NotificacionesService {
     return this.notificacionRepository.save(notificacion);
   }
 
+  async broadcastNotification(data: {
+    titulo: string;
+    descripcion: string;
+    tipo: string;
+    usuario_origen_id?: number;
+  }): Promise<number> {
+    let usuarioOrigen: Usuario | null = null;
+    if (data.usuario_origen_id) {
+      usuarioOrigen = await this.usuarioRepository.findOne({
+        where: { id_Usuario: data.usuario_origen_id },
+      });
+    }
+
+    const qb = this.usuarioRepository.createQueryBuilder('usuario')
+      .leftJoinAndSelect('usuario.rol', 'rol')
+      .where("rol.nombre NOT ILIKE '%coordinador%'")
+      .andWhere("rol.nombre NOT ILIKE '%apoyo%'");
+    
+    const instructores = await qb.getMany();
+
+    if (instructores.length === 0) return 0;
+
+    const notificacionesToInsert = instructores.map(inst => {
+      return this.notificacionRepository.create({
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        tipo: data.tipo,
+        is_new: true,
+        usuario_destino: inst,
+        usuario_origen: usuarioOrigen || undefined,
+      });
+    });
+
+    await this.notificacionRepository.save(notificacionesToInsert);
+    return instructores.length;
+  }
+
+  async findBroadcastsByOrigen(usuarioId: number): Promise<Notificacion[]> {
+    // Para no mostrar repetidas (N veces el mismo mensaje), traemos los distinct agrupando por titulo, descripcion y hora aprox
+    const qb = this.notificacionRepository.createQueryBuilder('n')
+      .select('n.titulo', 'titulo')
+      .addSelect('n.descripcion', 'descripcion')
+      .addSelect('MAX(n.fecha_creacion)', 'fecha_creacion')
+      .where('n.id_usuario_origen = :id', { id: usuarioId })
+      .andWhere('n.tipo = :tipo', { tipo: 'general' })
+      .groupBy('n.titulo, n.descripcion')
+      .orderBy('fecha_creacion', 'DESC');
+    
+    const rawResult = await qb.getRawMany();
+    return rawResult.map(row => ({
+      id_notificacion: Math.random(), // id fake para el frontend (ya que es un agrupamiento)
+      titulo: row.titulo,
+      descripcion: row.descripcion,
+      tipo: 'general',
+      is_new: false,
+      fecha_creacion: row.fecha_creacion,
+      usuario_destino: null as any,
+      usuario_origen: null as any
+    }));
+  }
+
   async findByUsuario(usuarioId: number): Promise<Notificacion[]> {
     return this.notificacionRepository.find({
       where: { usuario_destino: { id_Usuario: usuarioId } },

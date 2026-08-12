@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { FiPieChart, FiFileText, FiUsers, FiClock, FiTrendingUp, FiSettings, FiMenu, FiX } from 'react-icons/fi'
+import { FiPieChart, FiFileText, FiUsers, FiClock, FiTrendingUp, FiSettings } from 'react-icons/fi'
 
 interface Props {
   active: string
