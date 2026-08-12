@@ -1,15 +1,16 @@
 import type { ReactElement } from 'react'
 import sitmiLogo from '../../../assets/Imagenes_Login/Sena.png'
+import { FiPieChart, FiUploadCloud, FiFolder, FiTrendingUp, FiBell, FiSettings } from 'react-icons/fi'
 
 type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
 
-const navigationItems: Array<{ id: PageKey; label: string; icon: string }> = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'subir', label: 'Subir Informe', icon: '📁' },
-  { id: 'informes', label: 'Mis Informes', icon: '🗂️' },
-  { id: 'indicadores', label: 'Indicadores', icon: '📈' },
-  { id: 'notificaciones', label: 'Alertas', icon: '🔔' },
-  { id: 'perfil', label: 'Perfil', icon: '⚙️' },
+const navigationItems: Array<{ id: PageKey; label: string; icon: ReactElement }> = [
+  { id: 'dashboard', label: 'Dashboard', icon: <FiPieChart /> },
+  { id: 'subir', label: 'Subir Informe', icon: <FiUploadCloud /> },
+  { id: 'informes', label: 'Mis Informes', icon: <FiFolder /> },
+  { id: 'indicadores', label: 'Indicadores', icon: <FiTrendingUp /> },
+  { id: 'notificaciones', label: 'Alertas', icon: <FiBell /> },
+  { id: 'perfil', label: 'Perfil', icon: <FiSettings /> },
 ]
 
 interface NavegacionProps {

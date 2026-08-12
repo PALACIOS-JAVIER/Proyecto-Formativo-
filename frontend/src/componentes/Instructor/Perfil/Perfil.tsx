@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { FaApple } from 'react-icons/fa'
+import { FiAlertTriangle } from 'react-icons/fi';
+
 
 export interface ProfileData {
   nombre: string
@@ -527,7 +529,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
       {saveError && (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-800">
-          ⚠️ {saveError}
+          <FiAlertTriangle /> {saveError}
         </div>
       )}
 
