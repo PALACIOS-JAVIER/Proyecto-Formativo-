@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
+import { FiRefreshCw, FiFolder, FiFolderMinus, FiAlertTriangle, FiDownload, FiFileText, FiBook, FiBookOpen } from 'react-icons/fi'
 
 interface BackendObservacion {
   id_observacion_gc: number
@@ -176,7 +177,7 @@ export function Informes(): ReactElement {
             download={`Informe_${report.tipo}_${report.mes}_${report.anio}_v${report.version}.pdf`}
             className="button button--ghost px-3.5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-border hover:bg-bg-card"
           >
-            <span>📥</span> Descargar PDF
+            <FiDownload /> Descargar PDF
           </a>
           <a
             href={pdfFullUrl}
@@ -184,7 +185,7 @@ export function Informes(): ReactElement {
             rel="noopener noreferrer"
             className="button button--primary px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            <span>📄</span> Ver PDF v{report.version}
+            <FiFileText /> Ver PDF v{report.version}
           </a>
         </div>
       </article>
@@ -199,8 +200,8 @@ export function Informes(): ReactElement {
           <h1>Revisa tus informes organizados por tipo (GC/GF), mes y versión.</h1>
           <p className="subtext">Los informes GC y GF se organizan por separado con sus respectivas versiones (v1, v2) de corrección.</p>
         </div>
-        <button type="button" onClick={fetchUserReports} className="button button--ghost text-xs">
-          🔄 Actualizar lista
+        <button type="button" onClick={fetchUserReports} className="button button--ghost text-xs flex items-center gap-2">
+          <FiRefreshCw /> Actualizar lista
         </button>
       </header>
 
@@ -294,7 +295,7 @@ export function Informes(): ReactElement {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold border border-emerald-300">
-                      📁
+                      <FiFolder />
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-foreground">Carpeta {folderMonth}</h2>
@@ -306,8 +307,8 @@ export function Informes(): ReactElement {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {monthCorrections > 0 && (
-                      <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-xs border border-rose-300">
-                        ⚠️ {monthCorrections} Corrección(es)
+                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 font-bold text-xs border border-rose-300">
+                        <FiAlertTriangle /> {monthCorrections} Corrección(es)
                       </span>
                     )}
                     {monthPending > 0 && (
@@ -320,8 +321,8 @@ export function Informes(): ReactElement {
                         ✓ {monthApproved} Aprobado(s)
                       </span>
                     )}
-                    <button type="button" className="button button--ghost text-xs py-1.5 px-3 ml-2">
-                      {isCollapsed ? 'Abrir carpeta 📂' : 'Contraer 📁'}
+                    <button type="button" className="button button--ghost text-xs py-1.5 px-3 ml-2 flex items-center gap-1.5">
+                      {isCollapsed ? <><FiFolder /> Abrir carpeta</> : <><FiFolderMinus /> Contraer</>}
                     </button>
                   </div>
                 </div>
@@ -332,7 +333,7 @@ export function Informes(): ReactElement {
                     {/* Section GC */}
                     <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 space-y-3">
                       <h3 className="text-base font-bold text-emerald-900 flex items-center gap-2">
-                        <span>📗</span> Informes de Gestión Clave (GC) — {gcReports.length} versión(es)
+                        <FiBook /> Informes de Gestión Clave (GC) — {gcReports.length} versión(es)
                       </h3>
                       {gcReports.length === 0 ? (
                         <p className="text-xs text-secondary italic">No hay informes GC registrados en este mes.</p>
@@ -346,7 +347,7 @@ export function Informes(): ReactElement {
                     {/* Section GF */}
                     <div className="rounded-2xl border border-sky-200 bg-sky-50/40 p-4 space-y-3">
                       <h3 className="text-base font-bold text-sky-900 flex items-center gap-2">
-                        <span>📘</span> Informes de Gestión Formativa (GF) — {gfReports.length} versión(es)
+                        <FiBookOpen /> Informes de Gestión Formativa (GF) — {gfReports.length} versión(es)
                       </h3>
                       {gfReports.length === 0 ? (
                         <p className="text-xs text-secondary italic">No hay informes GF registrados en este mes.</p>

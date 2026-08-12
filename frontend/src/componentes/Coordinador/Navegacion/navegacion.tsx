@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import { FiPieChart, FiFileText, FiUsers, FiClock, FiTrendingUp, FiSettings, FiMenu, FiX } from 'react-icons/fi'
 
 interface Props {
   active: string
@@ -10,12 +11,12 @@ interface Props {
 
 export function Navegacion({ active, onSelect, onLogout, isOpen, onClose }: Props): ReactElement {
   const items = [
-    { id: 'dashboard', label: 'Dashboard', hint: 'Resumen general', icon: '📊' },
-    { id: 'informes', label: 'Revisar informes', hint: 'Por aprobar', icon: '🧾' },
-    { id: 'instructores', label: 'Instructores', hint: 'Equipo activo', icon: '👥' },
-    { id: 'historial', label: 'Historial', hint: 'Bitácora', icon: '🕘' },
-    { id: 'reportes', label: 'Reportes', hint: 'Indicadores', icon: '📈' },
-    { id: 'perfil', label: 'Perfil', hint: 'Datos del cargo', icon: '⚙️' },
+    { id: 'dashboard', label: 'Dashboard', hint: 'Resumen general', icon: <FiPieChart /> },
+    { id: 'informes', label: 'Revisar informes', hint: 'Por aprobar', icon: <FiFileText /> },
+    { id: 'instructores', label: 'Instructores', hint: 'Equipo activo', icon: <FiUsers /> },
+    { id: 'historial', label: 'Historial', hint: 'Bitácora', icon: <FiClock /> },
+    { id: 'reportes', label: 'Reportes', hint: 'Indicadores', icon: <FiTrendingUp /> },
+    { id: 'perfil', label: 'Perfil', hint: 'Datos del cargo', icon: <FiSettings /> },
   ]
 
   return (
