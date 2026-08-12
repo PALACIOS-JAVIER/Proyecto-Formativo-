@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { FiRefreshCw, FiSearch, FiFolder, FiFolderMinus, FiFileText, FiAlertTriangle, FiCpu, FiInfo, FiCheck } from 'react-icons/fi'
 
 interface BackendObservacion {
   id_observacion_gc: number
@@ -261,7 +262,7 @@ export function RevisarInformes(): ReactElement {
             <p className="mt-3 max-w-2xl text-sm text-slate-600">Abre el archivo PDF original de cada instructor y envía retroalimentación oportuna.</p>
           </div>
           <button type="button" onClick={fetchAllReports} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-            🔄 Actualizar lista
+            <FiRefreshCw /> Actualizar lista
           </button>
         </div>
       </header>
@@ -294,7 +295,7 @@ export function RevisarInformes(): ReactElement {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex w-full flex-col sm:flex-row gap-4">
               <div className="flex flex-1 items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500">
-                <span className="text-slate-400 mr-3 text-lg">🔎</span>
+                <span className="text-slate-400 mr-3 text-lg"><FiSearch /></span>
                 <input
                   className="w-full border-none bg-transparent outline-none text-sm text-slate-800 placeholder-slate-400"
                   placeholder="Buscar por instructor, cédula, área o ID..."
@@ -369,7 +370,7 @@ export function RevisarInformes(): ReactElement {
                         className="flex items-center justify-between cursor-pointer group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-2xl border border-amber-200 shadow-sm">📁</div>
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-2xl border border-amber-200 shadow-sm text-amber-600"><FiFolder /></div>
                           <div>
                             <h3 className="text-lg font-bold text-slate-800">Periodo: {monthKey}</h3>
                             <p className="text-sm text-slate-500 mt-0.5">
@@ -377,8 +378,8 @@ export function RevisarInformes(): ReactElement {
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs font-semibold px-4 py-2 bg-slate-50 rounded-xl text-slate-600 border border-slate-200 transition-colors group-hover:bg-slate-100">
-                          {isMonthCollapsed ? 'Abrir Periodo 📂' : 'Contraer 📁'}
+                        <span className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-50 rounded-xl text-slate-600 border border-slate-200 transition-colors group-hover:bg-slate-100">
+                          {isMonthCollapsed ? <><FiFolder /> Abrir Periodo</> : <><FiFolderMinus /> Contraer</>}
                         </span>
                       </div>
 
@@ -397,7 +398,7 @@ export function RevisarInformes(): ReactElement {
                                   className="flex items-center justify-between cursor-pointer group"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <span className="text-xl opacity-80">📁</span>
+                                    <span className="text-xl text-amber-500 opacity-80"><FiFolder /></span>
                                     <div>
                                       <h4 className="font-semibold text-sm text-slate-800">{instructorName}</h4>
                                       <p className="text-xs text-slate-500 mt-0.5">
@@ -405,8 +406,8 @@ export function RevisarInformes(): ReactElement {
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-xs font-semibold px-3 py-1.5 bg-white rounded-lg text-slate-600 border border-slate-200 shadow-sm transition-colors group-hover:bg-slate-50">
-                                    {isInstCollapsed ? 'Ver Informes 📂' : 'Ocultar 📁'}
+                                  <span className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-white rounded-lg text-slate-600 border border-slate-200 shadow-sm transition-colors group-hover:bg-slate-50">
+                                    {isInstCollapsed ? <><FiFolder /> Ver Informes</> : <><FiFolderMinus /> Ocultar</>}
                                   </span>
                                 </div>
 
@@ -469,7 +470,7 @@ export function RevisarInformes(): ReactElement {
                                           <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 space-y-2">
                                             <div className="flex flex-wrap items-center justify-between gap-2">
                                               <div className="flex items-center gap-2">
-                                                <span className="text-sm">🤖</span>
+                                                <span className="text-sm text-indigo-500"><FiCpu /></span>
                                                 <h6 className="font-bold text-xs text-indigo-950">Auditoría IA (Sera 🦅)</h6>
                                                 {r.veredicto_ia === 'aprobado_ia' && (
                                                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -581,18 +582,18 @@ export function RevisarInformes(): ReactElement {
                                               rel="noopener noreferrer"
                                               className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 text-slate-700"
                                             >
-                                              <span>📄</span> Ver PDF
+                                              <FiFileText /> Ver PDF
                                             </a>
                                             {normalizedStatus !== 'correccion' && (
                                               <button
                                                 type="button"
-                                                className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors"
+                                                className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
                                                 onClick={() => {
                                                   setCorrectionTarget({ id: reportId, tipo: r.tipo })
                                                   setCorrectionNote('') 
                                                 }}
                                               >
-                                                ⚠️ Solicitar Corrección
+                                                <FiAlertTriangle /> Solicitar Corrección
                                               </button>
                                             )}
                                             {normalizedStatus !== 'aprobado' && (
@@ -601,7 +602,7 @@ export function RevisarInformes(): ReactElement {
                                                 className="px-4 py-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
                                                 onClick={() => handleApprove(reportId, r.tipo)}
                                               >
-                                                ✓ Aprobar
+                                                <FiCheck /> Aprobar
                                               </button>
                                             )}
                                           </div>
@@ -627,7 +628,7 @@ export function RevisarInformes(): ReactElement {
         <div className="space-y-6">
           <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-6 shadow-sm">
             <h3 className="font-bold text-lg text-emerald-900 mb-4 flex items-center gap-2">
-              <span className="text-xl">💡</span> Instrucciones
+              <span className="text-xl text-emerald-600"><FiInfo /></span> Instrucciones
             </h3>
             <div className="text-sm text-emerald-800/80 leading-relaxed space-y-4">
               <p>
