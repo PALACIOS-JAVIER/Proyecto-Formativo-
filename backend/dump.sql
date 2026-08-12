@@ -93,3 +93,30 @@ INSERT INTO objetos_contractuales (id_objeto, descripcion, id_area) VALUES
 (28, 'Prestar servicios profesionales y/o de apoyo a la gestión, en la planeación y ejecución de la formación, así como la evaluación de los resultados de aprendizaje definidos en los diseños curriculares asignados, para el desarrollo de habilidades y competencias técnicas de la población campesina- CampeSENA, en la especialidad de IDIOMAS - INGLES del Centro de Gestión y Desarrollo Sostenible Surcolombiano, del SENA Regional Huila y su área de cobertura', 17) ON CONFLICT DO NOTHING;
 SELECT setval('objetos_contractuales_id_objeto_seq', (SELECT MAX(id_objeto) FROM objetos_contractuales));
 
+
+-- Insertar Usuario Coordinador (reemplaza con los datos reales de tu coordinador)
+-- Nota: La contraseña está en texto plano temporalmente. 
+-- El sistema la cifrará automáticamente la primera vez que el coordinador inicie sesión.
+INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, password, estado_cuenta, id_sede, id_rol, id_area)
+VALUES (
+    'NombreCoordinador', 
+    'ApellidoCoordinador', 
+    123456789, 
+    3000000000, 
+    'coordinador@sena.edu.co', 
+    'ContraseñaSegura123', 
+    'aprobado', 
+    1, 
+    1, 
+    1
+) 
+ON CONFLICT (correo) DO NOTHING;
+
+-- Agregar este usuario a la tabla de coordinadores
+INSERT INTO coordinadores (id_sede, id_usuario, anio_ejercicio)
+VALUES (
+    1, 
+    (SELECT "id_Usuario" FROM usuarios WHERE correo = 'coordinador@sena.edu.co'), 
+    2024
+) 
+ON CONFLICT DO NOTHING;
