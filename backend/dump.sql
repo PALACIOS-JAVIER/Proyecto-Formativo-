@@ -100,12 +100,12 @@ SELECT setval('objetos_contractuales_id_objeto_seq', (SELECT MAX(id_objeto) FROM
 -- El sistema la cifrará automáticamente la primera vez que el coordinador inicie sesión.
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, password, estado_cuenta, id_sede, id_rol, id_area)
 VALUES (
-    'NombreCoordinador', 
-    'ApellidoCoordinador', 
-    123456789, 
+    'Admin', 
+    'Coordinador', 
+    111111111, 
     3000000000, 
     'coordinador@sena.edu.co', 
-    'ContraseñaSegura123', 
+    '123456', 
     'aprobado', 
     1, 
     3, 
