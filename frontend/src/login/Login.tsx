@@ -62,7 +62,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     rol: '' as any,
     sede: '',
     area: '',
-    codigoContrato: '',
+    codigoContrato: 'COD-',
     codigoSiif: '',
     fechaInicioContrato: '',
     fechaFinContrato: '',
@@ -117,36 +117,36 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     if (mode === 'register') {
       const fallbackSedes = [{ id_sede: 1, nombre: 'Yamboro' }]
       const fallbackRoles = [
-        { id_rol: 1, nombre: 'Regular - Fic', sede: { id_sede: 1, nombre: 'Yamboro' } },
-        { id_rol: 2, nombre: 'CampeSena', sede: { id_sede: 1, nombre: 'Yamboro' } },
+        { id_rol: 1, nombre: 'regular fit', sede: { id_sede: 1, nombre: 'Yamboro' } },
+        { id_rol: 2, nombre: 'campesena', sede: { id_sede: 1, nombre: 'Yamboro' } },
       ]
       const fallbackAreas = [
-        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 12, nombre: 'Produccion Pecuaria', rol: { id_rol: 2, nombre: 'CampeSena' } },
-        { id_area: 13, nombre: 'Agricola', rol: { id_rol: 2, nombre: 'CampeSena' } },
-        { id_area: 14, nombre: 'Opereciones Forestales', rol: { id_rol: 2, nombre: 'CampeSena' } },
-        { id_area: 15, nombre: 'Comunicación', rol: { id_rol: 2, nombre: 'CampeSena' } },
-        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'Regular - Fic' } },
-        { id_area: 17, nombre: 'Idiomas', rol: { id_rol: 2, nombre: 'CampeSena' } },
+        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 12, nombre: 'Produccion Pecuaria', rol: { id_rol: 2, nombre: 'campesena' } },
+        { id_area: 13, nombre: 'Agricola', rol: { id_rol: 2, nombre: 'campesena' } },
+        { id_area: 14, nombre: 'Opereciones Forestales', rol: { id_rol: 2, nombre: 'campesena' } },
+        { id_area: 15, nombre: 'Comunicación', rol: { id_rol: 2, nombre: 'campesena' } },
+        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 17, nombre: 'Idiomas', rol: { id_rol: 2, nombre: 'campesena' } },
       ]
 
       Promise.all([
         fetch('/api/sedes').then(r => r.ok ? r.json() : fallbackSedes).catch(() => fallbackSedes),
-        fetch('/api/roles').then(r => r.ok ? r.json() : fallbackRoles).catch(() => fallbackRoles),
+        Promise.resolve(fallbackRoles), // Forzar roles locales para que aparezcan exactos
         fetch('/api/areas').then(r => r.ok ? r.json() : fallbackAreas).catch(() => fallbackAreas),
-      ]).then(([s, r, a]) => {
+      ]).then(([s, _r, a]) => {
         const validSedes = ((s && s.length > 0) ? s : fallbackSedes).filter((sede: any) => sede.nombre?.toLowerCase() !== 'otra')
-        const validRoles = ((r && r.length > 0) ? r : fallbackRoles).filter((rol: any) => !rol.nombre?.toLowerCase().includes('apoyo'))
+        const validRoles = fallbackRoles // Siempre usar los predefinidos para asegurar que salgan ambos
         setSedesList(validSedes)
         setRolesList(validRoles)
         setAreasList((a && a.length > 0) ? a : fallbackAreas)

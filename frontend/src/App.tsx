@@ -69,8 +69,10 @@ function App() {
           source: u.rol?.nombre === 'Apoyo Administrativo' ? 'coordinador' : 'registro'
         }
       })
-      // Opcional: Filtrar para no mostrar al coordinador actual (o dejarlo si quieren verse)
-      setInstructors(mappedInstructors)
+      const filteredInstructors = mappedInstructors.filter((inst: InstructorProfile) => {
+        return !inst.rol.toLowerCase().includes('coordinador')
+      })
+      setInstructors(filteredInstructors)
     } catch (error) {
       console.error('Error fetching instructors', error)
     }
@@ -206,10 +208,7 @@ function App() {
   }
 
   const handleRegister = async (registration: RegistrationData) => {
-    // Mapeo básico temporal de strings a IDs
-    const id_sede = registration.sede.toLowerCase() === 'otra' ? '2' : '1'
-    let id_rol = '1'
-    if (registration.rol.toLowerCase().includes('regular')) id_rol = '2'
+    // Variables extraídas directamente del formulario
     
     try {
       await api.post('/usuarios', {
@@ -220,24 +219,23 @@ function App() {
         correo: registration.correo,
         password: registration.contraseña,
         passwordConfirm: registration.contraseña,
-        id_sede,
-        id_rol,
-        id_area: '1', // Default por ahora ya que el form de login tiene un input texto libre
+        id_sede: registration.sede, // User selected from dropdown directly
+        id_rol: registration.rol, // User selected from dropdown directly
+        id_area: registration.area, // User selected from dropdown directly
         codigoContrato: registration.codigoContrato,
         codigoSiif: Number(registration.codigoSiif) || 0,
         fechaInicioContrato: registration.fechaInicioContrato,
         fechaFinContrato: registration.fechaFinContrato
       })
-      alert('Registro completado. Tu cuenta está pendiente de aprobación.')
+      return { success: true }
     } catch (error: any) {
       console.error('Error en registro', error)
       const backendMsg = error?.response?.data?.message
       if (backendMsg) {
-        const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join('\\n') : backendMsg
-        alert(`Error en el registro:\\n${formattedMsg}`)
-      } else {
-        alert('Error en el registro. Verifica los datos o si la cédula/correo ya existe.')
+        const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg
+        return { success: false, message: formattedMsg }
       }
+      return { success: false, message: 'Error en el registro. Verifica los datos o si la cédula/correo ya existe.' }
     }
   }
 
