@@ -1,7 +1,15 @@
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
-import { useMemo, useState } from 'react'
+import * as XLSX from 'xlsx'
 
-const CONTRACTORS: any[] = []
+interface Contractor {
+  id: number
+  name: string
+  cc: string
+  area: string
+  reports: any[]
+  corrections: any[]
+}
 
 export function Reportes(): ReactElement {
   const userData = (() => {
@@ -13,18 +21,64 @@ export function Reportes(): ReactElement {
   })()
   const coordinatorName = userData.nombre || 'Coordinador'
 
+  const [contractorsData, setContractorsData] = useState<Contractor[]>([])
   const [filterPeriod, setFilterPeriod] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [filterContractor, setFilterContractor] = useState('')
-  const [selectedContractors, setSelectedContractors] = useState<number[]>(CONTRACTORS.map((contractor) => contractor.id))
+  const [selectedContractors, setSelectedContractors] = useState<number[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const token = localStorage.getItem('access_token') || ''
+        const headers = { 'Authorization': `Bearer ${token}` }
+
+        const [usersRes, gcRes] = await Promise.all([
+          fetch('/api/usuarios', { headers }).then(r => r.ok ? r.json() : []),
+          fetch('/api/informes-gc', { headers }).then(r => r.ok ? r.json() : [])
+        ])
+
+        const formattedContractors: Contractor[] = (usersRes || [])
+          .filter((u: any) => {
+            const role = (u.rol?.nombre || u.rol || '').toLowerCase()
+            return !role.includes('coordinador') && !role.includes('apoyo')
+          })
+          .map((u: any) => {
+            const userReports = (gcRes || []).filter((r: any) => r.usuario?.id_Usuario === u.id_Usuario)
+            return {
+              id: u.id_Usuario,
+              name: `${u.nombre} ${u.apellido}`,
+              cc: u.cedula?.toString() || '',
+              area: u.area?.nombre || 'General',
+              reports: userReports.map((r: any) => ({
+                period: `${r.mes} ${r.anio}`,
+                submittedDate: r.fecha_registro
+              })),
+              corrections: []
+            }
+          })
+
+        setContractorsData(formattedContractors)
+        setSelectedContractors(formattedContractors.map(c => c.id))
+      } catch (err) {
+        console.error('Error fetching data for reportes:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const contractorSearchResults = useMemo(() => {
-    return CONTRACTORS.filter((contractor) => {
+    return contractorsData.filter((contractor) => {
       const matchesName = filterContractor === '' || contractor.name.toLowerCase().includes(filterContractor.toLowerCase())
-      const matchesPeriod = filterPeriod === '' || contractor.reports.some((report: any) => report.period.toLowerCase().includes(filterPeriod.toLowerCase()))
+      const matchesPeriod = filterPeriod === '' || contractor.reports.some(report => report.period.toLowerCase().includes(filterPeriod.toLowerCase()))
       return matchesName && matchesPeriod
     })
-  }, [filterContractor, filterPeriod])
+  }, [contractorsData, filterContractor, filterPeriod])
 
   const filteredContractors = useMemo(() => {
     return contractorSearchResults.filter((contractor) => selectedContractors.includes(contractor.id))
@@ -32,11 +86,8 @@ export function Reportes(): ReactElement {
 
   const displayedContractors = useMemo(() => {
     return filteredContractors.filter((contractor) => {
-      const matchesDate =
-        filterDate === '' ||
-        contractor.reports.some((report: any) => new Date(report.submittedDate) <= new Date(filterDate)) ||
-        contractor.corrections.some((correction: any) => new Date(correction.date) <= new Date(filterDate))
-      return matchesDate
+      if (filterDate === '') return true
+      return contractor.reports.some(report => new Date(report.submittedDate) <= new Date(filterDate))
     })
   }, [filteredContractors, filterDate])
 
@@ -56,6 +107,29 @@ export function Reportes(): ReactElement {
     }
   }
 
+  const handleExport = () => {
+    if (displayedContractors.length === 0) {
+      alert('No hay contratistas seleccionados para exportar.')
+      return
+    }
+
+    // Preparar datos para Excel
+    const data = displayedContractors.map(c => ({
+      'Cédula': c.cc,
+      'Nombre Completo': c.name,
+      'Área': c.area,
+      'Periodo Filtrado': filterPeriod || 'Todos',
+      'Informes Presentados': c.reports.length
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Consolidado")
+    
+    // Descargar el archivo
+    XLSX.writeFile(wb, `Reporte_Consolidado_${new Date().toISOString().split('T')[0]}.xlsx`)
+  }
+
   return (
     <section className="page-panel">
       <header className="page-header page-header--compact">
@@ -68,12 +142,23 @@ export function Reportes(): ReactElement {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card space-y-5">
+          {isLoading && <p className="text-sm text-emerald-600 font-bold mb-4">Cargando datos de instructores...</p>}
           <div>
             <label className="field-label">1. PERIODO MENSUAL</label>
             <select className="month-selector mt-2" value={filterPeriod} onChange={(e) => setFilterPeriod(e.target.value)}>
               <option value="">Todos</option>
-              <option>Febrero 2026</option>
-              <option>Enero 2026</option>
+              <option value="Enero">Enero</option>
+              <option value="Febrero">Febrero</option>
+              <option value="Marzo">Marzo</option>
+              <option value="Abril">Abril</option>
+              <option value="Mayo">Mayo</option>
+              <option value="Junio">Junio</option>
+              <option value="Julio">Julio</option>
+              <option value="Agosto">Agosto</option>
+              <option value="Septiembre">Septiembre</option>
+              <option value="Octubre">Octubre</option>
+              <option value="Noviembre">Noviembre</option>
+              <option value="Diciembre">Diciembre</option>
             </select>
           </div>
 
@@ -94,7 +179,7 @@ export function Reportes(): ReactElement {
             </div>
             <div className="mt-3 max-h-64 overflow-y-auto rounded-3xl border border-border bg-bg-alt p-3">
               {contractorSearchResults.map((contractor) => (
-                <label key={contractor.id} className="flex items-center gap-3 py-2">
+                <label key={contractor.id} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-slate-50 rounded px-2">
                   <input
                     type="checkbox"
                     checked={selectedContractors.includes(contractor.id)}
@@ -105,7 +190,9 @@ export function Reportes(): ReactElement {
                   <span className="ml-auto rounded-full border border-border bg-white px-3 py-1 text-[11px] text-secondary">{contractor.area}</span>
                 </label>
               ))}
-              {contractorSearchResults.length === 0 && <p className="text-sm text-text-muted">No hay contratistas con ese filtro.</p>}
+              {contractorSearchResults.length === 0 && !isLoading && (
+                <p className="text-sm text-text-muted">No hay contratistas con ese filtro.</p>
+              )}
             </div>
           </div>
 
@@ -120,7 +207,13 @@ export function Reportes(): ReactElement {
           </div>
 
           <div className="mt-5">
-            <button className="button button--primary w-full px-6 py-3">Consolidar y Exportar Reporte</button>
+            <button 
+              onClick={handleExport}
+              disabled={isLoading || displayedContractors.length === 0}
+              className="button button--primary w-full px-6 py-3 disabled:opacity-50"
+            >
+              Consolidar y Exportar Reporte
+            </button>
           </div>
         </div>
 
@@ -157,8 +250,8 @@ export function Reportes(): ReactElement {
             <div className="rounded-2xl border border-border bg-bg-card p-4">
               <h3 className="text-sm font-semibold text-foreground">1. DATOS GENERALES DEL CONTRATO</h3>
               <div className="grid gap-3 text-sm text-secondary mt-3">
-                <div className="flex justify-between gap-4"><span>Centro:</span><span className="text-foreground">Centro de Gestión y Desarrollo Sostenible Surcolombiano</span></div>
-                <div className="flex justify-between gap-4"><span>Coordinador / Responsable:</span><span className="text-foreground">{coordinatorName}</span></div>
+                <div className="flex justify-between gap-4"><span>Centro:</span><span className="text-foreground text-right">Centro de Gestión y Desarrollo Sostenible Surcolombiano</span></div>
+                <div className="flex justify-between gap-4"><span>Coordinador / Responsable:</span><span className="text-foreground text-right">{coordinatorName}</span></div>
               </div>
             </div>
 
@@ -179,18 +272,8 @@ export function Reportes(): ReactElement {
             </div>
 
             <div className="rounded-2xl border border-border bg-bg-card p-4">
-              <h3 className="text-sm font-semibold text-foreground">3. OBLIGACIONES INCORPORADAS (GC GTH-F-062 V10)</h3>
-              <p className="text-sm text-secondary mt-3">Se compilarán las bitácoras semanales correspondientes a las **18 obligaciones** para la modalidad Regular - FIC y **19 obligaciones** para la modalidad CampeSENA según corresponda.</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-bg-card p-4">
-              <h3 className="text-sm font-semibold text-foreground">4. PLANILLA DE DESPLAZAMIENTOS SENA</h3>
-              <p className="text-sm text-secondary mt-3">Se anexarán tablas de desplazamientos que justifican la ejecución de formación en subsedes o ambientes alternos.</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-bg-card p-4">
-              <h3 className="text-sm font-semibold text-foreground">5. DISCO VIRTUAL DE EVIDENCIAS (DRIVE / ONEDRIVE)</h3>
-              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-foreground">Se adjuntarán automáticamente los enlaces oficiales de las carpetas de almacenamiento virtual verificadas para cada contratista.</div>
+              <h3 className="text-sm font-semibold text-foreground">3. OBLIGACIONES INCORPORADAS</h3>
+              <p className="text-sm text-secondary mt-3">Se compilarán las bitácoras correspondientes a las **18 obligaciones** para la modalidad Regular - FIC y **19 obligaciones** para la modalidad CampeSENA.</p>
             </div>
           </div>
         </div>

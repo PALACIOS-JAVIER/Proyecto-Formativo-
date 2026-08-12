@@ -8,6 +8,7 @@ import type { InstructorProfile } from '../../App'
 import { Historial } from './Historial/historial'
 import { Reportes } from './Reportes/reportes'
 import { Perfil } from './Perfil/perfil'
+import { BroadcastModal } from './BroadcastModal'
 
 type PageKey = 'dashboard' | 'informes' | 'instructores' | 'historial' | 'reportes' | 'perfil'
 
@@ -34,6 +35,7 @@ export function CoordinadorApp({
 }: CoordinadorAppProps): ReactElement {
   const [activePage, setActivePage] = useState<PageKey>('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false)
 
   const handleSelectPage = (page: string) => {
     setActivePage(page as PageKey)
@@ -59,7 +61,7 @@ export function CoordinadorApp({
   }
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row bg-[#F6F6F6] text-[#00304D]">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-[#F6F6F6] text-[#00304D] relative">
       
       {/* Overlay para móvil */}
       {isSidebarOpen && (
@@ -84,6 +86,20 @@ export function CoordinadorApp({
           {pageComponents[activePage]}
         </main>
       </div>
+
+      {/* Floating Action Button for Broadcast */}
+      <button
+        onClick={() => setIsBroadcastOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 hover:scale-105 active:scale-95 transition-all duration-200"
+        title="Enviar aviso general a instructores"
+      >
+        <span className="text-2xl">📢</span>
+      </button>
+
+      {/* Broadcast Modal */}
+      {isBroadcastOpen && (
+        <BroadcastModal onClose={() => setIsBroadcastOpen(false)} />
+      )}
     </div>
   )
 }

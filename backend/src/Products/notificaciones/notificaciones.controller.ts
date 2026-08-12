@@ -10,6 +10,16 @@ export class NotificacionesController {
     return this.notificacionesService.createNotification(body);
   }
 
+  @Post('broadcast')
+  broadcast(@Body() body: { titulo: string; descripcion: string; tipo: string; usuario_origen_id?: number }) {
+    return this.notificacionesService.broadcastNotification(body);
+  }
+
+  @Get('broadcasts/:userId')
+  findBroadcastsByOrigen(@Param('userId') userId: string) {
+    return this.notificacionesService.findBroadcastsByOrigen(+userId);
+  }
+
   @Get('usuario/:userId')
   findByUsuario(@Param('userId') userId: string) {
     return this.notificacionesService.findByUsuario(+userId);

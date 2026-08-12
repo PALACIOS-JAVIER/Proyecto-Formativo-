@@ -4,6 +4,7 @@ import { InstructorApp } from './componentes/Instructor/InstructorApp'
 import { CoordinadorApp } from './componentes/Coordinador/CoordinadorApp'
 import type { ProfileData } from './componentes/Instructor/Perfil/Perfil'
 import { api } from './services/api'
+import { GlobalNotificationListener } from './componentes/GlobalNotificationListener'
 
 type UserRole = 'instructor' | 'coordinador' | 'apoyo_administrativo' | null
 type InstructorStatus = 'pendiente' | 'activo' | 'inactivo' | 'rechazado'
@@ -320,19 +321,24 @@ function App() {
     return <Login onLogin={handleLogin} onRegister={handleRegister} onForgotPassword={handleForgotPassword} onResetPassword={handleResetPassword} />
   }
 
-  return (userRole === 'coordinador' || userRole === 'apoyo_administrativo') ? (
-    <CoordinadorApp
-      onLogout={handleLogout}
-      instructors={instructors}
-      onUpdateInstructor={updateInstructor}
-      onCreateSupportStaff={createSupportStaff}
-      onDeleteInstructor={deleteInstructor}
-      instructorEditAllowed={instructorEditAllowed}
-      onToggleInstructorEditPermission={(value) => setInstructorEditAllowed(value)}
-      isSupportStaff={userRole === 'apoyo_administrativo'}
-    />
-  ) : (
-    <InstructorApp onLogout={handleLogout} canEditProfile={instructorEditAllowed} />
+  return (
+    <>
+      <GlobalNotificationListener />
+      {(userRole === 'coordinador' || userRole === 'apoyo_administrativo') ? (
+        <CoordinadorApp
+          onLogout={handleLogout}
+          instructors={instructors}
+          onUpdateInstructor={updateInstructor}
+          onCreateSupportStaff={createSupportStaff}
+          onDeleteInstructor={deleteInstructor}
+          instructorEditAllowed={instructorEditAllowed}
+          onToggleInstructorEditPermission={(value) => setInstructorEditAllowed(value)}
+          isSupportStaff={userRole === 'apoyo_administrativo'}
+        />
+      ) : (
+        <InstructorApp onLogout={handleLogout} canEditProfile={instructorEditAllowed} />
+      )}
+    </>
   )
 }
 
