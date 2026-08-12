@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
+import { FiRefreshCw, FiClock, FiAlertTriangle, FiCheck } from 'react-icons/fi';
+
 
 export function Dashboard(): ReactElement {
   const [stats, setStats] = useState({
@@ -49,7 +51,7 @@ export function Dashboard(): ReactElement {
         id: `${r.tipo}-${r.id_informe_gc || r.id_informe_gf}`,
         name: `${r.usuario?.nombre || 'Instructor'} ${r.usuario?.apellido || ''} - Informe ${r.tipo} (${r.mes} ${r.anio})`,
         time: new Date(r.fecha_registro).toLocaleDateString(),
-        state: r.estado === 'aprobado' || r.estado === 'success' ? '✓ Aprobado' : r.estado === 'correccion' || r.estado === 'alert' ? '⚠️ Corrección' : '⏳ En revisión',
+        state: r.estado === 'aprobado' || r.estado === 'success' ? '<FiCheck /> Aprobado' : r.estado === 'correccion' || r.estado === 'alert' ? '<FiAlertTriangle /> Corrección' : '<FiClock /> En revisión',
         progress: r.estado === 'aprobado' || r.estado === 'success' ? '100%' : '50%',
       }))
 
@@ -116,7 +118,7 @@ export function Dashboard(): ReactElement {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={fetchDashboardData} className="button button--ghost text-xs py-1.5 px-3">
-              🔄 Actualizar
+              <FiRefreshCw /> Actualizar
             </button>
             <span className="rounded-full px-3 py-1 text-sm font-medium bg-emerald-100 text-emerald-700">● En línea</span>
           </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
+import { FiRefreshCw, FiEdit, FiCheck } from 'react-icons/fi';
+
 
 interface HistoryItem {
   id: string
@@ -39,7 +41,7 @@ export function Historial(): ReactElement {
         if (r.estado === 'aprobado' || r.estado === 'success') {
           logs.push({
             id: `gc-app-${r.id_informe_gc}`,
-            action: '✅ Informe Aprobado',
+            action: '<FiCheck /> Informe Aprobado',
             target: `Informe GC (${r.mes} ${r.anio})`,
             date: new Date(r.fecha_registro).toLocaleString(),
             details: `Aprobado el informe de gestión de ${instName}.`,
@@ -51,7 +53,7 @@ export function Historial(): ReactElement {
           r.observaciones.forEach((o: any) => {
             logs.push({
               id: `gc-obs-${o.id_observacion_gc || Math.random()}`,
-              action: '📝 Solicitud de Corrección Enviada',
+              action: '<FiEdit /> Solicitud de Corrección Enviada',
               target: `Informe GC (${r.mes} ${r.anio})`,
               date: new Date(o.fecha || r.fecha_registro).toLocaleString(),
               details: `Instructor ${instName}. Observación: "${o.comentario}"`,
@@ -67,7 +69,7 @@ export function Historial(): ReactElement {
         if (r.estado === 'aprobado' || r.estado === 'success') {
           logs.push({
             id: `gf-app-${r.id_informe_gf}`,
-            action: '✅ Informe Aprobado',
+            action: '<FiCheck /> Informe Aprobado',
             target: `Informe GF (${r.mes} ${r.anio})`,
             date: new Date(r.fecha_registro).toLocaleString(),
             details: `Aprobado el informe financiero de ${instName}.`,
@@ -79,7 +81,7 @@ export function Historial(): ReactElement {
           r.observaciones.forEach((o: any) => {
             logs.push({
               id: `gf-obs-${o.id_observacion_gf || Math.random()}`,
-              action: '📝 Solicitud de Corrección Enviada',
+              action: '<FiEdit /> Solicitud de Corrección Enviada',
               target: `Informe GF (${r.mes} ${r.anio})`,
               date: new Date(o.fecha || r.fecha_registro).toLocaleString(),
               details: `Instructor ${instName}. Observación: "${o.comentario}"`,
@@ -126,7 +128,7 @@ export function Historial(): ReactElement {
           <p className="subtext">Consulta la bitácora histórica de informes aprobados, correcciones enviadas y permisos de instructores.</p>
         </div>
         <button type="button" onClick={fetchAuditHistory} className="button button--ghost text-xs py-1.5 px-3">
-          🔄 Actualizar historial
+          <FiRefreshCw /> Actualizar historial
         </button>
       </header>
 

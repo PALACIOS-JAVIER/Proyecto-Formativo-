@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { ReactElement } from 'react'
+import { FiFileText, FiAlertTriangle, FiCheck } from 'react-icons/fi';
+
 
 export function CargarInforme(): ReactElement {
   const [gcFile, setGcFile] = useState<File | null>(null)
@@ -59,7 +61,7 @@ export function CargarInforme(): ReactElement {
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         setGcFile(null)
         setIsGcError(true)
-        setGcMessage('⚠️ Solo se permiten archivos en formato PDF (.pdf).')
+        setGcMessage('<FiAlertTriangle /> Solo se permiten archivos en formato PDF (.pdf).')
         return
       }
       setGcFile(file)
@@ -77,7 +79,7 @@ export function CargarInforme(): ReactElement {
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         setGfFile(null)
         setIsGfError(true)
-        setGfMessage('⚠️ Solo se permiten archivos en formato PDF (.pdf).')
+        setGfMessage('<FiAlertTriangle /> Solo se permiten archivos en formato PDF (.pdf).')
         return
       }
       setGfFile(file)
@@ -128,7 +130,7 @@ export function CargarInforme(): ReactElement {
       }
 
       setIsGcError(false)
-      setGcMessage(`✓ Informe GC (${month} ${year}) en PDF subido exitosamente.`)
+      setGcMessage(`<FiCheck /> Informe GC (${month} ${year}) en PDF subido exitosamente.`)
       setGcFile(null)
       fetchReports()
     } catch (err: any) {
@@ -182,7 +184,7 @@ export function CargarInforme(): ReactElement {
       }
 
       setIsGfError(false)
-      setGfMessage(`✓ Informe GF (${month} ${year}) en PDF subido exitosamente.`)
+      setGfMessage(`<FiCheck /> Informe GF (${month} ${year}) en PDF subido exitosamente.`)
       setGfFile(null)
       fetchReports()
     } catch (err: any) {
@@ -242,7 +244,7 @@ export function CargarInforme(): ReactElement {
             <div>
               <div className="upload-type-picker mb-4">
                 <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-300">
-                  📄 Informe GC (PDF)
+                  <FiFileText /> Informe GC (PDF)
                 </span>
               </div>
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GC</h2>
@@ -255,13 +257,13 @@ export function CargarInforme(): ReactElement {
 
               {isGcApproved && (
                 <div className="mt-4 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
-                  ✓ Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                  <FiCheck /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
                 </div>
               )}
 
               {gcFile && !isGcApproved && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
-                  <span>📄 {gcFile.name} ({formatFileSize(gcFile.size)})</span>
+                  <span><FiFileText /> {gcFile.name} ({formatFileSize(gcFile.size)})</span>
                 </div>
               )}
             </div>
@@ -301,7 +303,7 @@ export function CargarInforme(): ReactElement {
             <div>
               <div className="upload-type-picker mb-4">
                 <span className="px-3 py-1.5 rounded-full bg-sky-100 text-sky-800 font-bold text-xs border border-sky-300">
-                  📄 Informe GF (PDF)
+                  <FiFileText /> Informe GF (PDF)
                 </span>
               </div>
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GF</h2>
@@ -314,13 +316,13 @@ export function CargarInforme(): ReactElement {
 
               {isGfApproved && (
                 <div className="mt-4 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 p-2.5 rounded-xl">
-                  ✓ Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                  <FiCheck /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
                 </div>
               )}
 
               {gfFile && !isGfApproved && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 shadow-sm">
-                  <span>📄 {gfFile.name} ({formatFileSize(gfFile.size)})</span>
+                  <span><FiFileText /> {gfFile.name} ({formatFileSize(gfFile.size)})</span>
                 </div>
               )}
             </div>

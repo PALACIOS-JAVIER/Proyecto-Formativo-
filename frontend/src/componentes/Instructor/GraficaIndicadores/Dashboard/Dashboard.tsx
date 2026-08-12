@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
+import { FiRefreshCw, FiEdit, FiAlertTriangle } from 'react-icons/fi';
+
 
 export function Dashboard(): ReactElement {
   const userData = (() => {
@@ -99,7 +101,7 @@ export function Dashboard(): ReactElement {
           </div>
           <div className="flex items-center gap-3">
             <button type="button" onClick={fetchInstructorStats} className="button button--ghost text-xs py-1.5 px-3">
-              🔄 Actualizar
+              <FiRefreshCw /> Actualizar
             </button>
             <span className="rounded-full px-3 py-1 text-sm font-medium bg-emerald-100 text-emerald-700">Actualizado</span>
           </div>
@@ -144,7 +146,7 @@ export function Dashboard(): ReactElement {
                     className="cursor-pointer rounded-2xl p-3 text-xs bg-rose-50 border border-rose-200 text-rose-900 font-medium transition-all hover:bg-rose-100/70"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span>⚠️ <strong>Pendiente de reenvío:</strong> {corr.title}</span>
+                      <span><FiAlertTriangle /> <strong>Pendiente de reenvío:</strong> {corr.title}</span>
                       <span className="text-[10px] text-rose-600 shrink-0 font-bold">
                         {isExpanded ? '▲ Ocultar' : '▼ Ver observaciones'}
                       </span>
@@ -195,7 +197,7 @@ export function Dashboard(): ReactElement {
             <div className="mt-4 space-y-2 max-h-48 overflow-y-auto pr-1">
               {stats.topObservaciones.map((obs, idx) => (
                 <div key={idx} className="rounded-2xl p-3 text-xs bg-amber-50 border border-amber-200 text-amber-900 font-medium leading-relaxed">
-                  📝 {obs}
+                  <FiEdit /> {obs}
                 </div>
               ))}
             </div>

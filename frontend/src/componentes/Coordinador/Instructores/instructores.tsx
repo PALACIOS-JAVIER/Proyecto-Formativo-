@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
 import { FaApple } from 'react-icons/fa'
 import type { InstructorProfile } from '../../../App'
+import { FiAlertTriangle, FiCheck } from 'react-icons/fi';
+
 
 interface SupportStaffData {
   nombre: string
@@ -93,7 +95,7 @@ export function Instructores({
     }
 
     if (!supportStaffData.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
-      setNotificationMessage('⚠️ El correo debe pertenecer al dominio institucional (@sena.edu.co).')
+      setNotificationMessage('<FiAlertTriangle /> El correo debe pertenecer al dominio institucional (@sena.edu.co).')
       return
     }
 
@@ -117,18 +119,18 @@ export function Instructores({
 
   const handleAccept = (instructor: InstructorProfile) => {
     onUpdateInstructor(instructor.id, { status: 'activo' })
-    setNotificationMessage(`✓ Instructor ${instructor.nombre} ${instructor.apellido} aceptado correctamente.`)
+    setNotificationMessage(`<FiCheck /> Instructor ${instructor.nombre} ${instructor.apellido} aceptado correctamente.`)
   }
 
   const handleReject = (instructor: InstructorProfile) => {
     onUpdateInstructor(instructor.id, { status: 'rechazado' })
-    setNotificationMessage(`⚠️ Registro de ${instructor.nombre} ${instructor.apellido} rechazado.`)
+    setNotificationMessage(`<FiAlertTriangle /> Registro de ${instructor.nombre} ${instructor.apellido} rechazado.`)
   }
 
   const toggleActivation = (instructor: InstructorProfile) => {
     const nextStatus = instructor.status === 'activo' ? 'inactivo' : 'activo'
     onUpdateInstructor(instructor.id, { status: nextStatus })
-    setNotificationMessage(`✓ Estado de ${instructor.nombre} ${instructor.apellido} cambiado a: ${nextStatus}.`)
+    setNotificationMessage(`<FiCheck /> Estado de ${instructor.nombre} ${instructor.apellido} cambiado a: ${nextStatus}.`)
   }
 
   const handleDeleteInstructor = (id: number) => {
@@ -362,7 +364,7 @@ export function Instructores({
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.toLowerCase().trim().endsWith('@sena.edu.co')) { setNotificationMessage('⚠️ El correo debe pertenecer al dominio institucional (@sena.edu.co).'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
+                  <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.toLowerCase().trim().endsWith('@sena.edu.co')) { setNotificationMessage('<FiAlertTriangle /> El correo debe pertenecer al dominio institucional (@sena.edu.co).'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
                   <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
                   <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
                 </>
