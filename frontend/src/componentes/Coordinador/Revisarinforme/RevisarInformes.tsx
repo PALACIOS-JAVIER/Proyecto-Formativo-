@@ -379,7 +379,7 @@ export function RevisarInformes(): ReactElement {
                           </div>
                         </div>
                         <span className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-50 rounded-xl text-slate-600 border border-slate-200 transition-colors group-hover:bg-slate-100">
-                          {isMonthCollapsed ? <><FiFolder /> Abrir Periodo</> : <><FiFolderMinus /> Contraer</>}
+                          {isMonthCollapsed ? <><FiFolder /> <span>Abrir Periodo</span></> : <><FiFolderMinus /> <span>Contraer</span></>}
                         </span>
                       </div>
 
@@ -407,7 +407,7 @@ export function RevisarInformes(): ReactElement {
                                     </div>
                                   </div>
                                   <span className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-white rounded-lg text-slate-600 border border-slate-200 shadow-sm transition-colors group-hover:bg-slate-50">
-                                    {isInstCollapsed ? <><FiFolder /> Ver Informes</> : <><FiFolderMinus /> Ocultar</>}
+                                    {isInstCollapsed ? <><FiFolder /> <span>Ver Informes</span></> : <><FiFolderMinus /> <span>Ocultar</span></>}
                                   </span>
                                 </div>
 
