@@ -65,22 +65,9 @@ CREATE TABLE usuarios (
 
 CREATE TABLE coordinadores (
     id_coordinador SERIAL PRIMARY KEY,
-    anio_ejercicio INT NOT NULL DEFAULT 2026,
-    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
-    id_sede INT REFERENCES sedes(id_sede) ON DELETE CASCADE
-);
-
-CREATE TABLE apoyos_administrativos (
-    id_apoyo SERIAL PRIMARY KEY,
-    id_coordinador INT REFERENCES coordinadores(id_coordinador) ON DELETE CASCADE,
-    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE
-);
-
-CREATE TABLE coordinadores (
-    id_coordinador SERIAL PRIMARY KEY,
-    id_sede INT UNIQUE REFERENCES sedes(id_sede) ON DELETE CASCADE,
-    id_usuario INT REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
-    anio_ejercicio INT
+    id_sede INT REFERENCES sedes(id_sede) ON DELETE CASCADE,
+    id_usuario INT UNIQUE REFERENCES usuarios("id_Usuario") ON DELETE CASCADE,
+    anio_ejercicio INT NOT NULL DEFAULT 2026
 );
 
 CREATE TABLE apoyos_administrativos (
@@ -174,11 +161,11 @@ CREATE TABLE historial (
 
 -- Insertar coordinador por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area) 
-VALUES ('Admin', 'Coordinador', 111111111, 3000000000, 'admin@sena.edu.co', NULL, NULL, NULL, NULL, '123456', 'aprobado', 1, 3, NULL);
+VALUES ('Segio', 'Coordinador', 9286354, 3096877933, 'coordinador@sena.edu.co', NULL, NULL, NULL, NULL, '123456', 'aprobado', 1, 3, NULL);
 
 -- Asignar coordinador a la sede Yamboro
-INSERT INTO coordinadores (id_sede, id_usuario, anio_ejercicio) VALUES (1, 1, 2025);
+INSERT INTO coordinadores (id_sede, id_usuario, anio_ejercicio) VALUES (1, 1, 2026);
 
 -- Insertar instructor por defecto
 INSERT INTO usuarios (nombre, apellido, cedula, telefono, correo, "codigoContrato", "codigoSiif", "fechaInicioContrato", "fechaFinContrato", password, estado_cuenta, id_sede, id_rol, id_area, id_especialidad) 
-VALUES ('Instructor', 'Demo', 222222222, 3000000001, 'instructor@sena.edu.co', 'CTR-111', 1, '2025-01-01', '2025-12-31', '123456', 'aprobado', 1, 1, 1, 1);
+VALUES ('Instructor', 'Demo', 222222222, 3090789356, 'instructor@sena.edu.co', 'CTR-111', 1, '2025-01-01', '2025-12-31', '123456', 'aprobado', 1, 1, 1, 1);
