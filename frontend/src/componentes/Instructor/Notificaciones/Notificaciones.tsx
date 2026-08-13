@@ -137,7 +137,7 @@ export function Notificaciones(): ReactElement {
               className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${n.is_new ? 'border-amber-300 bg-amber-50/80 shadow-sm' : 'border-border bg-bg-alt'}`}
             >
               <div className="flex items-start gap-3">
-                <span className="text-2xl mt-0.5">{n.tipo === 'observation' ? '<FiAlertTriangle />' : '<FiBell />'}</span>
+                <span className="text-2xl mt-0.5">{n.tipo === 'observation' ? <FiAlertTriangle /> : <FiBell />}</span>
                 <div>
                   <h2 className="text-base font-bold text-foreground">{n.titulo}</h2>
                   <p className="text-sm text-secondary mt-1">{n.descripcion}</p>
