@@ -51,7 +51,7 @@ export function Dashboard(): ReactElement {
         id: `${r.tipo}-${r.id_informe_gc || r.id_informe_gf}`,
         name: `${r.usuario?.nombre || 'Instructor'} ${r.usuario?.apellido || ''} - Informe ${r.tipo} (${r.mes} ${r.anio})`,
         time: new Date(r.fecha_registro).toLocaleDateString(),
-        state: r.estado === 'aprobado' || r.estado === 'success' ? '<FiCheck /> Aprobado' : r.estado === 'correccion' || r.estado === 'alert' ? '<FiAlertTriangle /> Corrección' : '<FiClock /> En revisión',
+        state: r.estado === 'aprobado' || r.estado === 'success' ? <span className="flex items-center gap-1"><FiCheck /> Aprobado</span> : r.estado === 'correccion' || r.estado === 'alert' ? <span className="flex items-center gap-1"><FiAlertTriangle /> Corrección</span> : <span className="flex items-center gap-1"><FiClock /> En revisión</span>,
         progress: r.estado === 'aprobado' || r.estado === 'success' ? '100%' : '50%',
       }))
 

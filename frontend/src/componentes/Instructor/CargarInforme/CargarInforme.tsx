@@ -6,19 +6,20 @@ import { FiFileText, FiAlertTriangle, FiCheck } from 'react-icons/fi';
 export function CargarInforme(): ReactElement {
   const [gcFile, setGcFile] = useState<File | null>(null)
   const [gfFile, setGfFile] = useState<File | null>(null)
-  const [month, setMonth] = useState('Mayo')
-  const [year, setYear] = useState('2026')
+  const monthOptions = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  const yearOptions = ['2024', '2025', '2026', '2027', '2028', '2029', '2030', '2031']
+
+  const [month, setMonth] = useState(() => monthOptions[new Date().getMonth()])
+  const [year, setYear] = useState(() => new Date().getFullYear().toString())
   
-  const [gcMessage, setGcMessage] = useState('')
-  const [gfMessage, setGfMessage] = useState('')
+  const [gcMessage, setGcMessage] = useState<React.ReactNode>('')
+  const [gfMessage, setGfMessage] = useState<React.ReactNode>('')
   const [isGcError, setIsGcError] = useState(false)
   const [isGfError, setIsGfError] = useState(false)
   
   const [isSubmittingGc, setIsSubmittingGc] = useState(false)
   const [isSubmittingGf, setIsSubmittingGf] = useState(false)
 
-  const monthOptions = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-  const yearOptions = ['2024', '2025', '2026', '2027', '2028', '2029', '2030']
   const selectedPeriod = `${month} ${year}`
 
   const [reportsGC, setReportsGC] = useState<any[]>([])
@@ -61,7 +62,7 @@ export function CargarInforme(): ReactElement {
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         setGcFile(null)
         setIsGcError(true)
-        setGcMessage('<FiAlertTriangle /> Solo se permiten archivos en formato PDF (.pdf).')
+        setGcMessage(<><FiAlertTriangle className="inline-block" /> Solo se permiten archivos en formato PDF (.pdf).</>)
         return
       }
       setGcFile(file)
@@ -79,7 +80,7 @@ export function CargarInforme(): ReactElement {
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         setGfFile(null)
         setIsGfError(true)
-        setGfMessage('<FiAlertTriangle /> Solo se permiten archivos en formato PDF (.pdf).')
+        setGfMessage(<><FiAlertTriangle className="inline-block" /> Solo se permiten archivos en formato PDF (.pdf).</>)
         return
       }
       setGfFile(file)
@@ -130,7 +131,7 @@ export function CargarInforme(): ReactElement {
       }
 
       setIsGcError(false)
-      setGcMessage(`<FiCheck /> Informe GC (${month} ${year}) en PDF subido exitosamente.`)
+      setGcMessage(<><FiCheck className="inline-block" /> Informe GC ({month} {year}) en PDF subido exitosamente.</>)
       setGcFile(null)
       fetchReports()
     } catch (err: any) {
@@ -184,7 +185,7 @@ export function CargarInforme(): ReactElement {
       }
 
       setIsGfError(false)
-      setGfMessage(`<FiCheck /> Informe GF (${month} ${year}) en PDF subido exitosamente.`)
+      setGfMessage(<><FiCheck className="inline-block" /> Informe GF ({month} {year}) en PDF subido exitosamente.</>)
       setGfFile(null)
       fetchReports()
     } catch (err: any) {
