@@ -184,8 +184,11 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
     const fetchProfile = async () => {
       try {
+        const token = localStorage.getItem('access_token') || '';
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
         if (userId && userId > 0) {
-          const res = await fetch(`/api/usuarios/${userId}`)
+          const res = await fetch(`/api/usuarios/${userId}`, { headers })
           if (res.ok) {
             const u = await res.json()
             mapUserData(u)
@@ -194,7 +197,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         }
 
         if (userEmail) {
-          const res = await fetch(`/api/usuarios`)
+          const res = await fetch(`/api/usuarios`, { headers })
           if (res.ok) {
             const list = await res.json()
             const match = list.find((item: any) => item.correo?.toLowerCase().trim() === userEmail.toLowerCase().trim())
@@ -372,9 +375,13 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       if (data.id_objeto) payload.id_objeto = Number(data.id_objeto)
 
       if (userId) {
+        const token = localStorage.getItem('access_token') || '';
         const response = await fetch(`/api/usuarios/${userId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify(payload),
         })
 
@@ -389,6 +396,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           formData.append('file', fotoFile)
           await fetch(`/api/usuarios/${userId}/foto`, {
             method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData,
           })
         }
@@ -399,6 +407,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           formData.append('file', firmaFile)
           await fetch(`/api/usuarios/${userId}/firma`, {
             method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData,
           })
         }
@@ -467,9 +476,13 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       const userId = getUserIdFromSession()
       if (!userId) throw new Error("ID de usuario no encontrado")
 
+      const token = localStorage.getItem('access_token') || '';
       const response = await fetch(`/api/usuarios/${userId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ password: newPassword }),
       })
 
@@ -639,7 +652,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
               type="file"
               accept="image/*"
               onChange={handleCropFileChange}
-              className="mb-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+              className="mb-2 block w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-1.5 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer shadow-sm"
             />
             {preview ? <img src={preview} alt="preview" className="rounded-2xl max-h-36 object-cover border border-border" /> : null}
           </label>
@@ -744,6 +757,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
                 const f = e.target.files?.[0]
                 if (f) setFirmaFile(f)
               }}
+              className="mb-2 block w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-1.5 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer shadow-sm"
             />
             {firmaPreview ? (
               <div className="flex flex-col items-start gap-2 mt-2">
