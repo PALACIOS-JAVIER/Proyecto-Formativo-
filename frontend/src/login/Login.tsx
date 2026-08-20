@@ -204,11 +204,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             return
           }
           if (result.correo) setTargetEmail(result.correo)
-          if (result.devCode) {
-            setSuccessMessage(`Código enviado al correo ${result.correo}. (Modo Dev de pruebas: tu código es ${result.devCode})`)
-          } else {
-            setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
-          }
+          setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
           setForgotSubmitted(true)
         } else if (result === false) {
           setErrorMessage('No se encontró ningún usuario registrado con ese correo institucional o usuario.')
