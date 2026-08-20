@@ -32,7 +32,7 @@ services:
       DB_SYNCHRONIZE: "true"
       PORT: 3000
       JWT_SECRET: SRWv5qyFNC7PsQdmSzZjaGEosHg8pjGtuRBABcjti9YrIqaclYLCMRG7mxU3r6jE
-      FRONTEND_URL: http://localhost:5173
+      FRONTEND_URL: http://informestimi.com
     ports:
       - "3000:3000"
     volumes:
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile
     container_name: proyecto_formativo_frontend
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       - backend
     networks:

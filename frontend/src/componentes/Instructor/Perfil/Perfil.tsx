@@ -352,9 +352,9 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault()
-    if (data.correo && !data.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
-      showToast('El correo debe pertenecer al dominio institucional (@sena.edu.co)', 'error')
-      return
+    if (data.correo && !data.correo.includes('@')) {
+      showToast('Por favor, ingresa un correo electrónico válido', 'error')
+      return false
     }
     setIsSaving(true)
     setSaveError('')
@@ -571,7 +571,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             <span className="font-medium text-xs text-secondary uppercase">Correo institucional</span>
-            <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} disabled={isFieldDisabled('correo')} />
+            <input type="email" placeholder="ejemplo@correo.com" value={data.correo} onChange={(e) => handleChange('correo', e.target.value)} disabled={isFieldDisabled('correo')} />
           </label>
 
           <label>

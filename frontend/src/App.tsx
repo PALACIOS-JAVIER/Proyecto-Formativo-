@@ -69,8 +69,11 @@ function App() {
           source: u.rol?.nombre === 'Apoyo Administrativo' ? 'coordinador' : 'registro'
         }
       })
+      const coordsRes = await api.get('/coordinadores')
+      const coordIds = new Set(coordsRes.data.map((c: any) => c.usuario?.id_Usuario))
+
       const filteredInstructors = mappedInstructors.filter((inst: InstructorProfile) => {
-        return !inst.rol.toLowerCase().includes('coordinador')
+        return !coordIds.has(inst.id) && !inst.rol.toLowerCase().includes('coordinador')
       })
       setInstructors(filteredInstructors)
     } catch (error) {

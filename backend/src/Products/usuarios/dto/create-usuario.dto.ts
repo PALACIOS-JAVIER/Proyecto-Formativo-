@@ -18,7 +18,7 @@ export class CreateUsuarioDto {
     @IsNotEmpty()
     telefono: number;
 
-    @IsEmail()
+    @IsEmail({}, { message: 'El correo debe ser válido' })
     correo:string;
 
     @IsString()
