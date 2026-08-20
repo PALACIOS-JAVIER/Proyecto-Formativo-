@@ -193,13 +193,13 @@ export class AuthService {
         });
 
         await transporter.sendMail({
-          from: `"SENA - Proyecto Formativo" <${process.env.SMTP_USER}>`,
+          from: `"SENA - STIMI" <${process.env.SMTP_USER}>`,
           to: targetEmail,
           subject: 'Código de Verificación - Restablecer Contraseña SENA',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
               <div style="background-color: #39A900; padding: 20px; text-align: center; color: white;">
-                <h2 style="margin: 0; font-size: 24px;">SENA - Restablecimiento de Contraseña</h2>
+                <h2 style="margin: 0; font-size: 24px;">SENA - Restablecimiento de Contraseña STIMI</h2>
               </div>
               <div style="padding: 30px; color: #333333;">
                 <p>Hola <strong>${user.nombre}</strong>,</p>
@@ -229,8 +229,7 @@ export class AuthService {
     return { 
       success: true, 
       message: 'Código de verificación generado y enviado al correo institucional.',
-      correo: targetEmail,
-      devCode: verificationCode
+      correo: targetEmail
     };
   }
 

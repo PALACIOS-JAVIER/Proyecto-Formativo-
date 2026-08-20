@@ -179,7 +179,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   // ── Validaciones en tiempo real ─────────────────────────────────────
   const vCedula = /^\d+$/.test(registration.cedula) && registration.cedula.length >= 6
   const vTelefono = /^\d{7,15}$/.test(registration.telefono)
-  const vCorreo = registration.correo.toLowerCase().trim().endsWith('@sena.edu.co') && registration.correo.includes('@')
+  const vCorreo = registration.correo.includes('@') && registration.correo.includes('.')
   const vConfirm = registration.contraseña !== '' && confirmPassword === registration.contraseña
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -204,11 +204,8 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             return
           }
           if (result.correo) setTargetEmail(result.correo)
-          if (result.devCode) {
-            setSuccessMessage(`Código enviado al correo ${result.correo}. (Modo Dev de pruebas: tu código es ${result.devCode})`)
-          } else {
-            setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
-          }
+          
+          setSuccessMessage(`Hemos enviado un código de seguridad de 6 dígitos a tu correo ${result.correo}.`)
           setForgotSubmitted(true)
         } else if (result === false) {
           setErrorMessage('No se encontró ningún usuario registrado con ese correo institucional o usuario.')
@@ -281,8 +278,8 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
         setErrorMessage('La fecha de inicio debe ser anterior a la fecha fin del contrato.')
         return
       }
-      if (!registration.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
-        setErrorMessage('El correo debe pertenecer al dominio institucional (@sena.edu.co).')
+      if (!registration.correo.includes('@') || !registration.correo.includes('.')) {
+        setErrorMessage('Por favor ingresa un correo válido.')
         return
       }
       if (registration.contraseña !== confirmPassword) {
@@ -669,18 +666,18 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
 
                     {/* Correo */}
                     <label className={`${LABEL} sm:col-span-1 lg:col-span-2`}>
-                      <span>Correo institucional<Req /></span>
+                      <span>Correo electrónico<Req /></span>
                       <input
                         type="email"
                         value={registration.correo}
                         onChange={(e) => handleRegisterChange('correo', e.target.value)}
                         onBlur={() => touch('correo')}
-                        placeholder="ejemplo@sena.edu.co"
+                        placeholder="ejemplo@correo.com"
                         className={dynInput(fieldState(registration.correo, vCorreo, !!touched.correo))}
                         required
                       />
                       {touched.correo && !vCorreo && registration.correo !== '' && (
-                        <span className="text-red-500 text-xs font-normal flex items-center gap-1"><LuCircleAlert className="w-3 h-3" />Debe terminar en @sena.edu.co</span>
+                        <span className="text-red-500 text-xs font-normal flex items-center gap-1"><LuCircleAlert className="w-3 h-3" />Correo inválido</span>
                       )}
                       {touched.correo && vCorreo && (
                         <span className="text-[#39A900] text-xs font-normal flex items-center gap-1"><LuCircleCheck className="w-3 h-3" />Correo válido</span>

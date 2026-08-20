@@ -19,7 +19,6 @@ export class CreateUsuarioDto {
     telefono: number;
 
     @IsEmail()
-    @Matches(/@sena\.edu\.co$/i, { message: 'El correo debe pertenecer al dominio institucional @sena.edu.co' })
     correo:string;
 
     @IsString()
