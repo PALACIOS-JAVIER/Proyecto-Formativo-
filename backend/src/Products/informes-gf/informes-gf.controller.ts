@@ -27,7 +27,7 @@ const pdfUploadOptions = {
     }
     cb(null, true);
   },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB máximo para PDFs
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB máximo para PDFs
 };
 
 @UseGuards(AuthGuard('jwt'))
