@@ -302,7 +302,7 @@ function App() {
 
   const handleForgotPassword = async (identifier: string) => {
     try {
-      const response = await api.post('/auth/forgot-password', { identifier })
+      const response = await api.post('/auth/forgot-password', { correo: identifier })
       return response.data
     } catch (error: any) {
       return { success: false, message: error?.response?.data?.message || 'Error al solicitar cambio de contraseña' }
