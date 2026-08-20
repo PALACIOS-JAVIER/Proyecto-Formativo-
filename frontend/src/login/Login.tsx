@@ -179,7 +179,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   // ── Validaciones en tiempo real ─────────────────────────────────────
   const vCedula = /^\d+$/.test(registration.cedula) && registration.cedula.length >= 6
   const vTelefono = /^\d{7,15}$/.test(registration.telefono)
-  const vCorreo = registration.correo.includes('@') && registration.correo.includes('.')
+  const vCorreo = registration.correo.includes('@')
   const vConfirm = registration.contraseña !== '' && confirmPassword === registration.contraseña
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -278,8 +278,8 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
         setErrorMessage('La fecha de inicio debe ser anterior a la fecha fin del contrato.')
         return
       }
-      if (!registration.correo.includes('@') || !registration.correo.includes('.')) {
-        setErrorMessage('Por favor ingresa un correo válido.')
+      if (!registration.correo.includes('@')) {
+        setErrorMessage('Por favor, ingresa un correo electrónico válido.')
         return
       }
       if (registration.contraseña !== confirmPassword) {
@@ -677,7 +677,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         required
                       />
                       {touched.correo && !vCorreo && registration.correo !== '' && (
-                        <span className="text-red-500 text-xs font-normal flex items-center gap-1"><LuCircleAlert className="w-3 h-3" />Correo inválido</span>
+                        <span className="text-red-500 text-xs font-normal flex items-center gap-1"><LuCircleAlert className="w-3 h-3" />Debe ser un correo válido</span>
                       )}
                       {touched.correo && vCorreo && (
                         <span className="text-[#39A900] text-xs font-normal flex items-center gap-1"><LuCircleCheck className="w-3 h-3" />Correo válido</span>

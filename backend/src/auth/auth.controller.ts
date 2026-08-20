@@ -14,8 +14,8 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
-  forgotPassword(@Body('correo') correo: string, @Body('username') username: string) {
-    return this.authService.forgotPassword(correo || username);
+  forgotPassword(@Body('identifier') identifier: string, @Body('correo') correo: string, @Body('username') username: string) {
+    return this.authService.forgotPassword(identifier || correo || username);
   }
 
   @HttpCode(HttpStatus.OK)

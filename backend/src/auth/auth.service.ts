@@ -264,7 +264,8 @@ export class AuthService {
       throw new BadRequestException('Usuario no encontrado en el sistema.');
     }
 
-    user.password = nuevaContrasena.trim();
+    const hashedPassword = await bcrypt.hash(nuevaContrasena.trim(), 10);
+    user.password = hashedPassword;
     await this.usuarioRepository.save(user);
 
     this.recoveryCodes.delete(cleanCorreo);

@@ -94,8 +94,8 @@ export function Instructores({
       return
     }
 
-    if (!supportStaffData.correo.toLowerCase().trim().endsWith('@sena.edu.co')) {
-      setNotificationMessage('<FiAlertTriangle /> El correo debe pertenecer al dominio institucional (@sena.edu.co).')
+    if (!supportStaffData.correo.includes('@')) {
+      setNotificationMessage('<FiAlertTriangle /> Ingresa un correo electrónico válido.')
       return
     }
 
@@ -226,8 +226,12 @@ export function Instructores({
                       </div>
                     ) : (
                       <div className="flex flex-wrap justify-end gap-1.5">
-                        <button type="button" onClick={() => toggleActivation(inst)} className={`${btnBase} bg-slate-100 text-slate-800 hover:bg-slate-200`}>{inst.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
-                        <button type="button" onClick={() => handleDeleteInstructor(inst.id)} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Eliminar</button>
+                        {!(isSupportStaff && inst.rol.toLowerCase() === 'apoyo administrativo') && (
+                          <>
+                            <button type="button" onClick={() => toggleActivation(inst)} className={`${btnBase} bg-slate-100 text-slate-800 hover:bg-slate-200`}>{inst.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
+                            <button type="button" onClick={() => handleDeleteInstructor(inst.id)} className={`${btnBase} bg-rose-100 text-rose-800 hover:bg-rose-200`}>Eliminar</button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -318,7 +322,7 @@ export function Instructores({
               </label>
               <label>
                 Correo institucional
-                <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" className="input-field" value={selectedInstructorForm.correo} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, correo: e.target.value })} disabled={!instructorEditAllowed} />
+                <input type="email" placeholder="ejemplo@correo.com" className="input-field" value={selectedInstructorForm.correo} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, correo: e.target.value })} disabled={!instructorEditAllowed} />
               </label>
               <label>
                 Rol
@@ -332,26 +336,30 @@ export function Instructores({
                 Área
                 <input className="input-field" value={selectedInstructorForm.area} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, area: e.target.value })} disabled={!instructorEditAllowed} />
               </label>
-              <label>
-                Código de contrato
-                <input className="input-field" value={selectedInstructorForm.codigoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoContrato: e.target.value })} disabled={!instructorEditAllowed} />
-              </label>
-              <label>
-                Código SIIF
-                <input className="input-field" value={selectedInstructorForm.codigoSiif || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoSiif: e.target.value })} disabled={!instructorEditAllowed} />
-              </label>
-              <label>
-                Fecha inicio del contrato
-                <input type="date" className="input-field" value={selectedInstructorForm.fechaInicioContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaInicioContrato: e.target.value })} disabled={!instructorEditAllowed} />
-              </label>
-              <label>
-                Fecha fin del contrato
-                <input type="date" className="input-field" value={selectedInstructorForm.fechaFinContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaFinContrato: e.target.value })} disabled={!instructorEditAllowed} />
-              </label>
-              <label className="md:col-span-2">
-                Objeto del contrato
-                <textarea className="input-field min-h-24" value={selectedInstructorForm.objetoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, objetoContrato: e.target.value })} disabled={!instructorEditAllowed} />
-              </label>
+              {selectedInstructorForm.rol?.toLowerCase() !== 'apoyo administrativo' && (
+                <>
+                  <label>
+                    Código de contrato
+                    <input className="input-field" value={selectedInstructorForm.codigoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoContrato: e.target.value })} disabled={!instructorEditAllowed} />
+                  </label>
+                  <label>
+                    Código SIIF
+                    <input className="input-field" value={selectedInstructorForm.codigoSiif || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, codigoSiif: e.target.value })} disabled={!instructorEditAllowed} />
+                  </label>
+                  <label>
+                    Fecha inicio del contrato
+                    <input type="date" className="input-field" value={selectedInstructorForm.fechaInicioContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaInicioContrato: e.target.value })} disabled={!instructorEditAllowed} />
+                  </label>
+                  <label>
+                    Fecha fin del contrato
+                    <input type="date" className="input-field" value={selectedInstructorForm.fechaFinContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, fechaFinContrato: e.target.value })} disabled={!instructorEditAllowed} />
+                  </label>
+                  <label className="md:col-span-2">
+                    Objeto del contrato
+                    <textarea className="input-field min-h-24" value={selectedInstructorForm.objetoContrato || ''} onChange={(e) => setSelectedInstructorForm({ ...selectedInstructorForm, objetoContrato: e.target.value })} disabled={!instructorEditAllowed} />
+                  </label>
+                </>
+              )}
             </div>
             </div>
 
@@ -364,9 +372,13 @@ export function Instructores({
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.toLowerCase().trim().endsWith('@sena.edu.co')) { setNotificationMessage('<FiAlertTriangle /> El correo debe pertenecer al dominio institucional (@sena.edu.co).'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
-                  <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
+                  {!(isSupportStaff && selectedInstructorForm.rol?.toLowerCase() === 'apoyo administrativo') && (
+                    <>
+                      <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.includes('@')) { setNotificationMessage('<FiAlertTriangle /> Ingresa un correo electrónico válido.'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
+                      <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
+                      <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -403,7 +415,7 @@ export function Instructores({
               </label>
               <label>
                 Correo institucional
-                <input type="email" pattern=".*@sena\.edu\.co$" title="El correo debe terminar en @sena.edu.co" placeholder="ejemplo@sena.edu.co" className="input-field" value={supportStaffData.correo} onChange={(e) => handleSupportInput('correo', e.target.value)} />
+                <input type="email" placeholder="ejemplo@correo.com" className="input-field" value={supportStaffData.correo} onChange={(e) => handleSupportInput('correo', e.target.value)} />
               </label>
               <label>
                 Contraseña
