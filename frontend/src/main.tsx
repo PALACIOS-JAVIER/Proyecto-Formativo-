@@ -3,29 +3,25 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-// Google Translate / React 18 crash workaround
+// Workaround para evitar que Google Translate rompa (ponga en blanco) la aplicación React
 if (typeof Node === 'function' && Node.prototype) {
   const originalRemoveChild = Node.prototype.removeChild;
-  Node.prototype.removeChild = function<T extends Node>(child: T): T {
+  Node.prototype.removeChild = function (child: Node): Node {
     if (child.parentNode !== this) {
-      if (console) {
-        console.warn('Google Translate React workaround: Cannot remove a child from a different parent', child, this);
-      }
+      if (console) console.warn('Cannot remove a child from a different parent', child, this);
       return child;
     }
-    return originalRemoveChild.apply(this, [child]) as T;
-  };
-  
+    return originalRemoveChild.call(this, child);
+  } as typeof Node.prototype.removeChild;
+
   const originalInsertBefore = Node.prototype.insertBefore;
-  Node.prototype.insertBefore = function<T extends Node>(newNode: T, referenceNode: Node | null): T {
+  Node.prototype.insertBefore = function (newNode: Node, referenceNode: Node | null): Node {
     if (referenceNode && referenceNode.parentNode !== this) {
-      if (console) {
-        console.warn('Google Translate React workaround: Cannot insert before a reference node from a different parent', referenceNode, this);
-      }
+      if (console) console.warn('Cannot insert before a reference node from a different parent', referenceNode, this);
       return newNode;
     }
-    return originalInsertBefore.apply(this, [newNode, referenceNode]) as T;
-  };
+    return originalInsertBefore.call(this, newNode, referenceNode);
+  } as typeof Node.prototype.insertBefore;
 }
 
 createRoot(document.getElementById('root')!).render(
