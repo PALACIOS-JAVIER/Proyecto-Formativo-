@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactElement } from 'react'
 import { FaApple } from 'react-icons/fa'
 import type { InstructorProfile } from '../../../App'
-import { FiAlertTriangle, FiCheck } from 'react-icons/fi';
+
 
 
 interface SupportStaffData {
@@ -61,7 +61,12 @@ export function Instructores({
   }, [notificationMessage])
 
   const roleOptions = useMemo(() => ['Todas', ...Array.from(new Set(instructors.map((item) => item.rol)))], [instructors])
-  const areaOptions = useMemo(() => ['Todas', ...Array.from(new Set(instructors.map((item) => item.area)))], [instructors])
+  const areaOptions = useMemo(() => {
+    const defaultAreas = ['Agropecuaria', 'Deportes', 'Etica', 'Agricola', 'Construcción', 'Campesena']
+    const dynamicAreas = Array.from(new Set(instructors.map((item) => item.area)))
+    const combinedAreas = Array.from(new Set([...defaultAreas, ...dynamicAreas]))
+    return ['Todas', ...combinedAreas]
+  }, [instructors])
 
   const filteredInstructors = useMemo(
     () =>

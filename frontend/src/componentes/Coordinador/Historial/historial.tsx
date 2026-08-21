@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
-import { FiRefreshCw, FiEdit, FiCheck } from 'react-icons/fi';
+import { FiRefreshCw } from 'react-icons/fi';
 
 
 interface HistoryItem {

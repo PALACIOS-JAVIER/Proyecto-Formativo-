@@ -1,28 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { api } from '../services/api'
 
 export function GlobalNotificationListener() {
   const notifiedIds = useRef<Set<number>>(new Set())
-  const [permission, setPermission] = useState<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
-  )
-  const [showBanner, setShowBanner] = useState(true)
-
-  const requestPermission = async () => {
-    if (typeof Notification !== 'undefined') {
-      const perm = await Notification.requestPermission()
-      setPermission(perm)
-      setShowBanner(false)
-    }
-  }
-
   useEffect(() => {
-    // Intentar solicitar permiso al montar
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().then(perm => {
-        setPermission(perm)
-      }).catch(() => {})
-    }
 
     const checkNotifications = async () => {
       try {
@@ -65,44 +46,6 @@ export function GlobalNotificationListener() {
 
     return () => clearInterval(interval)
   }, [])
-
-  if (permission === 'default' && showBanner) {
-    return (
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        backgroundColor: '#fff',
-        padding: '16px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        border: '1px solid #e5e7eb',
-        maxWidth: '300px'
-      }}>
-        <p style={{ margin: 0, fontSize: '14px', color: '#374151', fontFamily: 'sans-serif' }}>
-          Para recibir avisos importantes, necesitas habilitar las notificaciones del navegador.
-        </p>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <button 
-            onClick={() => setShowBanner(false)}
-            style={{ padding: '6px 12px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#6b7280', fontSize: '14px', fontWeight: 'bold' }}
-          >
-            Ahora no
-          </button>
-          <button 
-            onClick={requestPermission}
-            style={{ padding: '6px 12px', border: 'none', background: '#39A900', color: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
-          >
-            Activar
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return null
 }

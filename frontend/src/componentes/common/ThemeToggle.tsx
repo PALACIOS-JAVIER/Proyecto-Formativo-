@@ -21,7 +21,7 @@ export function ThemeToggle({ theme, onToggle }: ThemeToggleProps): ReactElement
       }`}
       aria-label={`Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`}
     >
-      <span className="text-base">{isDark ? '<FiSun />' : '<FiMoon />'}</span>
+      <span className="text-base">{isDark ? <FiSun /> : <FiMoon />}</span>
       <span>{isDark ? 'Claro' : 'Oscuro'}</span>
     </button>
   )

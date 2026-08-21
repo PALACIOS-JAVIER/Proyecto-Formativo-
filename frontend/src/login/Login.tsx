@@ -250,6 +250,19 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
         setErrorMessage('Por favor ingresa usuario y contraseña.')
         return
       }
+
+      // Solicitar permiso de notificaciones con la interacción del usuario
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        const hasPrompted = localStorage.getItem('notif_prompt_dismissed');
+        if (!hasPrompted) {
+          Notification.requestPermission().then((perm) => {
+            if (perm !== 'granted') {
+              localStorage.setItem('notif_prompt_dismissed', 'true');
+            }
+          }).catch(() => {});
+        }
+      }
+
       try {
         setLoading(true)
         const loginResult = await onLogin?.({ username, password })
