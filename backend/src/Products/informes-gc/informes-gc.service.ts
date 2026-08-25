@@ -141,15 +141,9 @@ export class InformesGcService {
 
   private async enviarAFlujoN8N(informe: InformeGC, tipo: string, usuario: Usuario): Promise<void> {
     try {
-      const filePath = path.join(process.cwd(), informe.archivo_url);
-      if (!fs.existsSync(filePath)) {
-        console.warn(`Archivo no encontrado para enviar a n8n: ${filePath}`);
-        return;
-      }
-      const fileBuffer = await fs.promises.readFile(filePath);
-      const base64File = fileBuffer.toString('base64');
-      const nombreArchivo = path.basename(filePath);
+      const nombreArchivo = informe.archivo_url.split('/').pop() || 'informe.pdf';
       const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv1927518.hstgr.cloud/webhook/revisar-informe';
+      const fileUrl = `${process.env.FRONTEND_URL || 'http://informestimi.com'}/${informe.archivo_url}`;
 
       console.log(`🚀 Enviando Informe ${tipo} #${informe.id_informe_gc} al flujo n8n en ${webhookUrl}...`);
       const res = await fetch(webhookUrl, {
@@ -163,7 +157,7 @@ export class InformesGcService {
           mes: informe.mes,
           anio: informe.anio,
           nombre_archivo: nombreArchivo,
-          archivo_base64: base64File,
+          archivo_url: fileUrl
         }),
       }).catch((err) => {
         console.error(`❌ Error al contactar webhook de n8n: ${err.message || err}`);
