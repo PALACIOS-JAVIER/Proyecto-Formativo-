@@ -11,6 +11,8 @@ import { unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as bcrypt from 'bcrypt';
 
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
+
 @Injectable()
 export class UsuariosService {
   constructor(
@@ -22,6 +24,7 @@ export class UsuariosService {
     private readonly rolRepository: Repository<Rol>,
     @InjectRepository(Area)
     private readonly areaRepository: Repository<Area>,
+    private readonly notificacionesService: NotificacionesService,
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
@@ -97,7 +100,20 @@ export class UsuariosService {
     });
 
     try {
-      return await this.usuarioRepository.save(usuario);
+      const savedUser = await this.usuarioRepository.save(usuario);
+      
+      // Notify coordinators if a new instructor or user needs approval
+      // Normally instructors require approval (estado_cuenta='pendiente')
+      if (savedUser.rol?.nombre?.toLowerCase().includes('campesena') || savedUser.rol?.nombre?.toLowerCase().includes('instructor')) {
+        await this.notificacionesService.notifyCoordinators({
+          titulo: 'Nuevo registro de instructor',
+          descripcion: `El instructor ${savedUser.nombre} ${savedUser.apellido} se ha registrado y está en espera de aprobación.`,
+          tipo: 'alerta',
+          usuario_origen_id: savedUser.id_Usuario,
+        });
+      }
+
+      return savedUser;
     } catch (error: any) {
       if (error.code === '23505' || error.detail?.includes('already exists')) {
         if (error.detail?.includes('cedula')) {
@@ -178,8 +194,31 @@ export class UsuariosService {
       delete (dto as any).id_objeto;
     }
 
+    const previousEstado = usuario.estado_cuenta;
     Object.assign(usuario, dto);
-    return this.usuarioRepository.save(usuario);
+    const updatedUser = await this.usuarioRepository.save(usuario);
+
+    if (dto.estado_cuenta && dto.estado_cuenta !== previousEstado) {
+      let mensaje = '';
+      if (dto.estado_cuenta === 'aprobado' || dto.estado_cuenta === 'activo') {
+        mensaje = 'El coordinador ha aceptado tu registro. Ya puedes acceder al sistema.';
+      } else if (dto.estado_cuenta === 'rechazado') {
+        mensaje = 'El coordinador ha rechazado tu registro.';
+      } else if (dto.estado_cuenta === 'inactivo') {
+        mensaje = 'El coordinador ha desactivado tu cuenta.';
+      }
+
+      if (mensaje) {
+        await this.notificacionesService.createNotification({
+          titulo: 'Actualización de estado de cuenta',
+          descripcion: mensaje,
+          tipo: 'alerta',
+          usuario_destino_id: updatedUser.id_Usuario,
+        });
+      }
+    }
+
+    return updatedUser;
   }
 
   async updateFiles(id: number, data: { fotoPerfil?: string; firma?: string }): Promise<Usuario> {
