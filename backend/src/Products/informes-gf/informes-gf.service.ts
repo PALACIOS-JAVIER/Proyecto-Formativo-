@@ -146,7 +146,7 @@ export class InformesGfService {
         console.warn(`Archivo no encontrado para enviar a n8n: ${filePath}`);
         return;
       }
-      const fileBuffer = fs.readFileSync(filePath);
+      const fileBuffer = await fs.promises.readFile(filePath);
       const base64File = fileBuffer.toString('base64');
       const nombreArchivo = path.basename(filePath);
       const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv1927518.hstgr.cloud/webhook/revisar-informe';
