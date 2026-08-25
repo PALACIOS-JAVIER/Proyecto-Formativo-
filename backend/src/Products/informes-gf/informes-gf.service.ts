@@ -149,7 +149,7 @@ export class InformesGfService {
       const fileBuffer = fs.readFileSync(filePath);
       const base64File = fileBuffer.toString('base64');
       const nombreArchivo = path.basename(filePath);
-      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv1849571.hstgr.cloud/webhook/revisar-informe';
+      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.srv1927518.hstgr.cloud/webhook/revisar-informe';
 
       console.log(`🚀 Enviando Informe ${tipo} #${informe.id_informe_gf} al flujo n8n en ${webhookUrl}...`);
       const res = await fetch(webhookUrl, {

@@ -18,7 +18,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: true,
+    origin: process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:3000', 'http://informestimi.com'],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,

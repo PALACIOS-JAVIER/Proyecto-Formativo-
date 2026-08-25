@@ -65,6 +65,12 @@ export function CargarInforme(): ReactElement {
         setGcMessage(<><FiAlertTriangle className="inline-block" /> Solo se permiten archivos en formato PDF (.pdf).</>)
         return
       }
+      if (file.size > 50 * 1024 * 1024) {
+        setGcFile(null)
+        setIsGcError(true)
+        setGcMessage(<><FiAlertTriangle className="inline-block" /> El archivo supera el límite de 50MB.</>)
+        return
+      }
       setGcFile(file)
     } else {
       setGcFile(null)
@@ -81,6 +87,12 @@ export function CargarInforme(): ReactElement {
         setGfFile(null)
         setIsGfError(true)
         setGfMessage(<><FiAlertTriangle className="inline-block" /> Solo se permiten archivos en formato PDF (.pdf).</>)
+        return
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        setGfFile(null)
+        setIsGfError(true)
+        setGfMessage(<><FiAlertTriangle className="inline-block" /> El archivo supera el límite de 50MB.</>)
         return
       }
       setGfFile(file)
@@ -249,7 +261,7 @@ export function CargarInforme(): ReactElement {
                 </span>
               </div>
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GC</h2>
-              <p className="text-xs text-secondary mt-1">Formato Institucional GC. Adjunta el archivo en formato PDF.</p>
+              <p className="text-xs text-secondary mt-1">Formato Institucional GC. Adjunta el archivo en formato PDF (Máx 50MB).</p>
 
               <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGcApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GC
@@ -308,7 +320,7 @@ export function CargarInforme(): ReactElement {
                 </span>
               </div>
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GF</h2>
-              <p className="text-xs text-secondary mt-1">Formato Institucional GF. Adjunta el archivo en formato PDF.</p>
+              <p className="text-xs text-secondary mt-1">Formato Institucional GF. Adjunta el archivo en formato PDF (Máx 50MB).</p>
 
               <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGfApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GF

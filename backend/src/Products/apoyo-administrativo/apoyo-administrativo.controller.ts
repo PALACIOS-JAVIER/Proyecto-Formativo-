@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApoyoAdministrativoService } from './apoyo-administrativo.service';
 import { CreateApoyoAdministrativoDto } from './dto/create-apoyo-administrativo.dto';
 import { UpdateApoyoAdministrativoDto } from './dto/update-apoyo-administrativo.dto';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('apoyos-administrativos')
 export class ApoyoAdministrativoController {
     constructor(private readonly apoyoService: ApoyoAdministrativoService) {}

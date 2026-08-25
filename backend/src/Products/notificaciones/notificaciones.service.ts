@@ -82,6 +82,42 @@ export class NotificacionesService {
     return instructores.length;
   }
 
+  async notifyCoordinators(data: {
+    titulo: string;
+    descripcion: string;
+    tipo: string;
+    usuario_origen_id?: number;
+  }): Promise<number> {
+    let usuarioOrigen: Usuario | null = null;
+    if (data.usuario_origen_id) {
+      usuarioOrigen = await this.usuarioRepository.findOne({
+        where: { id_Usuario: data.usuario_origen_id },
+      });
+    }
+
+    const qb = this.usuarioRepository.createQueryBuilder('usuario')
+      .leftJoinAndSelect('usuario.rol', 'rol')
+      .where("rol.nombre ILIKE '%coordinador%'");
+    
+    const coordinadores = await qb.getMany();
+
+    if (coordinadores.length === 0) return 0;
+
+    const notificacionesToInsert = coordinadores.map(coord => {
+      return this.notificacionRepository.create({
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        tipo: data.tipo,
+        is_new: true,
+        usuario_destino: coord,
+        usuario_origen: usuarioOrigen || undefined,
+      });
+    });
+
+    await this.notificacionRepository.save(notificacionesToInsert);
+    return coordinadores.length;
+  }
+
   async findBroadcastsByOrigen(usuarioId: number): Promise<Notificacion[]> {
     // Para no mostrar repetidas (N veces el mismo mensaje), traemos los distinct agrupando por titulo, descripcion y hora aprox
     const qb = this.notificacionRepository.createQueryBuilder('n')

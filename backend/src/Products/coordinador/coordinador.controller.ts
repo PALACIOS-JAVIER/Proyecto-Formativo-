@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Delete, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { CoordinadorService } from './coordinador.service';
 import { CreateCoordinadorDto } from './dto/create-coordinador.dto';
 import { UpdateCoordinadorDto } from './dto/update-coordinador.dto';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('coordinadores')
 export class CoordinadorController {
     constructor(private readonly coordinadorService: CoordinadorService) {}
