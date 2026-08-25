@@ -5,6 +5,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const notifiedIdsRef = useRef<Set<number>>(new Set())
 
   const fetchNotifications = async () => {
     try {
@@ -15,13 +16,30 @@ export function NotificationBell() {
       if (!userId) return
 
       const res = await api.get(`/notificaciones/usuario/${userId}`)
-      setNotifications(res.data || [])
+      const fetchedNotifs = res.data || []
+      setNotifications(fetchedNotifs)
+
+      // Trigger OS push notifications for new unread notifications
+      if (Notification.permission === 'granted') {
+        fetchedNotifs.forEach((notif: any) => {
+          if (notif.is_new && !notifiedIdsRef.current.has(notif.id_notificacion)) {
+            new Notification(notif.titulo, {
+              body: notif.descripcion,
+              icon: '/favicon.ico', // Optional icon
+            })
+            notifiedIdsRef.current.add(notif.id_notificacion)
+          }
+        })
+      }
     } catch (error) {
       // silently fail
     }
   }
 
   useEffect(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
     fetchNotifications()
     const interval = setInterval(fetchNotifications, 15000)
     return () => clearInterval(interval)
