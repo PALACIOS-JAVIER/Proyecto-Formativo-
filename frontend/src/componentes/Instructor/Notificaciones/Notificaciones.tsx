@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import { FiBell, FiAlertTriangle } from 'react-icons/fi';
-
+import { api } from '../../../services/api';
 
 interface NotificationData {
   id_notificacion: number
@@ -26,9 +26,9 @@ export function Notificaciones(): ReactElement {
       setIsLoading(true)
 
       const requests: Promise<any>[] = [
-        userId ? fetch(`/api/notificaciones/usuario/${userId}`).then(r => r.ok ? r.json() : []) : Promise.resolve([]),
-        userId ? fetch(`/api/informes-gc/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gc').then(r => r.ok ? r.json() : []),
-        userId ? fetch(`/api/informes-gf/usuario/${userId}`).then(r => r.ok ? r.json() : []) : fetch('/api/informes-gf').then(r => r.ok ? r.json() : []),
+        userId ? api.get(`/notificaciones/usuario/${userId}`).then(r => r.data).catch(() => []) : Promise.resolve([]),
+        userId ? api.get(`/informes-gc/usuario/${userId}`).then(r => r.data).catch(() => []) : api.get('/informes-gc').then(r => r.data).catch(() => []),
+        userId ? api.get(`/informes-gf/usuario/${userId}`).then(r => r.data).catch(() => []) : api.get('/informes-gf').then(r => r.data).catch(() => []),
       ]
 
       const [notifsData, gcRes, gfRes] = await Promise.all(requests)
@@ -73,9 +73,7 @@ export function Notificaciones(): ReactElement {
 
   const markAsRead = async (id: number) => {
     try {
-      await fetch(`/api/notificaciones/${id}/marcar-leida`, {
-        method: 'PATCH',
-      })
+      await api.patch(`/notificaciones/${id}/leer`)
       setNotifications((prev) => prev.map((n) => (n.id_notificacion === id ? { ...n, is_new: false } : n)))
     } catch (err) {
       console.error('Error marking notification as read:', err)
