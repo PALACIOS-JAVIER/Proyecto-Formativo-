@@ -35,6 +35,14 @@ import { InformeGF } from './Products/informes-gf/entities/informe-gf.entity';
 import { ObservacionGF } from './Products/informes-gf/entities/observacion-gf.entity';
 import { NotificacionesModule } from './Products/notificaciones/notificaciones.module';
 import { Notificacion } from './Products/notificaciones/entities/notificacione.entity';
+import { InformesModule } from './Products/informes/informes.module';
+import { Informe } from './Products/informes/entities/informe.entity';
+import { Actividad } from './Products/informes/entities/actividad.entity';
+import { Evidencia } from './Products/informes/entities/evidencia.entity';
+import { Desplazamiento } from './Products/informes/entities/desplazamiento.entity';
+import { Version } from './Products/informes/entities/version.entity';
+import { Novedad } from './Products/informes/entities/novedad.entity';
+import { ReportesModule } from './Products/reportes/reportes.module';
 
 @Module({
   imports: [
@@ -52,7 +60,30 @@ import { Notificacion } from './Products/notificaciones/entities/notificacione.e
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Area, Rol, Sede, ObjetoContractual, Coordinador, ApoyoAdministrativo, Usuario, Especialidad, Historial, CampesenaObligacione, RegularFicObligacione, InformeGC, ObservacionGC, InformeGF, ObservacionGF, Notificacion],
+      entities: [
+        Area,
+        Rol,
+        Sede,
+        ObjetoContractual,
+        Coordinador,
+        ApoyoAdministrativo,
+        Usuario,
+        Especialidad,
+        Historial,
+        CampesenaObligacione,
+        RegularFicObligacione,
+        InformeGC,
+        ObservacionGC,
+        InformeGF,
+        ObservacionGF,
+        Notificacion,
+        Informe,
+        Actividad,
+        Evidencia,
+        Desplazamiento,
+        Version,
+        Novedad,
+      ],
       synchronize: process.env.DB_SYNCHRONIZE === 'true',
       logging: false,
     }),
@@ -70,9 +101,12 @@ import { Notificacion } from './Products/notificaciones/entities/notificacione.e
     InformesGcModule,
     InformesGfModule,
     NotificacionesModule,
+    InformesModule,
+    ReportesModule,
     AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
