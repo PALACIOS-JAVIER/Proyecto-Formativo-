@@ -20,7 +20,7 @@ export interface RegistrationData {
   telefono: string
   correo: string
   contraseña: string
-  rol: 'campesena' | 'regular fit' | 'apoyo administrativo'
+  rol: 'campesena' | 'regular fic' | 'apoyo administrativo'
   sede: string
   area: string
   codigoContrato: string
@@ -28,6 +28,7 @@ export interface RegistrationData {
   fechaInicioContrato: string
   fechaFinContrato: string
   objetoContrato?: string
+  aceptaTerminos: boolean
 }
 
 interface LoginProps {
@@ -62,18 +63,19 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     rol: '' as any,
     sede: '',
     area: '',
-    codigoContrato: 'CO1. ',
+    codigoContrato: 'CO1.',
     codigoSiif: '',
     fechaInicioContrato: '',
     fechaFinContrato: '',
+    aceptaTerminos: false,
   })
 
   // ── Mostrar/ocultar contraseña ──────────────────────────────────────
   const [showLoginPwd, setShowLoginPwd] = useState(false)
   const [showRegPwd, setShowRegPwd] = useState(false)
   const [showConfirmPwd, setShowConfirmPwd] = useState(false)
-
   // ── Touched states para validación en tiempo real ───────────────────
+
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const touch = (field: string) => setTouched(p => ({ ...p, [field]: true }))
 
@@ -117,26 +119,26 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     if (mode === 'register') {
       const fallbackSedes = [{ id_sede: 1, nombre: 'Yamboro' }]
       const fallbackRoles = [
-        { id_rol: 1, nombre: 'regular fit', sede: { id_sede: 1, nombre: 'Yamboro' } },
+        { id_rol: 1, nombre: 'regular fic', sede: { id_sede: 1, nombre: 'Yamboro' } },
         { id_rol: 2, nombre: 'campesena', sede: { id_sede: 1, nombre: 'Yamboro' } },
       ]
       const fallbackAreas = [
-        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'regular fic' } },
         { id_area: 12, nombre: 'Produccion Pecuaria', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 13, nombre: 'Agricola', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 14, nombre: 'Opereciones Forestales', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 15, nombre: 'Comunicación', rol: { id_rol: 2, nombre: 'campesena' } },
-        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'regular fic' } },
         { id_area: 17, nombre: 'Idiomas', rol: { id_rol: 2, nombre: 'campesena' } },
       ]
 
@@ -181,6 +183,15 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   const vTelefono = /^\d{7,15}$/.test(registration.telefono)
   const vCorreo = registration.correo.includes('@')
   const vConfirm = registration.contraseña !== '' && confirmPassword === registration.contraseña
+  const termsAccepted = registration.aceptaTerminos
+  const passwordRules = [
+    { label: 'Mínimo 8 caracteres', shortLabel: '8 caracteres', valid: registration.contraseña.length >= 8 },
+    { label: 'Al menos 1 letra mayúscula (A-Z)', shortLabel: 'una mayúscula', valid: /[A-Z]/.test(registration.contraseña) },
+    { label: 'Al menos 1 letra minúscula (a-z)', shortLabel: 'una minúscula', valid: /[a-z]/.test(registration.contraseña) },
+    { label: 'Al menos 1 carácter especial (!@#$%^&_-)', shortLabel: 'un carácter especial', valid: /[!@#$%^&_-]/.test(registration.contraseña) },
+  ]
+  const isRegistrationPasswordValid = passwordRules.every(rule => rule.valid)
+  const missingPasswordRules = passwordRules.filter(rule => !rule.valid).map(rule => rule.shortLabel)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -295,8 +306,16 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
         setErrorMessage('Por favor, ingresa un correo electrónico válido.')
         return
       }
+      if (!isRegistrationPasswordValid) {
+        setErrorMessage('La contraseña no cumple todas las reglas requeridas.')
+        return
+      }
       if (registration.contraseña !== confirmPassword) {
         setErrorMessage('Las contraseñas no coinciden.')
+        return
+      }
+      if (!termsAccepted) {
+        setErrorMessage('Debes aceptar los términos y condiciones para continuar')
         return
       }
       try {
@@ -319,7 +338,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     }
   }
 
-  const handleRegisterChange = (field: keyof RegistrationData, value: string) => {
+  const handleRegisterChange = (field: keyof RegistrationData, value: string | boolean) => {
     setRegistration((current) => ({ ...current, [field]: value }))
   }
 
@@ -399,18 +418,24 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             {mode === 'forgot' ? (
               forgotSubmitted ? (
                 <>
+                  {/* Trampa para bloquear el autocompletado rebelde de Chrome */}
+                  <input type="text" name="fakeusernameremembered" style={{ display: 'none' }} />
+                  <input type="password" name="fakepasswordremembered" style={{ display: 'none' }} />
+
                   <div className="floating-field">
                     <input
-                      id="verification-code"
+                      id="verification-code-input"
+                      name="verification-code-input"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
                       onChange={(event) => setVerificationCode(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="one-time-code"
                       className={`${inputClasses} floating-input`}
                     />
-                    <label htmlFor="verification-code" className="floating-label">
+                    <label htmlFor="verification-code-input" className="floating-label">
                       Código de verificación (6 dígitos)
                     </label>
                   </div>
@@ -423,6 +448,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       onChange={(event) => setNewPassword(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="off"
+                      readOnly={!newPassword}
+                      onFocus={(e) => e.target.removeAttribute('readonly')}
                       className={`${inputClasses} floating-input`}
                     />
                     <label htmlFor="new-password" className="floating-label">
@@ -438,6 +466,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       onChange={(event) => setConfirmNewPassword(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="off"
+                      readOnly={!confirmNewPassword}
+                      onFocus={(e) => e.target.removeAttribute('readonly')}
                       className={`${inputClasses} floating-input`}
                     />
                     <label htmlFor="confirm-new-password" className="floating-label">
@@ -507,7 +538,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         value={registration.contraseña}
                         onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                         onBlur={() => touch('contraseña')}
-                        autoComplete="new-password"
+                        autoComplete="off"
+                        readOnly={!registration.contraseña}
+                        onFocus={(e) => e.target.removeAttribute('readonly')}
                         className={`${dynInput(fieldState(registration.contraseña, registration.contraseña.length >= 6, !!touched.contraseña))} pr-10`}
                         required
                       />
@@ -524,7 +557,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         onBlur={() => touch('confirmPassword')}
-                        autoComplete="new-password"
+                        autoComplete="off"
+                        readOnly={!confirmPassword}
+                        onFocus={(e) => e.target.removeAttribute('readonly')}
                         className={`${dynInput(fieldState(confirmPassword, vConfirm, !!touched.confirmPassword))} pr-10`}
                         required
                       />
@@ -843,12 +878,21 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                           value={registration.contraseña}
                           onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                           onBlur={() => touch('contraseña')}
-                          autoComplete="new-password"
+                          autoComplete="off"
+                          readOnly={!registration.contraseña}
+                          onFocus={(e) => e.target.removeAttribute('readonly')}
                           className={`${dynInput(fieldState(registration.contraseña, registration.contraseña.length >= 6, !!touched.contraseña))} pr-10`}
                           required
                         />
                         <PwdToggle show={showRegPwd} onToggle={() => setShowRegPwd(p => !p)} />
                       </div>
+                      {(registration.contraseña !== '') && (
+                        <p className={isRegistrationPasswordValid ? 'password-status password-rule--valid' : 'password-status password-rule--invalid'}>
+                          {isRegistrationPasswordValid
+                            ? <><LuCircleCheck aria-hidden="true" />Contraseña válida</>
+                            : <><LuCircleAlert aria-hidden="true" />Falta: {missingPasswordRules.join(', ')}</>}
+                        </p>
+                      )}
                     </div>
 
                     {/* Confirmar contraseña */}
@@ -860,7 +904,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           onBlur={() => touch('confirmPassword')}
-                          autoComplete="new-password"
+                          autoComplete="off"
+                          readOnly={!confirmPassword}
+                          onFocus={(e) => e.target.removeAttribute('readonly')}
                           className={`${dynInput(fieldState(confirmPassword, vConfirm, !!touched.confirmPassword))} pr-10`}
                           required
                         />
@@ -880,13 +926,25 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                   </div>
                 </div>
 
+                <label className="terms-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={registration.aceptaTerminos}
+                    onChange={(event) => handleRegisterChange('aceptaTerminos', event.target.checked)}
+                    required
+                  />
+                  <span>
+                    Acepto los <a href="/terminos-y-condiciones" target="_blank" rel="noreferrer">Términos y Condiciones</a> y autorizo el Tratamiento de Datos Personales
+                  </span>
+                </label>
+
                 {/* ── Botón de envío ── */}
                 <button
                   type="submit"
                   className="w-full h-11 bg-gradient-to-r from-[#39A900] via-[#339900] to-[#2D8600] hover:from-[#2D8600] hover:to-[#1e6100] active:scale-[0.99] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-xl shadow-[#39A900]/25 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-60"
-                  disabled={loading}
+                  disabled={loading || !isRegistrationPasswordValid}
                 >
-                  {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+                  {loading ? 'Creando cuenta...' : 'Registrarse'}
                 </button>
 
                 <div className="switch-mode-row text-center pt-2">

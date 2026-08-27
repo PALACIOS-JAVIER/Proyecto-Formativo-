@@ -4,14 +4,11 @@ import { Navegacion } from './Navegacion/Navegacion'
 import { Dashboard } from './GraficaIndicadores/Dashboard/Dashboard'
 import { CargarInforme } from './CargarInforme/CargarInforme'
 import { Informes } from './Informes/Informes'
-import { AsistenteAI } from './AsistenteIA/AsistenteAI'
 import { Perfil } from './Perfil/Perfil'
 import { Notificaciones } from './Notificaciones/Notificaciones'
 import { Indicadores } from './GraficaIndicadores/Indicadores'
 import { WhatsApp } from './WhatsApp/WhatsApp'
-import { NotificationBell } from '../common/NotificationBell'
-
-type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
+type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil'
 
 interface InstructorAppProps {
   onLogout: () => void
@@ -29,7 +26,6 @@ export function InstructorApp({ onLogout, canEditProfile }: InstructorAppProps):
     indicadores: <Indicadores />,
     notificaciones: <Notificaciones />,
     perfil: <Perfil canEditProfile={canEditProfile} />,
-    asistente: <AsistenteAI />,
   }
 
   return (
@@ -54,7 +50,6 @@ export function InstructorApp({ onLogout, canEditProfile }: InstructorAppProps):
           </div>
           
           <div className="flex items-center gap-2">
-            <NotificationBell />
             <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-[#00304D] lg:hidden">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
