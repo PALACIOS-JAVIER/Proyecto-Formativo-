@@ -62,7 +62,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     rol: '' as any,
     sede: '',
     area: '',
-    codigoContrato: 'COD-',
+    codigoContrato: 'CO1. ',
     codigoSiif: '',
     fechaInicioContrato: '',
     fechaFinContrato: '',
