@@ -886,7 +886,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         />
                         <PwdToggle show={showRegPwd} onToggle={() => setShowRegPwd(p => !p)} />
                       </div>
-                      {(passwordFocused || registration.contraseña !== '') && (
+                      {(registration.contraseña !== '') && (
                         <p className={isRegistrationPasswordValid ? 'password-status password-rule--valid' : 'password-status password-rule--invalid'}>
                           {isRegistrationPasswordValid
                             ? <><LuCircleCheck aria-hidden="true" />Contraseña válida</>

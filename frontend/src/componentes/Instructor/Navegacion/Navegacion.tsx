@@ -1,8 +1,7 @@
 import type { ReactElement } from 'react'
 import sitmiLogo from '../../../assets/Imagenes_Login/Sena.png'
 import { FiPieChart, FiUploadCloud, FiFolder, FiTrendingUp, FiBell, FiSettings } from 'react-icons/fi'
-
-type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
+type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil'
 
 const navigationItems: Array<{ id: PageKey; label: string; icon: ReactElement }> = [
   { id: 'dashboard', label: 'Dashboard', icon: <FiPieChart /> },
