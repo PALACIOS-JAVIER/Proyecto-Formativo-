@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuariosService } from './usuarios.service';
 import { UsuariosController } from './usuarios.controller';
-import { ContratistasController } from './contratistas.controller';
 import { Usuario } from './entities/usuario.entity';
 import { Sede } from '../sede/entities/sede.entity';
 import { Rol } from '../rol/entities/rol.entity';
@@ -14,7 +13,7 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module';
     TypeOrmModule.forFeature([Usuario, Sede, Rol, Area]),
     NotificacionesModule,
   ],
-  controllers: [UsuariosController, ContratistasController],
+  controllers: [UsuariosController],
   providers: [UsuariosService],
   exports: [UsuariosService],
 })
