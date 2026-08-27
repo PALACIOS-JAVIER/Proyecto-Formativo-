@@ -4,13 +4,11 @@ import { Navegacion } from './Navegacion/Navegacion'
 import { Dashboard } from './GraficaIndicadores/Dashboard/Dashboard'
 import { CargarInforme } from './CargarInforme/CargarInforme'
 import { Informes } from './Informes/Informes'
-import { AsistenteAI } from './AsistenteIA/AsistenteAI'
 import { Perfil } from './Perfil/Perfil'
 import { Notificaciones } from './Notificaciones/Notificaciones'
 import { Indicadores } from './GraficaIndicadores/Indicadores'
 import { WhatsApp } from './WhatsApp/WhatsApp'
-
-type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil' | 'asistente'
+type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil'
 
 interface InstructorAppProps {
   onLogout: () => void
@@ -28,7 +26,6 @@ export function InstructorApp({ onLogout, canEditProfile }: InstructorAppProps):
     indicadores: <Indicadores />,
     notificaciones: <Notificaciones />,
     perfil: <Perfil canEditProfile={canEditProfile} />,
-    asistente: <AsistenteAI />,
   }
 
   return (

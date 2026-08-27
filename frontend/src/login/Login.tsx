@@ -74,9 +74,8 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
   const [showLoginPwd, setShowLoginPwd] = useState(false)
   const [showRegPwd, setShowRegPwd] = useState(false)
   const [showConfirmPwd, setShowConfirmPwd] = useState(false)
-  const [passwordFocused, setPasswordFocused] = useState(false)
-
   // ── Touched states para validación en tiempo real ───────────────────
+
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const touch = (field: string) => setTouched(p => ({ ...p, [field]: true }))
 
