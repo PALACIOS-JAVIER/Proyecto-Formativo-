@@ -228,7 +228,8 @@ function App() {
         codigoContrato: registration.codigoContrato,
         codigoSiif: Number(registration.codigoSiif) || 0,
         fechaInicioContrato: registration.fechaInicioContrato,
-        fechaFinContrato: registration.fechaFinContrato
+        fechaFinContrato: registration.fechaFinContrato,
+        aceptaTerminos: registration.aceptaTerminos,
       })
       return { success: true }
     } catch (error: any) {
