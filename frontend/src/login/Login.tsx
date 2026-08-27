@@ -20,7 +20,7 @@ export interface RegistrationData {
   telefono: string
   correo: string
   contraseña: string
-  rol: 'campesena' | 'regular fit' | 'apoyo administrativo'
+  rol: 'campesena' | 'regular fic' | 'apoyo administrativo'
   sede: string
   area: string
   codigoContrato: string
@@ -62,7 +62,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     rol: '' as any,
     sede: '',
     area: '',
-    codigoContrato: 'COD-',
+    codigoContrato: 'CO1.',
     codigoSiif: '',
     fechaInicioContrato: '',
     fechaFinContrato: '',
@@ -117,26 +117,26 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     if (mode === 'register') {
       const fallbackSedes = [{ id_sede: 1, nombre: 'Yamboro' }]
       const fallbackRoles = [
-        { id_rol: 1, nombre: 'regular fit', sede: { id_sede: 1, nombre: 'Yamboro' } },
+        { id_rol: 1, nombre: 'regular fic', sede: { id_sede: 1, nombre: 'Yamboro' } },
         { id_rol: 2, nombre: 'campesena', sede: { id_sede: 1, nombre: 'Yamboro' } },
       ]
       const fallbackAreas = [
-        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'regular fit' } },
-        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 1, nombre: 'Construcción', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 2, nombre: 'Agricola', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 3, nombre: 'Agropecuaria', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 4, nombre: 'Ambiental', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 5, nombre: 'Informatica', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 6, nombre: 'Cocina', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 7, nombre: 'Deportes', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 8, nombre: 'Etica', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 9, nombre: 'Comunicación', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 10, nombre: 'Seguridad Y Salud En El Trabajo', rol: { id_rol: 1, nombre: 'regular fic' } },
+        { id_area: 11, nombre: 'Emprendimiento', rol: { id_rol: 1, nombre: 'regular fic' } },
         { id_area: 12, nombre: 'Produccion Pecuaria', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 13, nombre: 'Agricola', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 14, nombre: 'Opereciones Forestales', rol: { id_rol: 2, nombre: 'campesena' } },
         { id_area: 15, nombre: 'Comunicación', rol: { id_rol: 2, nombre: 'campesena' } },
-        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'regular fit' } },
+        { id_area: 16, nombre: 'Bilinguismo', rol: { id_rol: 1, nombre: 'regular fic' } },
         { id_area: 17, nombre: 'Idiomas', rol: { id_rol: 2, nombre: 'campesena' } },
       ]
 
@@ -399,18 +399,24 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             {mode === 'forgot' ? (
               forgotSubmitted ? (
                 <>
+                  {/* Trampa para bloquear el autocompletado rebelde de Chrome */}
+                  <input type="text" name="fakeusernameremembered" style={{ display: 'none' }} />
+                  <input type="password" name="fakepasswordremembered" style={{ display: 'none' }} />
+
                   <div className="floating-field">
                     <input
-                      id="verification-code"
+                      id="verification-code-input"
+                      name="verification-code-input"
                       type="text"
                       maxLength={6}
                       value={verificationCode}
                       onChange={(event) => setVerificationCode(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="one-time-code"
                       className={`${inputClasses} floating-input`}
                     />
-                    <label htmlFor="verification-code" className="floating-label">
+                    <label htmlFor="verification-code-input" className="floating-label">
                       Código de verificación (6 dígitos)
                     </label>
                   </div>
@@ -423,6 +429,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       onChange={(event) => setNewPassword(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="off"
+                      readOnly={!newPassword}
+                      onFocus={(e) => e.target.removeAttribute('readonly')}
                       className={`${inputClasses} floating-input`}
                     />
                     <label htmlFor="new-password" className="floating-label">
@@ -438,6 +447,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       onChange={(event) => setConfirmNewPassword(event.target.value)}
                       placeholder=" "
                       required
+                      autoComplete="off"
+                      readOnly={!confirmNewPassword}
+                      onFocus={(e) => e.target.removeAttribute('readonly')}
                       className={`${inputClasses} floating-input`}
                     />
                     <label htmlFor="confirm-new-password" className="floating-label">
@@ -507,7 +519,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         value={registration.contraseña}
                         onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                         onBlur={() => touch('contraseña')}
-                        autoComplete="new-password"
+                        autoComplete="off"
+                        readOnly={!registration.contraseña}
+                        onFocus={(e) => e.target.removeAttribute('readonly')}
                         className={`${dynInput(fieldState(registration.contraseña, registration.contraseña.length >= 6, !!touched.contraseña))} pr-10`}
                         required
                       />
@@ -524,7 +538,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         onBlur={() => touch('confirmPassword')}
-                        autoComplete="new-password"
+                        autoComplete="off"
+                        readOnly={!confirmPassword}
+                        onFocus={(e) => e.target.removeAttribute('readonly')}
                         className={`${dynInput(fieldState(confirmPassword, vConfirm, !!touched.confirmPassword))} pr-10`}
                         required
                       />
@@ -843,7 +859,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                           value={registration.contraseña}
                           onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                           onBlur={() => touch('contraseña')}
-                          autoComplete="new-password"
+                          autoComplete="off"
+                          readOnly={!registration.contraseña}
+                          onFocus={(e) => e.target.removeAttribute('readonly')}
                           className={`${dynInput(fieldState(registration.contraseña, registration.contraseña.length >= 6, !!touched.contraseña))} pr-10`}
                           required
                         />
@@ -860,7 +878,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           onBlur={() => touch('confirmPassword')}
-                          autoComplete="new-password"
+                          autoComplete="off"
+                          readOnly={!confirmPassword}
+                          onFocus={(e) => e.target.removeAttribute('readonly')}
                           className={`${dynInput(fieldState(confirmPassword, vConfirm, !!touched.confirmPassword))} pr-10`}
                           required
                         />
