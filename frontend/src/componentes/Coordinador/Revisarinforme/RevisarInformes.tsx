@@ -616,11 +616,28 @@ export function RevisarInformes(): ReactElement {
                                           )}
 
                                           {/* Actions */}
-                                          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
-                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                          <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                                            {/* Top Row: Solicitar Corrección */}
+                                            {normalizedStatus !== 'correccion' && (
+                                              <div className="flex items-center justify-end">
+                                                <button
+                                                  type="button"
+                                                  className="h-[36px] px-5 whitespace-nowrap text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                                                  onClick={() => {
+                                                    setCorrectionTarget({ id: reportId, tipo: r.tipo })
+                                                    setCorrectionNote('') 
+                                                  }}
+                                                >
+                                                  <FiAlertTriangle /> Solicitar Corrección
+                                                </button>
+                                              </div>
+                                            )}
+
+                                            {/* Bottom Row: Cargar, Descargar, Aprobar */}
+                                            <div className="flex flex-wrap items-center justify-end gap-2.5">
                                               {normalizedStatus !== 'aprobado' && (
-                                                <>
-                                                  <label className="cursor-pointer px-4 py-2 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-1.5">
+                                                <div className="flex flex-col gap-1 items-center">
+                                                  <label className="h-[36px] whitespace-nowrap cursor-pointer px-4 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm flex items-center justify-center gap-1.5">
                                                     <FiUpload /> Cargar PDF
                                                     <input
                                                       type="file"
@@ -639,35 +656,22 @@ export function RevisarInformes(): ReactElement {
                                                       {selectedFiles[cardKey].name}
                                                     </span>
                                                   )}
-                                                </>
+                                                </div>
                                               )}
-                                            </div>
 
-                                            <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
                                               <button
                                                 type="button"
                                                 onClick={() => forceDownload(pdfFullUrl, `Informe_${r.tipo}_Original.pdf`)}
-                                                className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 text-slate-700"
+                                                className="h-[36px] whitespace-nowrap px-4 text-xs font-bold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center justify-center gap-1.5 text-slate-700"
                                               >
                                                 <FiDownload /> Descargar
                                               </button>
-                                              {normalizedStatus !== 'correccion' && (
-                                                <button
-                                                  type="button"
-                                                  className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
-                                                  onClick={() => {
-                                                    setCorrectionTarget({ id: reportId, tipo: r.tipo })
-                                                    setCorrectionNote('') 
-                                                  }}
-                                                >
-                                                  <FiAlertTriangle /> Solicitar Corrección
-                                                </button>
-                                              )}
+
                                               {normalizedStatus !== 'aprobado' && (
                                                 <button
                                                   type="button"
                                                   disabled={!selectedFiles[cardKey] || isApproving[cardKey]}
-                                                  className="px-4 py-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  className="h-[36px] whitespace-nowrap px-5 text-xs font-bold bg-[#39A900] text-white hover:bg-[#007832] rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                                   onClick={() => handleApprove(reportId, r.tipo, cardKey)}
                                                 >
                                                   <FiCheck /> {isApproving[cardKey] ? 'Enviando...' : 'Aprobar'}
