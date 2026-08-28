@@ -17,6 +17,7 @@ interface BackendReport {
   estado: string // 'aprobado', 'correccion', 'revisando', 'success', 'warning', 'alert'
   fecha_registro: string
   archivo_url: string
+  archivo_firmado_url?: string
   observaciones?: BackendObservacion[]
 }
 
@@ -121,10 +122,33 @@ export function Informes(): ReactElement {
     return <span className="status-chip status-chip--info bg-amber-100 text-amber-800 border border-amber-300 font-bold px-3 py-1 rounded-full text-xs">⏳ En revisión por coordinador</span>
   }
 
+  const forceDownload = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch file');
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Error al forzar descarga, abriendo en nueva pestaña...', err);
+      window.open(url, '_blank');
+    }
+  }
+
   const renderCard = (report: ReportWithVersion) => {
     const pdfFullUrl = report.archivo_url.startsWith('http')
       ? report.archivo_url
-      : `/${report.archivo_url}`
+      : `http://localhost:3000/${report.archivo_url}`
+
+    const signedPdfFullUrl = report.archivo_firmado_url
+      ? (report.archivo_firmado_url.startsWith('http') ? report.archivo_firmado_url : `http://localhost:3000/${report.archivo_firmado_url}`)
+      : null
 
     const lastObs = report.observaciones && report.observaciones.length > 0
       ? report.observaciones[report.observaciones.length - 1]
@@ -171,22 +195,52 @@ export function Informes(): ReactElement {
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border flex-wrap">
-          <a
-            href={pdfFullUrl}
-            download={`Informe_${report.tipo}_${report.mes}_${report.anio}_v${report.version}.pdf`}
-            className="button button--ghost px-3.5 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-border hover:bg-bg-card"
-          >
-            <FiDownload /> Descargar PDF
-          </a>
-          <a
-            href={pdfFullUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="button button--primary px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            <FiFileText /> Ver PDF v{report.version}
-          </a>
+        <div className="mt-4 flex flex-col gap-3 pt-3 border-t border-border">
+          {/* ORIGINAL FILES ROW */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-secondary">Archivo Original:</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => forceDownload(pdfFullUrl, `Informe_${report.tipo}_${report.mes}_${report.anio}_v${report.version}.pdf`)}
+                className="rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-colors"
+              >
+                <FiDownload /> Descargar Original
+              </button>
+              <a
+                href={pdfFullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-colors"
+              >
+                <FiFileText /> Ver Original
+              </a>
+            </div>
+          </div>
+
+          {/* SIGNED FILES ROW (if exists) */}
+          {signedPdfFullUrl && (
+            <div className="flex items-center justify-between pt-2 border-t border-dashed border-border/50">
+              <span className="text-xs font-semibold text-emerald-700">Archivo Aprobado:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => forceDownload(signedPdfFullUrl, `Informe_${report.tipo}_${report.mes}_${report.anio}_v${report.version}_FIRMADO.pdf`)}
+                  className="rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-[#39A900] text-white hover:bg-[#007832] shadow-sm transition-colors"
+                >
+                  <FiDownload /> Descargar Aprobado
+                </button>
+                <a
+                  href={signedPdfFullUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-[#39A900] text-white hover:bg-[#007832] shadow-sm transition-colors"
+                >
+                  <FiFileText /> Ver Aprobado
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </article>
     )

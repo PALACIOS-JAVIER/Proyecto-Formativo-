@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react'
-import { FiRefreshCw, FiSearch, FiFolder, FiFolderMinus, FiFileText, FiAlertTriangle, FiCpu, FiInfo, FiCheck } from 'react-icons/fi'
+import { FiRefreshCw, FiSearch, FiFolder, FiFolderMinus, FiFileText, FiAlertTriangle, FiCpu, FiInfo, FiCheck, FiUpload, FiDownload } from 'react-icons/fi'
 
 interface BackendObservacion {
   id_observacion_gc: number
@@ -56,6 +56,8 @@ export function RevisarInformes(): ReactElement {
   const [actionAlert, setActionAlert] = useState('')
   const [expandedIA, setExpandedIA] = useState<Record<string, boolean>>({})
   const [analyzingIds, setAnalyzingIds] = useState<Record<string, boolean>>({})
+  const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({})
+  const [isApproving, setIsApproving] = useState<Record<string, boolean>>({})
 
   const fetchAllReports = async () => {
     try {
@@ -156,26 +158,46 @@ export function RevisarInformes(): ReactElement {
     return groups
   }, [filtered])
 
-  const handleApprove = async (reportId: number, tipo: 'GC' | 'GF') => {
+  const handleApprove = async (reportId: number, tipo: 'GC' | 'GF', cardKey: string) => {
+    const file = selectedFiles[cardKey]
+    if (!file) {
+      alert('Debes cargar el PDF firmado antes de aprobar el informe.')
+      return
+    }
+
     try {
+      setIsApproving(prev => ({ ...prev, [cardKey]: true }))
       const token = localStorage.getItem('access_token') || ''
       const endpoint = tipo === 'GC' ? 'informes-gc' : 'informes-gf'
-      const res = await fetch(`/api/${endpoint}/${reportId}/estado`, {
-        method: 'PATCH',
+      
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch(`/api/${endpoint}/${reportId}/aprobar-firmado`, {
+        method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ estado: 'aprobado' }),
+        body: formData,
       })
 
-      if (!res.ok) throw new Error('Error al aprobar el informe.')
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}))
+        throw new Error(err.message || 'Error al aprobar el informe.')
+      }
 
-      setActionAlert(`✓ Informe ${tipo} #${reportId} aprobado exitosamente.`)
+      setActionAlert(`✓ Informe ${tipo} #${reportId} aprobado exitosamente con firma.`)
       setTimeout(() => setActionAlert(''), 3000)
+      setSelectedFiles(prev => {
+        const next = { ...prev }
+        delete next[cardKey]
+        return next
+      })
       fetchAllReports()
     } catch (err: any) {
       alert(err.message || 'Ocurrió un error al aprobar.')
+    } finally {
+      setIsApproving(prev => ({ ...prev, [cardKey]: false }))
     }
   }
 
@@ -251,6 +273,25 @@ export function RevisarInformes(): ReactElement {
     })
     return Array.from(setOfMonths)
   }, [reports])
+
+  const forceDownload = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch file');
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Error al forzar descarga, abriendo en nueva pestaña...', err);
+      window.open(url, '_blank');
+    }
+  }
 
   return (
     <section className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -575,36 +616,64 @@ export function RevisarInformes(): ReactElement {
                                           )}
 
                                           {/* Actions */}
-                                          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                                            <a
-                                              href={pdfFullUrl}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 text-slate-700"
-                                            >
-                                              <FiFileText /> Ver PDF
-                                            </a>
-                                            {normalizedStatus !== 'correccion' && (
+                                          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                              {normalizedStatus !== 'aprobado' && (
+                                                <>
+                                                  <label className="cursor-pointer px-4 py-2 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-1.5">
+                                                    <FiUpload /> Cargar PDF
+                                                    <input
+                                                      type="file"
+                                                      accept="application/pdf"
+                                                      className="hidden"
+                                                      onChange={(e) => {
+                                                        if (e.target.files && e.target.files[0]) {
+                                                          const f = e.target.files[0];
+                                                          setSelectedFiles(prev => ({ ...prev, [cardKey]: f }))
+                                                        }
+                                                      }}
+                                                    />
+                                                  </label>
+                                                  {selectedFiles[cardKey] && (
+                                                    <span className="text-[10px] text-slate-500 max-w-[100px] truncate" title={selectedFiles[cardKey].name}>
+                                                      {selectedFiles[cardKey].name}
+                                                    </span>
+                                                  )}
+                                                </>
+                                              )}
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
                                               <button
                                                 type="button"
-                                                className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
-                                                onClick={() => {
-                                                  setCorrectionTarget({ id: reportId, tipo: r.tipo })
-                                                  setCorrectionNote('') 
-                                                }}
+                                                onClick={() => forceDownload(pdfFullUrl, `Informe_${r.tipo}_Original.pdf`)}
+                                                className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 text-slate-700"
                                               >
-                                                <FiAlertTriangle /> Solicitar Corrección
+                                                <FiDownload /> Descargar
                                               </button>
-                                            )}
-                                            {normalizedStatus !== 'aprobado' && (
-                                              <button
-                                                type="button"
-                                                className="px-4 py-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
-                                                onClick={() => handleApprove(reportId, r.tipo)}
-                                              >
-                                                <FiCheck /> Aprobar
-                                              </button>
-                                            )}
+                                              {normalizedStatus !== 'correccion' && (
+                                                <button
+                                                  type="button"
+                                                  className="px-4 py-2 text-xs font-bold border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
+                                                  onClick={() => {
+                                                    setCorrectionTarget({ id: reportId, tipo: r.tipo })
+                                                    setCorrectionNote('') 
+                                                  }}
+                                                >
+                                                  <FiAlertTriangle /> Solicitar Corrección
+                                                </button>
+                                              )}
+                                              {normalizedStatus !== 'aprobado' && (
+                                                <button
+                                                  type="button"
+                                                  disabled={!selectedFiles[cardKey] || isApproving[cardKey]}
+                                                  className="px-4 py-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  onClick={() => handleApprove(reportId, r.tipo, cardKey)}
+                                                >
+                                                  <FiCheck /> {isApproving[cardKey] ? 'Enviando...' : 'Aprobar'}
+                                                </button>
+                                              )}
+                                            </div>
                                           </div>
                                         </div>
                                       )

@@ -76,6 +76,19 @@ export class InformesGfController {
     return this.informesGfService.updateEstado(+id, estado);
   }
 
+  @Post(':id/aprobar-firmado')
+  @UseInterceptors(FileInterceptor('file', pdfUploadOptions))
+  aprobarConFirma(
+    @Param('id') id: string,
+    @UploadedFile() file: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Debes adjuntar el archivo PDF firmado');
+    }
+    const archivo_firmado_url = `uploads/informes-gf/${file.filename}`;
+    return this.informesGfService.aprobarConFirma(+id, archivo_firmado_url);
+  }
+
   @Post(':id/observacion')
   addObservacion(
     @Param('id') id: string,
