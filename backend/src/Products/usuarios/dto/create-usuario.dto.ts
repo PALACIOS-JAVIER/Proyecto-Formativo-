@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsDateString, IsNumber, IsEmail, IsOptional, Matches, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsNumber, IsEmail, IsOptional, Matches, IsBoolean, Equals } from 'class-validator';
 
 export class CreateUsuarioDto {
 
@@ -63,7 +63,9 @@ export class CreateUsuarioDto {
 
     @IsString()
     @IsNotEmpty()
-    @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres.' })
+    @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&_-]).{8,}$/, {
+        message: 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, una minúscula y un carácter especial.',
+    })
     password: string;
 
     @IsString()
@@ -75,6 +77,10 @@ export class CreateUsuarioDto {
     firma?: string;
 
     @IsString()
-    @IsOptional()
-    passwordConfirm?: string;
+    @IsNotEmpty()
+    passwordConfirm: string;
+
+    @IsBoolean()
+    @Equals(true, { message: 'Debes aceptar los términos y condiciones para continuar' })
+    aceptaTerminos: boolean;
 }
