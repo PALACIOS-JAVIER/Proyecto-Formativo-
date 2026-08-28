@@ -105,6 +105,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   const [saveError, setSaveError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const [showSettings, setShowSettings] = useState(false)
   const [newPassword, setNewPassword] = useState('')
@@ -130,8 +131,6 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
   const [especialidadesList, setEspecialidadesList] = useState<any[]>([])
   const [objetosList, setObjetosList] = useState<any[]>([])
-  const [lockedEspecialidad, setLockedEspecialidad] = useState(false)
-  const [lockedObjeto, setLockedObjeto] = useState(false)
 
   // Crop states
   const [imageSrcToCrop, setImageSrcToCrop] = useState<string | null>(null)
@@ -176,8 +175,6 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         id_area_db: u.area?.id_area?.toString() || '',
       }
       setData(loaded)
-      if (u.especialidad) setLockedEspecialidad(true)
-      if (u.objetoContractual) setLockedObjeto(true)
       if (u.fotoPerfil) setPreview(u.fotoPerfil.startsWith('http') ? u.fotoPerfil : `/${u.fotoPerfil}`)
       if (u.firma) setFirmaPreview(u.firma.startsWith('http') ? u.firma : `/${u.firma}`)
     }
@@ -427,6 +424,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
       if (firmaPreview) out.firma = firmaPreview
       onSave?.(out)
       showToast('Perfil actualizado correctamente', 'success')
+      setIsEditing(false)
     } catch (err: any) {
       console.error('Error saving profile to backend DB:', err)
       setSaveError(err.message || 'Ocurrió un error al actualizar la base de datos.')
@@ -438,7 +436,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
   // Cedula, Rol, Area cannot be edited per requirement
   const isFieldDisabled = (field: keyof ProfileData) => {
     if (field === 'cedula' || field === 'rol' || field === 'area') return true
-    return false
+    return !isEditing
   }
 
   const handleDownloadFirma = async (e: React.MouseEvent) => {
@@ -531,6 +529,15 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </button>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="button button--primary px-5 py-2.5 rounded-xl font-bold shadow-md bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              Editar Perfil
+            </button>
+          )}
         </div>
       </header>
 
@@ -566,7 +573,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
 
           <label>
             <span className="font-medium text-xs text-secondary uppercase">Teléfono</span>
-            <input value={data.telefono} onChange={(e) => handleChange('telefono', e.target.value)} placeholder="Ingresa tu teléfono" />
+            <input value={data.telefono} onChange={(e) => handleChange('telefono', e.target.value)} placeholder="Ingresa tu teléfono" disabled={isFieldDisabled('telefono')} />
           </label>
 
           <label>
@@ -613,11 +620,11 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           </label>
 
           <label className="full-width">
-            <span className="font-medium text-xs text-secondary uppercase">Especialidad {lockedEspecialidad && "(Guardada - No editable)"}</span>
+            <span className="font-medium text-xs text-secondary uppercase">Especialidad</span>
             <select
               value={data.id_especialidad || ''}
               onChange={(e) => handleChange('id_especialidad', e.target.value)}
-              disabled={lockedEspecialidad || isFieldDisabled('id_especialidad' as keyof ProfileData)}
+              disabled={isFieldDisabled('id_especialidad' as keyof ProfileData)}
               className="w-full p-3 border border-border rounded-xl bg-white focus:border-emerald-500 focus:ring-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-slate-100"
             >
               <option value="">Seleccione su especialidad</option>
@@ -630,11 +637,11 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
           </label>
 
           <label className="full-width">
-            <span className="font-medium text-xs text-secondary uppercase">Objeto del contrato {lockedObjeto && "(Guardado - No editable)"}</span>
+            <span className="font-medium text-xs text-secondary uppercase">Objeto del contrato</span>
             <select
               value={data.id_objeto || ''}
               onChange={(e) => handleChange('id_objeto', e.target.value)}
-              disabled={lockedObjeto || isFieldDisabled('id_objeto' as keyof ProfileData)}
+              disabled={isFieldDisabled('id_objeto' as keyof ProfileData)}
               className="w-full p-3 border border-border rounded-xl bg-white focus:border-emerald-500 focus:ring-emerald-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-slate-100"
             >
               <option value="">Seleccione el objeto contractual</option>
@@ -652,6 +659,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
               type="file"
               accept="image/*"
               onChange={handleCropFileChange}
+              disabled={!isEditing}
               className="mb-2 block w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-1.5 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer shadow-sm"
             />
             {preview ? <img src={preview} alt="preview" className="rounded-2xl max-h-36 object-cover border border-border" /> : null}
@@ -757,6 +765,7 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
                 const f = e.target.files?.[0]
                 if (f) setFirmaFile(f)
               }}
+              disabled={!isEditing}
               className="mb-2 block w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-1.5 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer shadow-sm"
             />
             {firmaPreview ? (
@@ -779,9 +788,11 @@ export function Perfil({ initialData, onSave }: PerfilProps) {
         </div>
 
         <div className="mt-8 flex justify-end">
-          <button type="submit" disabled={isSaving} className="button button--primary px-8 py-3 rounded-2xl font-bold shadow-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
-            {isSaving ? 'Guardando en BD...' : 'Guardar cambios'}
-          </button>
+          {isEditing && (
+            <button type="submit" disabled={isSaving} className="button button--primary px-8 py-3 rounded-2xl font-bold shadow-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
+              {isSaving ? 'Guardando en BD...' : 'Guardar Cambios'}
+            </button>
+          )}
         </div>
       </form>
 

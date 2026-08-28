@@ -72,6 +72,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
 
   // ── Mostrar/ocultar contraseña ──────────────────────────────────────
   const [showLoginPwd, setShowLoginPwd] = useState(false)
+  const [loginAttempted, setLoginAttempted] = useState(false)
   const [showRegPwd, setShowRegPwd] = useState(false)
   const [showConfirmPwd, setShowConfirmPwd] = useState(false)
   // ── Touched states para validación en tiempo real ───────────────────
@@ -257,8 +258,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     }
 
     if (mode === 'login') {
+      setLoginAttempted(true)
       if (!username.trim() || !password.trim()) {
-        setErrorMessage('Por favor ingresa usuario y contraseña.')
+        setErrorMessage(!username.trim() ? 'El campo usuario es obligatorio.' : 'El campo contraseña es obligatorio.')
         return
       }
 
@@ -387,7 +389,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#39A900] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#39A900]" />
                 </span>
-                {mode === 'login' && 'Acceso al sistema'}
+                {mode === 'login' && 'ACCESO AL SISTEMA STIMI'}
                 {mode === 'register' && 'CREAR UNA CUENTA'}
                 {mode === 'forgot' && 'Recuperar acceso'}
                 {mode === 'reset' && 'Restablecer acceso'}
@@ -412,7 +414,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className={mode === 'register' ? 'register-form' : 'login-form'}>
+                  <form onSubmit={handleSubmit} noValidate={mode === 'login'} className={mode === 'register' ? 'register-form' : 'login-form'}>
 
             {/* ════════════════════ MODO FORGOT ════════════════════ */}
             {mode === 'forgot' ? (
@@ -598,6 +600,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                     className={`${inputClasses} floating-input`}
                   />
                   <label htmlFor="username" className="floating-label">Usuario</label>
+                  {loginAttempted && !username.trim() && (
+                    <span className="text-red-500 text-xs font-normal">Este campo es obligatorio y debe diligenciarlo</span>
+                  )}
                 </div>
 
                 {/* Contraseña login con ojo */}
@@ -613,6 +618,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                   />
                   <label htmlFor="password" className="floating-label">Contraseña</label>
                   <PwdToggle show={showLoginPwd} onToggle={() => setShowLoginPwd(p => !p)} />
+                  {loginAttempted && !password.trim() && (
+                    <span className="text-red-500 text-xs font-normal">Este campo es obligatorio y debe diligenciarlo</span>
+                  )}
                 </div>
 
                 <div className="login-options-row">

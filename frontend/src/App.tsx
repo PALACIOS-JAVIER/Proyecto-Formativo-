@@ -113,14 +113,20 @@ function App() {
     } catch (error: any) {
       console.warn('API Login endpoint error, checking backend error response:', error)
       const backendMsg = error?.response?.data?.message
-      if (backendMsg) {
+      if (backendMsg && error?.response?.status !== 401) {
         const formattedMsg = Array.isArray(backendMsg) ? backendMsg.join(', ') : backendMsg
         return { success: false, message: formattedMsg }
       }
     }
 
     // 2. Demo Fallback: 'coordinador'
-    if (lowerUser === 'coordinador' && (rawPass === '123456' || !rawPass)) {
+    if (
+      (lowerUser === 'coordinador' ||
+        lowerUser === 'coordinador@sena.edu.co' ||
+        lowerUser === 'arcosmunozemiliano719@gmail.com' ||
+        lowerUser === 'arcosmunzemiliano719@gmail.com') &&
+      rawPass === '123456'
+    ) {
       const demoUser = { id: -1, nombre: 'Coordinador Demo', rol: 'coordinador', correo: 'admin@sena.edu.co' }
       localStorage.setItem('access_token', 'demo_token_coordinador')
       localStorage.setItem('user_data', JSON.stringify(demoUser))
@@ -131,7 +137,10 @@ function App() {
     }
 
     // 3. Demo Fallback: 'instructor'
-    if (lowerUser === 'instructor' && (rawPass === '123456' || !rawPass)) {
+    if (
+      (lowerUser === 'instructor' || lowerUser === 'arcosmunozemiliano@gmail.com') &&
+      rawPass === '123456'
+    ) {
       const demoUser = { id: 0, nombre: 'Instructor Demo', rol: 'instructor', correo: 'demo@sena.edu.co' }
       localStorage.setItem('access_token', 'demo_token_instructor')
       localStorage.setItem('user_data', JSON.stringify(demoUser))
