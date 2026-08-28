@@ -84,6 +84,26 @@ export class InformesGfService {
     return this.informeGfRepository.save(informe);
   }
 
+  async aprobarConFirma(id: number, archivo_firmado_url: string): Promise<InformeGF> {
+    const informe = await this.findOne(id);
+    informe.estado = 'aprobado';
+    informe.archivo_firmado_url = archivo_firmado_url;
+    const guardado = await this.informeGfRepository.save(informe);
+
+    if (guardado.usuario) {
+      const notif = this.notificacionRepository.create({
+        titulo: 'Informe Aprobado',
+        descripcion: `El coordinador ha aprobado tu informe GF de ${guardado.mes} ${guardado.anio}. Ya puedes descargar la versión final firmada.`,
+        tipo: 'aprobacion',
+        usuario_destino: guardado.usuario,
+        is_new: true,
+      });
+      await this.notificacionRepository.save(notif);
+    }
+
+    return guardado;
+  }
+
   async addObservacion(id: number, comentario: string, coordinadorId?: number): Promise<ObservacionGF> {
     const informe = await this.findOne(id);
 

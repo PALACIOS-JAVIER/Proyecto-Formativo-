@@ -76,6 +76,17 @@ export class InformesGcController {
     return this.informesGcService.updateEstado(+id, estado);
   }
 
+  @Post(':id/aprobar-firmado')
+  @UseInterceptors(FileInterceptor('file', pdfUploadOptions))
+  aprobarConFirma(
+    @Param('id') id: string,
+    @UploadedFile() file: any,
+  ) {
+    if (!file) throw new BadRequestException('El archivo firmado es requerido');
+    const archivo_firmado_url = `uploads/informes-gc/${file.filename}`;
+    return this.informesGcService.aprobarConFirma(+id, archivo_firmado_url);
+  }
+
   @Post(':id/observacion')
   addObservacion(
     @Param('id') id: string,
