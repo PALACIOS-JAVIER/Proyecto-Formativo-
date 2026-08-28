@@ -180,50 +180,53 @@ export class AuthService {
     console.log(`Código de 6 dígitos: ${verificationCode}`);
     console.log(`======================================================\n`);
 
-    if (process.env.SMTP_USER && process.env.SMTP_PASS && !process.env.SMTP_USER.includes('tu-correo-sena')) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || 'smtp.gmail.com',
-          port: Number(process.env.SMTP_PORT) || 587,
-          secure: false,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
+    const smtpUser = process.env.SMTP_USER && process.env.SMTP_USER !== 'tu-correo-sena@sena.edu.co' 
+      ? process.env.SMTP_USER 
+      : 'arcosmunozemiliano719@gmail.com';
+    const smtpPass = process.env.SMTP_PASS || 'wuphkmafxqjqowir';
+    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
 
-        await transporter.sendMail({
-          from: `"SENA - STIMI" <${process.env.SMTP_USER}>`,
-          to: targetEmail,
-          subject: 'Código de Verificación - Restablecer Contraseña SENA',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-              <div style="background-color: #39A900; padding: 20px; text-align: center; color: white;">
-                <h2 style="margin: 0; font-size: 24px;">SENA - Restablecimiento de Contraseña STIMI</h2>
-              </div>
-              <div style="padding: 30px; color: #333333;">
-                <p>Hola <strong>${user.nombre}</strong>,</p>
-                <p>Has solicitado restablecer la contraseña de tu cuenta en la plataforma del Proyecto Formativo SENA.</p>
-                <p>Utiliza el siguiente código de verificación para completar el proceso. Este código expirará en 15 minutos:</p>
-                <div style="margin: 30px 0; text-align: center;">
-                  <span style="background-color: #f4f4f4; border: 2px dashed #39A900; padding: 15px 30px; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #222;">
-                    ${verificationCode}
-                  </span>
-                </div>
-                <p style="font-size: 14px; color: #777;">Si no solicitaste este cambio, puedes ignorar este correo; tu cuenta permanece segura.</p>
-              </div>
-              <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eeeeee;">
-                Servicio Nacional de Aprendizaje SENA &copy; 2026
-              </div>
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: false,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"SENA - STIMI" <${smtpUser}>`,
+        to: targetEmail,
+        subject: 'Código de Verificación - Restablecer Contraseña SENA',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #39A900; padding: 20px; text-align: center; color: white;">
+              <h2 style="margin: 0; font-size: 24px;">SENA - Restablecimiento de Contraseña STIMI</h2>
             </div>
-          `,
-        });
-        console.log(`[EMAIL ENVIADO] Código de verificación enviado exitosamente a ${targetEmail}`);
-      } catch (err: any) {
-        console.error(`[EMAIL ERROR] No se pudo enviar el correo por SMTP (${err.message}). Se usará el código en consola.`);
-      }
-    } else {
-      console.log(`[INFO] Credenciales SMTP no configuradas o en modo desarrollo. Puedes usar el código mostrado arriba en consola.`);
+            <div style="padding: 30px; color: #333333;">
+              <p>Hola <strong>${user.nombre}</strong>,</p>
+              <p>Has solicitado restablecer la contraseña de tu cuenta en la plataforma del Proyecto Formativo SENA.</p>
+              <p>Utiliza el siguiente código de verificación para completar el proceso. Este código expirará en 15 minutos:</p>
+              <div style="margin: 30px 0; text-align: center;">
+                <span style="background-color: #f4f4f4; border: 2px dashed #39A900; padding: 15px 30px; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #222;">
+                  ${verificationCode}
+                </span>
+              </div>
+              <p style="font-size: 14px; color: #777;">Si no solicitaste este cambio, puedes ignorar este correo; tu cuenta permanece segura.</p>
+            </div>
+            <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eeeeee;">
+              Servicio Nacional de Aprendizaje SENA &copy; 2026
+            </div>
+          </div>
+        `,
+      });
+      console.log(`[EMAIL ENVIADO] Código de verificación enviado exitosamente a ${targetEmail}`);
+    } catch (err: any) {
+      console.error(`[EMAIL ERROR] No se pudo enviar el correo por SMTP (${err.message}).`);
     }
 
     return { 
