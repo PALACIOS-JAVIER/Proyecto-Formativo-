@@ -84,6 +84,25 @@ export class InformesGcService {
     return this.informeGcRepository.save(informe);
   }
 
+  async aprobarConFirma(id: number, archivo_firmado_url: string) {
+    const informe = await this.findOne(id);
+    informe.estado = 'aprobado';
+    informe.archivo_firmado_url = archivo_firmado_url;
+    const guardado = await this.informeGcRepository.save(informe);
+
+    if (guardado.usuario) {
+      await this.notificacionRepository.save({
+        titulo: 'Informe Aprobado',
+        descripcion: `El coordinador ha aprobado tu informe GC de ${guardado.mes} ${guardado.anio}. Ya puedes descargar la versión final firmada.`,
+        tipo: 'aprobacion',
+        usuario_destino: guardado.usuario,
+        is_new: true,
+      });
+    }
+
+    return guardado;
+  }
+
   async addObservacion(id: number, comentario: string, coordinadorId?: number): Promise<ObservacionGC> {
     const informe = await this.findOne(id);
 

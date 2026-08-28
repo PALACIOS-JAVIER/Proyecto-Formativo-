@@ -22,6 +22,9 @@ export class InformeGC {
     @Column({ nullable: true })
     archivo_url: string;
 
+  @Column({ nullable: true })
+  archivo_firmado_url: string;
+
     @Column({ type: 'text', nullable: true })
     analisis_ia: string;
 
