@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import sitmiLogo from '../../../assets/Imagenes_Login/Sena.png'
+import stimiLogo from '../../../assets/Imagenes_Login/Sena.png'
 import { FiPieChart, FiUploadCloud, FiFolder, FiTrendingUp, FiBell, FiSettings } from 'react-icons/fi'
 type PageKey = 'dashboard' | 'subir' | 'informes' | 'indicadores' | 'notificaciones' | 'perfil'
 
@@ -33,9 +33,9 @@ export function Navegacion({ active, onSelect, onLogout, isOpen, onClose }: Nave
         </div>
 
         <div className="flex items-center gap-3 rounded-2xl border border-[#00304D]/10 bg-[#F6F6F6] px-3 py-3">
-          <img src={sitmiLogo} alt="SENA logo" className="h-11 w-11 rounded-xl object-contain bg-white" />
+          <img src={stimiLogo} alt="SENA logo" className="h-11 w-11 rounded-xl object-contain bg-white" />
           <div>
-            <div className="text-lg font-bold text-[#00304D]">SITMI</div>
+            <div className="text-lg font-bold text-[#00304D]">STIMI</div>
             <div className="text-sm text-[#475569]">Instructor</div>
           </div>
         </div>

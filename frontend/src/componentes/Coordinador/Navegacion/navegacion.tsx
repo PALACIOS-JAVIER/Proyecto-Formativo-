@@ -32,7 +32,7 @@ export function Navegacion({ active, onSelect, onLogout, isOpen, onClose }: Prop
         <div className="flex items-center gap-3 rounded-2xl border border-[#00304D]/10 bg-[#F6F6F6] px-3 py-3">
           <img src="/Sena.png" alt="SENA logo" className="h-11 w-11 rounded-xl object-contain bg-white" />
           <div>
-            <div className="text-lg font-bold text-[#00304D]">SITMI</div>
+            <div className="text-lg font-bold text-[#00304D]">STIMI</div>
             <div className="text-sm text-[#475569]">Coordinador</div>
           </div>
         </div>

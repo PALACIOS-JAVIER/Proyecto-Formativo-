@@ -44,7 +44,7 @@ export function InstructorApp({ onLogout, canEditProfile }: InstructorAppProps):
       <div className="flex flex-1 flex-col h-screen overflow-hidden">
         {/* Cabecera Móvil */}
         <header className="flex items-center justify-between bg-white px-4 py-3 border-b border-[#00304D]/10 shadow-sm shrink-0">
-          <div className="font-bold text-[#00304D] lg:hidden">SITMI</div>
+          <div className="font-bold text-[#00304D] lg:hidden">STIMI</div>
           <div className="hidden lg:flex-1 lg:flex lg:items-center lg:justify-between">
              <div className="text-lg font-semibold text-[#00304D] capitalize">{activePage}</div>
           </div>
