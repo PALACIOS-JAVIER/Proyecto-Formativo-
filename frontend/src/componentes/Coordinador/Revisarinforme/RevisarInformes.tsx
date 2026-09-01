@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react'
-import { FiRefreshCw, FiSearch, FiFolder, FiFolderMinus, FiFileText, FiAlertTriangle, FiCpu, FiInfo, FiCheck, FiUpload, FiDownload } from 'react-icons/fi'
+import { FiRefreshCw, FiSearch, FiFolder, FiFolderMinus, FiAlertTriangle, FiCpu, FiInfo, FiCheck, FiUpload, FiDownload } from 'react-icons/fi'
 
 interface BackendObservacion {
   id_observacion_gc: number
