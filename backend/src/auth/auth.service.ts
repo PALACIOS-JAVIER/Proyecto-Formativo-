@@ -145,23 +145,41 @@ export class AuthService {
   async forgotPassword(usernameOrEmail: string) {
     const usernameNormalizado = (usernameOrEmail || '').trim().toLowerCase();
     
+    // 1. Try exact email match
     let user = await this.usuarioRepository.findOne({ where: { correo: usernameNormalizado } });
+
+    // 2. Try cedula match if numeric
     if (!user) {
       const cedula = parseInt(usernameNormalizado);
       if (!isNaN(cedula)) {
         user = await this.usuarioRepository.findOne({ where: { cedula } });
       }
     }
+
+    // 3. Try telefono match if numeric
+    if (!user) {
+      const tel = parseInt(usernameNormalizado);
+      if (!isNaN(tel)) {
+        user = await this.usuarioRepository.findOne({ where: { telefono: tel } });
+      }
+    }
+
+    // 4. Try prefix or fuzzy email/username/nombre match across all users
     if (!user) {
       const allUsers = await this.usuarioRepository.find();
-      const emailPrefix = usernameNormalizado.includes('@') ? usernameNormalizado.split('@')[0] : '';
-      if (emailPrefix) {
-        user = allUsers.find(u => {
-          if (!u.correo) return false;
-          const dbEmail = u.correo.toLowerCase().trim();
-          return dbEmail === usernameNormalizado || dbEmail.split('@')[0] === emailPrefix;
-        }) || null;
-      }
+      const cleanPrefix = usernameNormalizado.includes('@') ? usernameNormalizado.split('@')[0] : usernameNormalizado;
+      user = allUsers.find(u => {
+        if (!u.correo) return false;
+        const dbEmail = u.correo.toLowerCase().trim();
+        const dbPrefix = dbEmail.split('@')[0];
+        return (
+          dbEmail === usernameNormalizado ||
+          dbPrefix === cleanPrefix ||
+          dbEmail.includes(cleanPrefix) ||
+          cleanPrefix.includes(dbPrefix) ||
+          u.nombre?.toLowerCase().trim() === cleanPrefix
+        );
+      }) || null;
     }
 
     if (!user) {

@@ -189,7 +189,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
     { label: 'Mínimo 8 caracteres', shortLabel: '8 caracteres', valid: registration.contraseña.length >= 8 },
     { label: 'Al menos 1 letra mayúscula (A-Z)', shortLabel: 'una mayúscula', valid: /[A-Z]/.test(registration.contraseña) },
     { label: 'Al menos 1 letra minúscula (a-z)', shortLabel: 'una minúscula', valid: /[a-z]/.test(registration.contraseña) },
-    { label: 'Al menos 1 carácter especial (!@#$%^&_-)', shortLabel: 'un carácter especial', valid: /[!@#$%^&_-]/.test(registration.contraseña) },
+    { label: 'Al menos 1 carácter especial', shortLabel: 'un carácter especial', valid: /[^a-zA-Z0-9\s]/.test(registration.contraseña) },
   ]
   const isRegistrationPasswordValid = passwordRules.every(rule => rule.valid)
   const missingPasswordRules = passwordRules.filter(rule => !rule.valid).map(rule => rule.shortLabel)
@@ -415,14 +415,14 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
           </div>
 
                   <form onSubmit={handleSubmit} noValidate={mode === 'login'} className={mode === 'register' ? 'register-form' : 'login-form'}>
+            {/* Trampa global para bloquear el autocompletado rebelde de Chrome en todos los modos */}
+            <input type="text" name="fakeusernameremembered" autoComplete="username" tabIndex={-1} aria-hidden="true" style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1 }} />
+            <input type="password" name="fakepasswordremembered" autoComplete="current-password" tabIndex={-1} aria-hidden="true" style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1 }} />
 
             {/* ════════════════════ MODO FORGOT ════════════════════ */}
             {mode === 'forgot' ? (
               forgotSubmitted ? (
                 <>
-                  {/* Trampa para bloquear el autocompletado rebelde de Chrome */}
-                  <input type="text" name="fakeusernameremembered" style={{ display: 'none' }} />
-                  <input type="password" name="fakepasswordremembered" style={{ display: 'none' }} />
 
                   <div className="floating-field">
                     <input
@@ -614,6 +614,10 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder=" "
                     required
+                    autoComplete="off"
+                    data-1p-ignore="true"
+                    data-lpignore="true"
+                    aria-autocomplete="none"
                     className={`${inputClasses} floating-input pr-10`}
                   />
                   <label htmlFor="password" className="floating-label">Contraseña</label>
@@ -831,6 +835,9 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                     <label className={LABEL}>
                       <span>Código SIIF<Req /></span>
                       <input
+                        name="codigoSiif"
+                        id="codigoSiif"
+                        autoComplete="off"
                         value={registration.codigoSiif}
                         onChange={(e) => handleRegisterChange('codigoSiif', e.target.value)}
                         className={`${BASE_INPUT} border-slate-300 hover:border-slate-400`}
@@ -882,13 +889,15 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       <span>Contraseña<Req /></span>
                       <div className="relative">
                         <input
-                          type={showRegPwd ? 'text' : 'password'}
+                          type="text"
+                          style={{ WebkitTextSecurity: showRegPwd ? 'none' : 'disc' }}
                           value={registration.contraseña}
                           onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                           onBlur={() => touch('contraseña')}
                           autoComplete="off"
-                          readOnly={!registration.contraseña}
-                          onFocus={(e) => e.target.removeAttribute('readonly')}
+                          data-1p-ignore="true"
+                          data-lpignore="true"
+                          aria-autocomplete="none"
                           className={`${dynInput(fieldState(registration.contraseña, registration.contraseña.length >= 6, !!touched.contraseña))} pr-10`}
                           required
                         />
@@ -908,13 +917,15 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       <span>Confirmar contraseña<Req /></span>
                       <div className="relative">
                         <input
-                          type={showConfirmPwd ? 'text' : 'password'}
+                          type="text"
+                          style={{ WebkitTextSecurity: showConfirmPwd ? 'none' : 'disc' }}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           onBlur={() => touch('confirmPassword')}
                           autoComplete="off"
-                          readOnly={!confirmPassword}
-                          onFocus={(e) => e.target.removeAttribute('readonly')}
+                          data-1p-ignore="true"
+                          data-lpignore="true"
+                          aria-autocomplete="none"
                           className={`${dynInput(fieldState(confirmPassword, vConfirm, !!touched.confirmPassword))} pr-10`}
                           required
                         />

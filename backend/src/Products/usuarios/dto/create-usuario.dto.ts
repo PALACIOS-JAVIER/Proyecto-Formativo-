@@ -63,7 +63,7 @@ export class CreateUsuarioDto {
 
     @IsString()
     @IsNotEmpty()
-    @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&_-]).{8,}$/, {
+    @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9\s]).{8,}$/, {
         message: 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, una minúscula y un carácter especial.',
     })
     password: string;
