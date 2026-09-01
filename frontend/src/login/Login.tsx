@@ -890,7 +890,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       <div className="relative">
                         <input
                           type="text"
-                          style={{ WebkitTextSecurity: showRegPwd ? 'none' : 'disc' }}
+                          style={{ WebkitTextSecurity: showRegPwd ? 'none' : 'disc' } as any}
                           value={registration.contraseña}
                           onChange={(e) => handleRegisterChange('contraseña', e.target.value)}
                           onBlur={() => touch('contraseña')}
@@ -918,7 +918,7 @@ export function Login({ onLogin, onRegister, onForgotPassword, onResetPassword }
                       <div className="relative">
                         <input
                           type="text"
-                          style={{ WebkitTextSecurity: showConfirmPwd ? 'none' : 'disc' }}
+                          style={{ WebkitTextSecurity: showConfirmPwd ? 'none' : 'disc' } as any}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           onBlur={() => touch('confirmPassword')}
