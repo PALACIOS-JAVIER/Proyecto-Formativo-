@@ -51,7 +51,12 @@ export function CargarInforme(): ReactElement {
   }, [fetchReports])
 
   const isGcApproved = reportsGC.some(r => r.mes === month && String(r.anio) === year && (r.estado === 'aprobado' || r.estado === 'success'))
+  const isGcInReview = reportsGC.some(r => r.mes === month && String(r.anio) === year && !['aprobado', 'success', 'correccion', 'alert'].includes(r.estado))
+  const isGcBlocked = isGcApproved || isGcInReview
+
   const isGfApproved = reportsGF.some(r => r.mes === month && String(r.anio) === year && (r.estado === 'aprobado' || r.estado === 'success'))
+  const isGfInReview = reportsGF.some(r => r.mes === month && String(r.anio) === year && !['aprobado', 'success', 'correccion', 'alert'].includes(r.estado))
+  const isGfBlocked = isGfApproved || isGfInReview
 
   const handleGcFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -263,18 +268,24 @@ export function CargarInforme(): ReactElement {
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GC</h2>
               <p className="text-xs text-secondary mt-1">Formato Institucional GC. Adjunta el archivo en formato PDF (Máx 50MB).</p>
 
-              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGcApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGcBlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GC
-                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGcFileChange} disabled={isGcApproved} />
+                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGcFileChange} disabled={isGcBlocked} />
               </label>
 
               {isGcApproved && (
                 <div className="mt-4 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
-                  <FiCheck /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                  <FiCheck className="inline-block mr-1" /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
                 </div>
               )}
 
-              {gcFile && !isGcApproved && (
+              {isGcInReview && !isGcApproved && (
+                <div className="mt-4 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
+                  <FiAlertTriangle className="inline-block mr-1" /> Este informe está en revisión por el coordinador y no puede ser enviado nuevamente.
+                </div>
+              )}
+
+              {gcFile && !isGcBlocked && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600 shadow-sm">
                   <span><FiFileText /> {gcFile.name} ({formatFileSize(gcFile.size)})</span>
                 </div>
@@ -296,8 +307,8 @@ export function CargarInforme(): ReactElement {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmittingGc || isGcApproved}
-                  className={`button button--primary text-xs font-bold text-white ${isGcApproved ? 'bg-emerald-400 cursor-not-allowed opacity-50' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                  disabled={isSubmittingGc || isGcBlocked}
+                  className={`button button--primary text-xs font-bold text-white ${isGcBlocked ? 'bg-emerald-400 cursor-not-allowed opacity-50' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                   onClick={handleGcSubmit}
                 >
                   {isSubmittingGc ? 'Subiendo GC...' : 'Cargar informe GC'}
@@ -322,18 +333,24 @@ export function CargarInforme(): ReactElement {
               <h2 className="text-xl font-bold text-foreground">Cargar Informe GF</h2>
               <p className="text-xs text-secondary mt-1">Formato Institucional GF. Adjunta el archivo en formato PDF (Máx 50MB).</p>
 
-              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGfApproved ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+              <label className={`button button--primary mt-4 inline-flex items-center gap-2 ${isGfBlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                 Seleccionar PDF GF
-                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGfFileChange} disabled={isGfApproved} />
+                <input type="file" hidden accept="application/pdf,.pdf" onChange={handleGfFileChange} disabled={isGfBlocked} />
               </label>
 
               {isGfApproved && (
                 <div className="mt-4 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 p-2.5 rounded-xl">
-                  <FiCheck /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
+                  <FiCheck className="inline-block mr-1" /> Este informe ya fue aprobado y no puede ser enviado nuevamente.
                 </div>
               )}
 
-              {gfFile && !isGfApproved && (
+              {isGfInReview && !isGfApproved && (
+                <div className="mt-4 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
+                  <FiAlertTriangle className="inline-block mr-1" /> Este informe está en revisión por el coordinador y no puede ser enviado nuevamente.
+                </div>
+              )}
+
+              {gfFile && !isGfBlocked && (
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 shadow-sm">
                   <span><FiFileText /> {gfFile.name} ({formatFileSize(gfFile.size)})</span>
                 </div>
@@ -355,8 +372,8 @@ export function CargarInforme(): ReactElement {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmittingGf || isGfApproved}
-                  className={`button button--primary text-xs font-bold text-white ${isGfApproved ? 'bg-sky-400 cursor-not-allowed opacity-50' : 'bg-sky-600 hover:bg-sky-700'}`}
+                  disabled={isSubmittingGf || isGfBlocked}
+                  className={`button button--primary text-xs font-bold text-white ${isGfBlocked ? 'bg-sky-400 cursor-not-allowed opacity-50' : 'bg-sky-600 hover:bg-sky-700'}`}
                   onClick={handleGfSubmit}
                 >
                   {isSubmittingGf ? 'Subiendo GF...' : 'Cargar informe GF'}
