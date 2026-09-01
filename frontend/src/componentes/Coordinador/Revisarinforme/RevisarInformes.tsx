@@ -444,6 +444,30 @@ export function RevisarInformes(): ReactElement {
                                       <h4 className="font-semibold text-sm text-slate-800">{instructorName}</h4>
                                       <p className="text-xs text-slate-500 mt-0.5">
                                         {reportsList.length} informe(s)
+                                        {(() => {
+                                          let aprobados = 0;
+                                          let pendientes = 0;
+                                          let rechazados = 0;
+                                          reportsList.forEach((r) => {
+                                            const st = r.estado === 'success' || r.estado === 'aprobado' ? 'aprobado' : r.estado === 'alert' || r.estado === 'correccion' ? 'correccion' : 'revision';
+                                            if (st === 'aprobado') aprobados++;
+                                            else if (st === 'correccion') rechazados++;
+                                            else pendientes++;
+                                          });
+                                          const parts = [];
+                                          if (aprobados > 0) parts.push(<span key="a" className="text-emerald-600 font-semibold">{aprobados} aprobado(s)</span>);
+                                          if (pendientes > 0) parts.push(<span key="p" className="text-sky-600 font-semibold">{pendientes} pendiente(s)</span>);
+                                          if (rechazados > 0) parts.push(<span key="r" className="text-rose-600 font-semibold">{rechazados} rechazado(s)</span>);
+                                          
+                                          if (parts.length > 0) {
+                                            return (
+                                              <span className="ml-1">
+                                                · {parts.map((p, i) => <span key={i}>{p}{i < parts.length - 1 ? ', ' : ''}</span>)}
+                                              </span>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
                                       </p>
                                     </div>
                                   </div>

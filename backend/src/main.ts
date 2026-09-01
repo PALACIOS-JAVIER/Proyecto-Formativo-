@@ -13,9 +13,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
+  const express = require('express');
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:3000', 'http://informestimi.com'],
