@@ -379,7 +379,6 @@ export function Instructores({
                 <>
                   {!(isSupportStaff && selectedInstructorForm.rol?.toLowerCase() === 'apoyo administrativo') && (
                     <>
-                      <button type="button" onClick={() => { if (selectedInstructorForm) { if (!selectedInstructorForm.correo.includes('@')) { setNotificationMessage('Ingresa un correo electrónico válido.'); return; } onUpdateInstructor(selectedInstructorForm.id, { ...selectedInstructorForm }); setNotificationMessage('Perfil actualizado.'); } }} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 shadow-sm" disabled={!instructorEditAllowed}>Guardar cambios</button>
                       <button type="button" onClick={() => { if (selectedInstructorForm) toggleActivation(selectedInstructorForm) }} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200 dark:bg-bg-alt dark:text-foreground border border-border">{selectedInstructorForm.status === 'activo' ? 'Desactivar' : 'Activar'}</button>
                       <button type="button" onClick={() => { if (selectedInstructorForm) { handleDeleteInstructor(selectedInstructorForm.id); setShowProfileModal(false); } }} className="rounded-lg bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-200">Eliminar</button>
                     </>
